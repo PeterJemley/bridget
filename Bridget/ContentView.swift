@@ -10,52 +10,65 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
+    @Query private var events: [DrawbridgeEvent]
+    @Query private var bridgeInfo: [DrawbridgeInfo]
+    
+    @State private var showDebugView = false
 
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        NavigationView {
+            VStack(spacing: 20) {
+                Text("Bridget")
+                    .font(.largeTitle)
+                    .fontWeight(.bold)
+                
+                Text("Seattle Drawbridge Monitor")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                
+                if events.isEmpty {
+                    Text("No bridge data loaded yet")
+                        .foregroundColor(.secondary)
+                        .italic()
+                } else {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Data Summary:")
+                            .font(.headline)
+                        
+                        Text("• \(events.count) bridge events")
+                        Text("• \(bridgeInfo.count) unique bridges")
+                        Text("• \(currentlyOpenCount) currently open")
+                        
+                        if let lastEvent = events.sorted(by: { $0.openDateTime > $1.openDateTime }).first {
+                            Text("• Last event: \(lastEvent.openDateTime.formatted(.relative(presentation: .named)))")
+                        }
                     }
+                    .padding()
+                    .background(Color.gray.opacity(0.1))
+                    .cornerRadius(10)
                 }
-                .onDelete(perform: deleteItems)
+                
+                Spacer()
+                
+                Button("Open Debug Console") {
+                    showDebugView = true
+                }
+                .buttonStyle(.borderedProminent)
             }
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
+            .padding()
+            .navigationTitle("Bridget")
+            .sheet(isPresented: $showDebugView) {
+                DebugView()
             }
-        } detail: {
-            Text("Select an item")
         }
     }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
-            }
-        }
+    
+    private var currentlyOpenCount: Int {
+        events.filter(\.isCurrentlyOpen).count
     }
 }
 
 #Preview {
     ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
+        .modelContainer(for: [DrawbridgeEvent.self, DrawbridgeInfo.self], inMemory: true)
 }

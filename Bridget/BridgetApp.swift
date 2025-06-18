@@ -12,7 +12,8 @@ import SwiftData
 struct BridgetApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
-            Item.self,
+            DrawbridgeEvent.self,
+            DrawbridgeInfo.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
