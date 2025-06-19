@@ -6,6 +6,18 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		485F4DB52E046E4400140AAD /* BridgetCore in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DB42E046E4400140AAD /* BridgetCore */; };
+		485F4DB82E046E6900140AAD /* BridgetNetworking in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DB72E046E6900140AAD /* BridgetNetworking */; };
+		485F4DBB2E046E9400140AAD /* BridgetSharedUI in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DBA2E046E9400140AAD /* BridgetSharedUI */; };
+		485F4DBE2E046EAA00140AAD /* BridgetDashboard in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DBD2E046EAA00140AAD /* BridgetDashboard */; };
+		485F4DC12E046F1C00140AAD /* BridgetBridgeDetail in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DC02E046F1C00140AAD /* BridgetBridgeDetail */; };
+		485F4DC42E046F3C00140AAD /* BridgetBridgesList in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DC32E046F3C00140AAD /* BridgetBridgesList */; };
+		485F4DC72E046F4F00140AAD /* BridgetHistory in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DC62E046F4F00140AAD /* BridgetHistory */; };
+		485F4DCA2E046F6600140AAD /* BridgetStatistics in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DC92E046F6600140AAD /* BridgetStatistics */; };
+		485F4DCD2E046F7E00140AAD /* BridgetSettings in Frameworks */ = {isa = PBXBuildFile; productRef = 485F4DCC2E046F7E00140AAD /* BridgetSettings */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		48FB97EE2E03820E009E62F7 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +64,15 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				485F4DC72E046F4F00140AAD /* BridgetHistory in Frameworks */,
+				485F4DB82E046E6900140AAD /* BridgetNetworking in Frameworks */,
+				485F4DC42E046F3C00140AAD /* BridgetBridgesList in Frameworks */,
+				485F4DCD2E046F7E00140AAD /* BridgetSettings in Frameworks */,
+				485F4DC12E046F1C00140AAD /* BridgetBridgeDetail in Frameworks */,
+				485F4DBE2E046EAA00140AAD /* BridgetDashboard in Frameworks */,
+				485F4DCA2E046F6600140AAD /* BridgetStatistics in Frameworks */,
+				485F4DBB2E046E9400140AAD /* BridgetSharedUI in Frameworks */,
+				485F4DB52E046E4400140AAD /* BridgetCore in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +133,15 @@
 			);
 			name = Bridget;
 			packageProductDependencies = (
+				485F4DB42E046E4400140AAD /* BridgetCore */,
+				485F4DB72E046E6900140AAD /* BridgetNetworking */,
+				485F4DBA2E046E9400140AAD /* BridgetSharedUI */,
+				485F4DBD2E046EAA00140AAD /* BridgetDashboard */,
+				485F4DC02E046F1C00140AAD /* BridgetBridgeDetail */,
+				485F4DC32E046F3C00140AAD /* BridgetBridgesList */,
+				485F4DC62E046F4F00140AAD /* BridgetHistory */,
+				485F4DC92E046F6600140AAD /* BridgetStatistics */,
+				485F4DCC2E046F7E00140AAD /* BridgetSettings */,
 			);
 			productName = Bridget;
 			productReference = 48FB97DE2E03820E009E62F7 /* Bridget.app */;
@@ -195,6 +225,17 @@
 			);
 			mainGroup = 48FB97D52E03820E009E62F7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				485F4DB32E046E4400140AAD /* XCLocalSwiftPackageReference "Packages/BridgetCore" */,
+				485F4DB62E046E6900140AAD /* XCLocalSwiftPackageReference "Packages/BridgetNetworking" */,
+				485F4DB92E046E9400140AAD /* XCLocalSwiftPackageReference "Packages/BridgetSharedUI" */,
+				485F4DBC2E046EAA00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetDashboard" */,
+				485F4DBF2E046F1C00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetBridgeDetail" */,
+				485F4DC22E046F3C00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetBridgesList" */,
+				485F4DC52E046F4F00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetHistory" */,
+				485F4DC82E046F6600140AAD /* XCLocalSwiftPackageReference "Packages/BridgetStatistics" */,
+				485F4DCB2E046F7E00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetSettings" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 48FB97DF2E03820E009E62F7 /* Products */;
 			projectDirPath = "";
@@ -558,6 +599,84 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		485F4DB32E046E4400140AAD /* XCLocalSwiftPackageReference "Packages/BridgetCore" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetCore;
+		};
+		485F4DB62E046E6900140AAD /* XCLocalSwiftPackageReference "Packages/BridgetNetworking" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetNetworking;
+		};
+		485F4DB92E046E9400140AAD /* XCLocalSwiftPackageReference "Packages/BridgetSharedUI" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetSharedUI;
+		};
+		485F4DBC2E046EAA00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetDashboard" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetDashboard;
+		};
+		485F4DBF2E046F1C00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetBridgeDetail" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetBridgeDetail;
+		};
+		485F4DC22E046F3C00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetBridgesList" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetBridgesList;
+		};
+		485F4DC52E046F4F00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetHistory" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetHistory;
+		};
+		485F4DC82E046F6600140AAD /* XCLocalSwiftPackageReference "Packages/BridgetStatistics" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetStatistics;
+		};
+		485F4DCB2E046F7E00140AAD /* XCLocalSwiftPackageReference "Packages/BridgetSettings" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = Packages/BridgetSettings;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		485F4DB42E046E4400140AAD /* BridgetCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetCore;
+		};
+		485F4DB72E046E6900140AAD /* BridgetNetworking */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetNetworking;
+		};
+		485F4DBA2E046E9400140AAD /* BridgetSharedUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetSharedUI;
+		};
+		485F4DBD2E046EAA00140AAD /* BridgetDashboard */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetDashboard;
+		};
+		485F4DC02E046F1C00140AAD /* BridgetBridgeDetail */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetBridgeDetail;
+		};
+		485F4DC32E046F3C00140AAD /* BridgetBridgesList */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetBridgesList;
+		};
+		485F4DC62E046F4F00140AAD /* BridgetHistory */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetHistory;
+		};
+		485F4DC92E046F6600140AAD /* BridgetStatistics */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetStatistics;
+		};
+		485F4DCC2E046F7E00140AAD /* BridgetSettings */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = BridgetSettings;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 48FB97D62E03820E009E62F7 /* Project object */;
 }

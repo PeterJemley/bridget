@@ -27,7 +27,7 @@ struct BridgetApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentViewModular()
         }
         .modelContainer(sharedModelContainer)
     }

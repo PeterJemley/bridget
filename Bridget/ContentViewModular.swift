@@ -9,15 +9,15 @@
 
 import SwiftUI
 import SwiftData
-// These imports will be available once packages are added to Xcode project:
-// import BridgetCore
-// import BridgetNetworking
-// import BridgetSharedUI
-// import BridgetDashboard
-// import BridgetBridgesList
-// import BridgetHistory
-// import BridgetStatistics
-// import BridgetSettings
+// Modular package imports
+import BridgetCore
+import BridgetNetworking
+import BridgetSharedUI
+import BridgetDashboard
+import BridgetBridgesList
+import BridgetHistory
+import BridgetStatistics
+import BridgetSettings
 
 struct ContentViewModular: View {
     @Environment(\.modelContext) private var modelContext
@@ -33,40 +33,35 @@ struct ContentViewModular: View {
         ZStack {
             TabView {
                 // Dashboard Tab - Using modular DashboardView
-                // DashboardView(events: events, bridgeInfo: bridgeInfo)
-                Text("Dashboard - Modular")
+                DashboardView(events: events, bridgeInfo: bridgeInfo)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")
                     }
                 
                 // Bridges Tab - Using modular BridgesListView
-                // BridgesListView(events: events, bridgeInfo: bridgeInfo)
-                Text("Bridges List - Modular")
+                BridgesListView(events: events, bridgeInfo: bridgeInfo)
                     .tabItem {
                         Image(systemName: "road.lanes")
                         Text("Bridges")
                     }
                 
                 // History Tab - Using modular HistoryView
-                // HistoryView(events: events)
-                Text("History - Modular")
+                HistoryView(events: events)
                     .tabItem {
                         Image(systemName: "clock.fill")
                         Text("History")
                     }
                 
                 // Statistics Tab - Using modular StatisticsView
-                // StatisticsView(events: events, bridgeInfo: bridgeInfo)
-                Text("Statistics - Modular")
+                StatisticsView(events: events, bridgeInfo: bridgeInfo)
                     .tabItem {
                         Image(systemName: "chart.bar.fill")
                         Text("Statistics")
                     }
                 
                 // Settings Tab - Using modular SettingsView
-                // SettingsView()
-                Text("Settings - Modular")
+                SettingsView()
                     .tabItem {
                         Image(systemName: "gear")
                         Text("Settings")
@@ -75,8 +70,7 @@ struct ContentViewModular: View {
             
             // Loading overlay for initial data fetch
             if isLoadingInitialData {
-                // LoadingDataOverlay()
-                Text("Loading...")
+                LoadingDataOverlay()
             }
         }
         .task {
