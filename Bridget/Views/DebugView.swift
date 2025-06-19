@@ -22,6 +22,13 @@ struct DebugView: View {
     @State private var importProgress: DrawbridgeAPI.ImportProgress?
     @State private var totalRecordsAvailable: Int?
     @State private var showBulkImportConfirmation = false
+    
+    @State private var lastDataStoreUpdate: Date?
+    
+    @State private var searchQuery = ""
+    @State private var searchResults: [DrawbridgeEvent] = []
+    @State private var showDuplicateAnalysis = false
+    @State private var duplicateAnalysis: [String] = []
 
     var body: some View {
         NavigationView {
@@ -39,10 +46,19 @@ struct DebugView: View {
                     
                     if let lastRefresh = lastRefresh {
                         HStack {
-                            Text("Last Refresh")
+                            Text("Last API Fetch")
                             Spacer()
                             Text(lastRefresh.formatted(.dateTime))
                                 .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    if let lastDataStoreUpdate = lastDataStoreUpdate {
+                        HStack {
+                            Text("Data Store Updated")
+                            Spacer()
+                            Text(lastDataStoreUpdate.formatted(.dateTime))
+                                .foregroundColor(.green)
                         }
                     }
                     
@@ -69,6 +85,73 @@ struct DebugView: View {
                     }
                 }
                 
+                Section("SwiftData Search") {
+                    HStack {
+                        TextField("Search bridge name...", text: $searchQuery)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                        Button("Search") {
+                            performSearch()
+                        }
+                        .disabled(searchQuery.isEmpty)
+                    }
+                    
+                    if !searchResults.isEmpty {
+                        Text("Found \(searchResults.count) events for '\(searchQuery)'")
+                            .font(.caption)
+                            .foregroundColor(.blue)
+                        
+                        ForEach(searchResults.prefix(3)) { event in
+                            VStack(alignment: .leading, spacing: 2) {
+                                HStack {
+                                    Text(event.entityName)
+                                        .font(.headline)
+                                    Spacer()
+                                    Text(event.isCurrentlyOpen ? "OPEN" : "CLOSED")
+                                        .font(.caption)
+                                        .padding(.horizontal, 6)
+                                        .padding(.vertical, 1)
+                                        .background(event.isCurrentlyOpen ? Color.orange : Color.green)
+                                        .foregroundColor(.white)
+                                        .cornerRadius(3)
+                                }
+                                Text("Entity ID: \(event.entityID) | \(event.openDateTime.formatted(.dateTime))")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                                Text("Duration: \(event.minutesOpen, specifier: "%.1f") min | Lat: \(event.latitude, specifier: "%.4f")")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 2)
+                        }
+                        
+                        if searchResults.count > 3 {
+                            Text("... and \(searchResults.count - 3) more results")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Button("Analyze Duplicates") {
+                        analyzeDuplicates()
+                    }
+                    .foregroundColor(.orange)
+                }
+                
+                if showDuplicateAnalysis {
+                    Section("Duplicate Analysis") {
+                        if duplicateAnalysis.isEmpty {
+                            Text("✅ No exact duplicates found")
+                                .foregroundColor(.green)
+                        } else {
+                            ForEach(duplicateAnalysis, id: \.self) { analysis in
+                                Text(analysis)
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                            }
+                        }
+                    }
+                }
+
                 if isBulkImporting || importProgress != nil {
                     Section("Bulk Import Progress") {
                         if let progress = importProgress {
@@ -188,7 +271,7 @@ struct DebugView: View {
                             .foregroundColor(.secondary)
                             .italic()
                     } else {
-                        ForEach(events.prefix(5)) { event in
+                        ForEach(events.sorted(by: { $0.openDateTime > $1.openDateTime }).prefix(10)) { event in
                             VStack(alignment: .leading, spacing: 4) {
                                 HStack {
                                     Text(event.entityName)
@@ -213,19 +296,19 @@ struct DebugView: View {
                                         .foregroundColor(.secondary)
                                 }
                                 
-                                Text("Duration: \(event.minutesOpen, specifier: "%.1f") minutes")
+                                Text("Duration: \(event.minutesOpen, specifier: "%.0f") minutes")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                                 
-                                Text("Location: \(event.latitude, specifier: "%.6f"), \(event.longitude, specifier: "%.6f")")
+                                Text("Entity ID: \(event.entityID) | Location: \(event.latitude, specifier: "%.6f"), \(event.longitude, specifier: "%.6f")")
                                     .font(.caption)
                                     .foregroundColor(.secondary)
                             }
                             .padding(.vertical, 2)
                         }
                         
-                        if events.count > 5 {
-                            Text("... and \(events.count - 5) more events")
+                        if events.count > 10 {
+                            Text("... and \(events.count - 10) more events")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                                 .italic()
@@ -330,6 +413,48 @@ struct DebugView: View {
         Set(events.map(\.entityName)).count
     }
     
+    private func performSearch() {
+        let query = searchQuery.lowercased()
+        searchResults = events.filter { event in
+            event.entityName.lowercased().contains(query)
+        }.sorted { $0.openDateTime > $1.openDateTime }
+    }
+    
+    private func analyzeDuplicates() {
+        var duplicateGroups: [String: [DrawbridgeEvent]] = [:]
+        var analysis: [String] = []
+        
+        // Group events by potential duplicate key (entityID + openDateTime + duration)
+        for event in events {
+            let key = "\(event.entityID)_\(event.openDateTime.timeIntervalSince1970)_\(event.minutesOpen)"
+            if duplicateGroups[key] == nil {
+                duplicateGroups[key] = []
+            }
+            duplicateGroups[key]?.append(event)
+        }
+        
+        // Find groups with more than one event (potential duplicates)
+        let duplicates = duplicateGroups.filter { $1.count > 1 }
+        
+        if duplicates.isEmpty {
+            analysis.append("✅ No exact duplicates found")
+        } else {
+            analysis.append("⚠️ Found \(duplicates.count) potential duplicate groups:")
+            
+            for (key, events) in duplicates.prefix(5) {
+                let event = events.first!
+                analysis.append("• \(event.entityName): \(events.count) identical events at \(event.openDateTime.formatted(.dateTime))")
+            }
+            
+            if duplicates.count > 5 {
+                analysis.append("... and \(duplicates.count - 5) more duplicate groups")
+            }
+        }
+        
+        duplicateAnalysis = analysis
+        showDuplicateAnalysis = true
+    }
+
     // MARK: - Actions
     
     private func fetchData() {
@@ -354,6 +479,7 @@ struct DebugView: View {
                     try? modelContext.save()
                     
                     lastRefresh = Date()
+                    lastDataStoreUpdate = Date()
                     apiCallCount += 1
                     isLoading = false
                 }
@@ -405,21 +531,34 @@ struct DebugView: View {
                         modelContext.delete(info)
                     }
                     
-                    // Insert all imported events
+                    var uniqueEvents: [String: DrawbridgeEvent] = [:]
+                    var duplicatesFound = 0
+                    
                     for event in allEvents {
+                        let key = "\(event.entityID)_\(event.openDateTime.timeIntervalSince1970)_\(event.minutesOpen)"
+                        if uniqueEvents[key] == nil {
+                            uniqueEvents[key] = event
+                        } else {
+                            duplicatesFound += 1
+                        }
+                    }
+                    
+                    // Insert only unique events
+                    for (_, event) in uniqueEvents {
                         modelContext.insert(event)
                     }
                     
                     // Update bridge info
-                    updateBridgeInfo(from: allEvents)
+                    updateBridgeInfo(from: Array(uniqueEvents.values))
                     
                     try? modelContext.save()
                     
                     lastRefresh = Date()
+                    lastDataStoreUpdate = Date()
                     apiCallCount += 1
                     isBulkImporting = false
                     
-                    print("🎉 Successfully imported \(allEvents.count) historical events")
+                    print("🎉 Successfully imported \(uniqueEvents.count) unique events, removed \(duplicatesFound) duplicates from API response")
                 }
             } catch {
                 await MainActor.run {
@@ -485,6 +624,7 @@ struct DebugView: View {
         errorMessage = nil
         importProgress = nil
         totalRecordsAvailable = nil
+        lastDataStoreUpdate = Date()
     }
 }
 

@@ -17,14 +17,27 @@ struct ContentView: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 20) {
-                Text("Bridget")
-                    .font(.largeTitle)
-                    .fontWeight(.bold)
-                
-                Text("Seattle Drawbridge Monitor")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
+            VStack(spacing: 30) {
+                VStack(spacing: 8) {
+                    HStack(spacing: 8) {
+                        Image(systemName: "laurel.leading")
+                            .font(.largeTitle)
+                            .foregroundColor(.green)
+                        
+                        Text("Bridget")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+                        
+                        Image(systemName: "laurel.trailing")
+                            .font(.largeTitle)
+                            .foregroundColor(.green)
+                    }
+                    
+                    Text("Ditch the spanxiety and bridge the gap between you and on time")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                }
                 
                 if events.isEmpty {
                     Text("No bridge data loaded yet")
@@ -32,8 +45,12 @@ struct ContentView: View {
                         .italic()
                 } else {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("Data Summary:")
-                            .font(.headline)
+                        HStack {
+                            Spacer()
+                            Text("Data Summary:")
+                                .font(.headline)
+                            Spacer()
+                        }
                         
                         Text("• \(events.count) bridge events")
                         Text("• \(uniqueBridgeCount) unique bridges")
@@ -43,12 +60,17 @@ struct ContentView: View {
                             Text("• Last event: \(lastEvent.openDateTime.formatted(.relative(presentation: .named)))")
                         }
                         
+                        Text("")
+                        
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("• Bridges monitored:")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                            HStack {
+                                Spacer()
+                                Text("Bridges Monitored:")
+                                    .font(.headline)
+                                Spacer()
+                            }
                             Text(uniqueBridgeNames)
-                                .font(.caption)
+                                .font(.body)
                                 .foregroundColor(.blue)
                                 .multilineTextAlignment(.leading)
                         }
@@ -66,7 +88,6 @@ struct ContentView: View {
                 .buttonStyle(.borderedProminent)
             }
             .padding()
-            .navigationTitle("Bridget")
             .sheet(isPresented: $showDebugView) {
                 DebugView()
             }
