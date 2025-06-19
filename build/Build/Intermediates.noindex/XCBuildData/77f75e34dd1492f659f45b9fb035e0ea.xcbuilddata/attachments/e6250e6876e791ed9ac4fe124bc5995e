@@ -1,4 +1,0 @@
-module BridgetHistory {
-header "BridgetHistory-Swift.h"
-export *
-}

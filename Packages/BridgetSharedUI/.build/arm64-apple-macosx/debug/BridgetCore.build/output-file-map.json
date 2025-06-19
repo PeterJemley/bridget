@@ -1,0 +1,29 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swiftdeps"
+  }
+}

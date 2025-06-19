@@ -67,34 +67,49 @@ public struct DashboardView: View {
                     StatusOverviewCard(events: events, bridgeInfo: bridgeInfo)
                     
                     // Last Known Status Section
-                    LastKnownStatusSection(events: lastKnownStatusPerBridge)
+                    LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
-                    // Recent Activity Section (Historical)
-                    RecentActivitySection(events: recentEvents)
+                    // Recent Activity Section
+                    RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)
                     
-                    Spacer(minLength: 100) // Bottom padding for tab bar
+                    // Data Source Info
+                    dataSourceInfo
                 }
-                .padding(.horizontal)
+                .padding()
             }
-            .navigationTitle("Dashboard")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Bridge Monitor")
+            .navigationBarTitleDisplayMode(.large)
         }
     }
     
-    // MARK: - Computed Properties with Historical Data Binding
-    private var lastKnownStatusPerBridge: [DrawbridgeEvent] {
-        let groupedEvents = DrawbridgeEvent.groupedByBridge(events)
-        return groupedEvents.compactMap { (_, bridgeEvents) in
-            bridgeEvents.max(by: { $0.openDateTime < $1.openDateTime })
-        }.sorted { $0.openDateTime > $1.openDateTime }
+    // MARK: - Computed Properties
+    
+    private var lastKnownStatusEvents: [DrawbridgeEvent] {
+        let uniqueBridges = Set(events.map { $0.entityID })
+        return uniqueBridges.compactMap { entityID in
+            events.filter { $0.entityID == entityID }
+                  .sorted { $0.openDateTime > $1.openDateTime }
+                  .first
+        }
+        .sorted { $0.openDateTime > $1.openDateTime }
     }
     
     private var recentEvents: [DrawbridgeEvent] {
-        events.sorted { $0.openDateTime > $1.openDateTime }.prefix(5).map { $0 }
+        let sortedEvents = events.sorted { $0.openDateTime > $1.openDateTime }
+        return Array(sortedEvents.prefix(10))
     }
     
-    private var todaysEvents: [DrawbridgeEvent] {
-        DrawbridgeEvent.eventsToday(events)
+    private var dataSourceInfo: some View {
+        VStack(spacing: 8) {
+            Text("Data provided by Seattle Open Data API")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            Text("Updated automatically on app launch")
+                .font(.caption2)
+                .foregroundColor(.secondary.opacity(0.7))
+        }
+        .padding(.vertical, 8)
     }
 }
 

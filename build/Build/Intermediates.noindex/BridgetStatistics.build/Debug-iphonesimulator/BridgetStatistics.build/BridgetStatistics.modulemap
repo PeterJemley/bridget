@@ -1,4 +1,0 @@
-module BridgetStatistics {
-header "BridgetStatistics-Swift.h"
-export *
-}

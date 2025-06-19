@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetSharedUITests.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Tests/BridgetSharedUITests/BridgetSharedUITests.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetSharedUITests.build/BridgetSharedUITests.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetSharedUITests.build/BridgetSharedUITests.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetSharedUITests.build/BridgetSharedUITests~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetSharedUI/.build/arm64-apple-macosx/debug/BridgetSharedUITests.build/BridgetSharedUITests.swiftdeps"
+  }
+}

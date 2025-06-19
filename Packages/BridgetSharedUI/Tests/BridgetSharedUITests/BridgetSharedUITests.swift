@@ -44,14 +44,14 @@ final class BridgetSharedUITests: XCTestCase {
     // MARK: - StatCard Tests
     
     func testStatCardCreation() {
-        let statCard = StatCard(title: "Average", value: "15.5 min")
+        let statCard = StatCard(title: "Average", value: "15.5 min", icon: "clock", color: .blue)
         XCTAssertNotNil(statCard)
     }
     
     func testStatCardWithNumericalValues() {
-        let intCard = StatCard(title: "Count", value: "42")
-        let floatCard = StatCard(title: "Average", value: "15.75")
-        let timeCard = StatCard(title: "Duration", value: "2h 30m")
+        let intCard = StatCard(title: "Count", value: "42", icon: "number", color: .green)
+        let floatCard = StatCard(title: "Average", value: "15.75", icon: "timer", color: .orange)
+        let timeCard = StatCard(title: "Duration", value: "2h 30m", icon: "clock.fill", color: .purple)
         
         XCTAssertNotNil(intCard)
         XCTAssertNotNil(floatCard)
@@ -143,7 +143,7 @@ final class BridgetSharedUITests: XCTestCase {
     func testMultipleComponentsInteraction() {
         // Test that components can be created together without conflicts
         let statusCard = StatusCard(title: "Bridges", value: "15", color: .blue)
-        let statCard = StatCard(title: "Average", value: "12.5 min")
+        let statCard = StatCard(title: "Average", value: "12.5 min", icon: "clock", color: .blue)
         let filterButton = FilterButton(title: "24H", isSelected: true, action: {})
         let infoRow = InfoRow(label: "Status", value: "Active")
         let loadingOverlay = LoadingDataOverlay()

@@ -10,9 +10,11 @@ import BridgetCore
 
 public struct RecentActivitySection: View {
     public let events: [DrawbridgeEvent]
+    public let bridgeInfo: [DrawbridgeInfo]
     
-    public init(events: [DrawbridgeEvent]) {
+    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo]) {
         self.events = events
+        self.bridgeInfo = bridgeInfo
     }
     
     public var body: some View {
@@ -44,6 +46,6 @@ public struct RecentActivitySection: View {
 }
 
 #Preview {
-    RecentActivitySection(events: [])
+    RecentActivitySection(events: [], bridgeInfo: [])
         .padding()
 }

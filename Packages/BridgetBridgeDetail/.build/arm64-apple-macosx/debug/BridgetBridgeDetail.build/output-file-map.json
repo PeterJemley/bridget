@@ -1,0 +1,53 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/AnalysisFilterSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/AnalysisFilterSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/AnalysisFilterSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/AnalysisFilterSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/AnalysisFilterSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/BridgeDetailView.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeDetailView.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeDetailView.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeDetailView~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeDetailView.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/BridgeHeaderSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeHeaderSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeHeaderSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeHeaderSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeHeaderSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/BridgeInfoSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeInfoSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeInfoSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeInfoSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeInfoSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/BridgeStatsSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeStatsSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeStatsSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeStatsSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/BridgeStatsSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/DynamicAnalysisSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/DynamicAnalysisSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/DynamicAnalysisSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/DynamicAnalysisSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/DynamicAnalysisSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/FunctionalTimeFilterSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/FunctionalTimeFilterSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/FunctionalTimeFilterSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/FunctionalTimeFilterSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/FunctionalTimeFilterSection.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/Sources/BridgetBridgeDetail/ViewFilterSection.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/ViewFilterSection.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/ViewFilterSection.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/ViewFilterSection~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail/.build/arm64-apple-macosx/debug/BridgetBridgeDetail.build/ViewFilterSection.swiftdeps"
+  }
+}

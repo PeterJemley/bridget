@@ -1,4 +1,0 @@
-module BridgetCore {
-header "BridgetCore-Swift.h"
-export *
-}

@@ -1,4 +1,0 @@
-module BridgetNetworking {
-header "BridgetNetworking-Swift.h"
-export *
-}
