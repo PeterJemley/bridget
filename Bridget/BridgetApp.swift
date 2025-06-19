@@ -14,6 +14,7 @@ struct BridgetApp: App {
         let schema = Schema([
             DrawbridgeEvent.self,
             DrawbridgeInfo.self,
+            BridgeAnalytics.self,
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 

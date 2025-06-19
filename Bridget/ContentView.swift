@@ -36,11 +36,21 @@ struct ContentView: View {
                             .font(.headline)
                         
                         Text("• \(events.count) bridge events")
-                        Text("• \(bridgeInfo.count) unique bridges")
+                        Text("• \(uniqueBridgeCount) unique bridges")
                         Text("• \(currentlyOpenCount) currently open")
                         
                         if let lastEvent = events.sorted(by: { $0.openDateTime > $1.openDateTime }).first {
                             Text("• Last event: \(lastEvent.openDateTime.formatted(.relative(presentation: .named)))")
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("• Bridges monitored:")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                            Text(uniqueBridgeNames)
+                                .font(.caption)
+                                .foregroundColor(.blue)
+                                .multilineTextAlignment(.leading)
                         }
                     }
                     .padding()
@@ -65,6 +75,15 @@ struct ContentView: View {
     
     private var currentlyOpenCount: Int {
         events.filter(\.isCurrentlyOpen).count
+    }
+    
+    private var uniqueBridgeCount: Int {
+        Set(events.map(\.entityName)).count
+    }
+    
+    private var uniqueBridgeNames: String {
+        let names = Set(events.map(\.entityName))
+        return names.sorted().joined(separator: ", ")
     }
 }
 

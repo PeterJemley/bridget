@@ -65,6 +65,24 @@ extension DrawbridgeEvent {
         Dictionary(grouping: events, by: { $0.entityName })
     }
     
+    static func getUniqueBridges(_ events: [DrawbridgeEvent]) -> [(entityID: Int, entityName: String, entityType: String, latitude: Double, longitude: Double)] {
+        var uniqueBridges: [Int: (entityID: Int, entityName: String, entityType: String, latitude: Double, longitude: Double)] = [:]
+        
+        for event in events {
+            if uniqueBridges[event.entityID] == nil {
+                uniqueBridges[event.entityID] = (
+                    entityID: event.entityID,
+                    entityName: event.entityName,
+                    entityType: event.entityType,
+                    latitude: event.latitude,
+                    longitude: event.longitude
+                )
+            }
+        }
+        
+        return Array(uniqueBridges.values)
+    }
+    
     static func eventsToday(_ events: [DrawbridgeEvent]) -> [DrawbridgeEvent] {
         let calendar = Calendar.current
         let today = Date()
