@@ -271,47 +271,35 @@ struct DebugView: View {
                             .foregroundColor(.secondary)
                             .italic()
                     } else {
-                        ForEach(events.sorted(by: { $0.openDateTime > $1.openDateTime }).prefix(10)) { event in
-                            VStack(alignment: .leading, spacing: 4) {
+                        // Summary view instead of long list
+                        NavigationLink(destination: RawDataDetailView(events: events)) {
+                            VStack(alignment: .leading, spacing: 8) {
                                 HStack {
-                                    Text(event.entityName)
+                                    Text("Raw Data Summary")
                                         .font(.headline)
                                     Spacer()
-                                    Text(event.isCurrentlyOpen ? "OPEN" : "CLOSED")
-                                        .font(.caption)
-                                        .padding(.horizontal, 8)
-                                        .padding(.vertical, 2)
-                                        .background(event.isCurrentlyOpen ? Color.orange : Color.green)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(4)
-                                }
-                                
-                                Text("Opened: \(event.openDateTime.formatted(.dateTime))")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                if let closeDateTime = event.closeDateTime {
-                                    Text("Closed: \(closeDateTime.formatted(.dateTime))")
-                                        .font(.caption)
+                                    Image(systemName: "chevron.right")
                                         .foregroundColor(.secondary)
+                                        .font(.caption)
                                 }
                                 
-                                Text("Duration: \(event.minutesOpen, specifier: "%.0f") minutes")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                                
-                                Text("Entity ID: \(event.entityID) | Location: \(event.latitude, specifier: "%.6f"), \(event.longitude, specifier: "%.6f")")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
+                                if let latestEvent = latestEvent {
+                                    VStack(alignment: .leading, spacing: 4) {
+                                        Text("Latest Event: \(latestEvent.entityName)")
+                                            .font(.subheadline)
+                                            .fontWeight(.medium)
+                                        
+                                        Text("Opened: \(latestEvent.openDateTime.formatted(.dateTime))")
+                                            .font(.caption)
+                                            .foregroundColor(.secondary)
+                                        
+                                        Text("Total \(events.count) events available for inspection")
+                                            .font(.caption)
+                                            .foregroundColor(.blue)
+                                    }
+                                }
                             }
-                            .padding(.vertical, 2)
-                        }
-                        
-                        if events.count > 10 {
-                            Text("... and \(events.count - 10) more events")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                                .italic()
+                            .padding(.vertical, 4)
                         }
                     }
                 }
@@ -411,6 +399,10 @@ struct DebugView: View {
     
     private var actualUniqueBridgeCount: Int {
         Set(events.map(\.entityName)).count
+    }
+    
+    private var latestEvent: DrawbridgeEvent? {
+        events.sorted { $0.openDateTime > $1.openDateTime }.first
     }
     
     private func performSearch() {

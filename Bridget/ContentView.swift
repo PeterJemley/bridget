@@ -7,48 +7,169 @@
 
 import SwiftUI
 import SwiftData
+import Charts
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var events: [DrawbridgeEvent]
     @Query private var bridgeInfo: [DrawbridgeInfo]
     
+    // Loading state for automatic data fetching
+    @State private var isLoadingInitialData = false
+    @State private var initialDataLoaded = false
+    @State private var dataFetchError: String?
+    
     var body: some View {
-        TabView {
-            // Dashboard Tab
-            DashboardView(events: events, bridgeInfo: bridgeInfo)
-                .tabItem {
-                    Image(systemName: "house.fill")
-                    Text("Dashboard")
-                }
+        ZStack {
+            TabView {
+                // Dashboard Tab
+                DashboardView(events: events, bridgeInfo: bridgeInfo)
+                    .tabItem {
+                        Image(systemName: "house.fill")
+                        Text("Dashboard")
+                    }
+                
+                // Bridges Tab
+                BridgesListView(events: events, bridgeInfo: bridgeInfo)
+                    .tabItem {
+                        Image(systemName: "road.lanes")
+                        Text("Bridges")
+                    }
+                
+                // History Tab
+                HistoryView(events: events)
+                    .tabItem {
+                        Image(systemName: "clock.fill")
+                        Text("History")
+                    }
+                
+                // Statistics Tab
+                StatisticsView(events: events, bridgeInfo: bridgeInfo)
+                    .tabItem {
+                        Image(systemName: "chart.bar.fill")
+                        Text("Statistics")
+                    }
+                
+                // Settings Tab (with Debug Console)
+                SettingsView()
+                    .tabItem {
+                        Image(systemName: "gear")
+                        Text("Settings")
+                    }
+            }
             
-            // Bridges Tab
-            BridgesListView(events: events, bridgeInfo: bridgeInfo)
-                .tabItem {
-                    Image(systemName: "road.lanes")
-                    Text("Bridges")
-                }
+            // Loading overlay for initial data fetch
+            if isLoadingInitialData {
+                LoadingDataOverlay()
+            }
+        }
+        .task {
+            await loadInitialDataIfNeeded()
+        }
+    }
+    
+    // Initial data loading function
+    private func loadInitialDataIfNeeded() async {
+        // Only fetch if we have no data and haven't already tried
+        guard events.isEmpty && !initialDataLoaded else { return }
+        
+        await MainActor.run {
+            isLoadingInitialData = true
+            dataFetchError = nil
+        }
+        
+        do {
+            let fetchedEvents = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 500)
             
-            // History Tab
-            HistoryView(events: events)
-                .tabItem {
-                    Image(systemName: "clock.fill")
-                    Text("History")
+            await MainActor.run {
+                // Store events
+                for event in fetchedEvents {
+                    modelContext.insert(event)
                 }
+                
+                // Update bridge info
+                updateBridgeInfo(from: fetchedEvents)
+                
+                try? modelContext.save()
+                
+                initialDataLoaded = true
+                isLoadingInitialData = false
+            }
+        } catch {
+            await MainActor.run {
+                dataFetchError = error.localizedDescription
+                isLoadingInitialData = false
+                initialDataLoaded = true // Don't keep trying
+            }
+        }
+    }
+    
+    // Bridge info update function (copied from DebugView)
+    private func updateBridgeInfo(from events: [DrawbridgeEvent]) {
+        let uniqueBridges = DrawbridgeEvent.getUniqueBridges(events)
+        
+        for bridgeData in uniqueBridges {
+            // Get all events for this specific bridge
+            let allBridgeEvents = events.filter { $0.entityID == bridgeData.entityID }
             
-            // Statistics Tab
-            StatisticsView(events: events, bridgeInfo: bridgeInfo)
-                .tabItem {
-                    Image(systemName: "chart.bar.fill")
-                    Text("Statistics")
-                }
+            // Check if bridge info already exists
+            let existingInfo = bridgeInfo.first { $0.entityID == bridgeData.entityID }
             
-            // Settings Tab (with Debug Console)
-            SettingsView()
-                .tabItem {
-                    Image(systemName: "gear")
-                    Text("Settings")
+            if let existing = existingInfo {
+                // Update existing info
+                existing.totalOpenings = allBridgeEvents.count
+                existing.averageOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).reduce(0, +) / Double(allBridgeEvents.count)
+                existing.longestOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).max() ?? 0
+                existing.lastUpdated = Date()
+            } else {
+                // Create new bridge info
+                let newBridgeInfo = DrawbridgeInfo(
+                    entityID: bridgeData.entityID,
+                    entityName: bridgeData.entityName,
+                    entityType: bridgeData.entityType,
+                    latitude: bridgeData.latitude,
+                    longitude: bridgeData.longitude
+                )
+                newBridgeInfo.totalOpenings = allBridgeEvents.count
+                newBridgeInfo.averageOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).reduce(0, +) / Double(allBridgeEvents.count)
+                newBridgeInfo.longestOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).max() ?? 0
+                
+                modelContext.insert(newBridgeInfo)
+            }
+        }
+    }
+}
+
+// Loading overlay component
+struct LoadingDataOverlay: View {
+    var body: some View {
+        ZStack {
+            Color.black.opacity(0.3)
+                .ignoresSafeArea()
+            
+            VStack(spacing: 20) {
+                ProgressView()
+                    .scaleEffect(1.5)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                
+                VStack(spacing: 8) {
+                    Text("Loading Bridge Data")
+                        .font(.headline)
+                        .fontWeight(.semibold)
+                    
+                    Text("Accessing Seattle Open Data API")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Getting the latest bridge information...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
+            }
+            .padding(30)
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+            .shadow(radius: 20)
         }
     }
 }
@@ -87,6 +208,21 @@ struct DashboardView: View {
                             .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal)
+                    
+                    // Data source information
+                    if !events.isEmpty {
+                        HStack {
+                            Image(systemName: "info.circle")
+                                .foregroundColor(.blue)
+                            Text("Data provided by Seattle Open Data API")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color(.systemGray6))
+                        .cornerRadius(8)
+                    }
                     
                     // Status Overview Card
                     StatusOverviewCard(events: events, bridgeInfo: bridgeInfo)
@@ -367,7 +503,7 @@ struct BridgeDetailPlaceholderView: View {
     }
 }
 
-// MARK: - Bridge Detail View (Phase 1 Implementation)
+// MARK: - Bridge Detail View
 struct BridgeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allEvents: [DrawbridgeEvent]
@@ -393,27 +529,25 @@ struct BridgeDetailView: View {
                     bridgeEvents: bridgeSpecificEvents
                 )
                 
-                // Analysis Type Filter Buttons  
+                // Analysis Type Filter Buttons (NOW FUNCTIONAL)
                 AnalysisFilterSection(selectedAnalysis: $selectedAnalysis)
                 
-                // View Type Filter Buttons
+                // View Type Filter Buttons (NOW FUNCTIONAL)
                 ViewFilterSection(selectedView: $selectedView)
                 
-                // Bridge Statistics Section
+                // Bridge Statistics Section (Updated to use selected filters)
                 BridgeStatsSection(
                     events: filteredEvents,
-                    timePeriod: selectedPeriod
+                    timePeriod: selectedPeriod,
+                    analysisType: selectedAnalysis
                 )
                 
-                // Recent Activity for This Bridge
-                BridgeActivitySection(
-                    events: filteredEvents.prefix(10).map { $0 }
-                )
-                
-                // Chart Placeholder Section (Bridge-specific)
-                BridgeChartSection(
-                    bridgeName: bridgeEvent.entityName,
-                    events: filteredEvents
+                // Dynamic Content Section Based on Selected Analysis and View
+                DynamicAnalysisSection(
+                    events: filteredEvents,
+                    analysisType: selectedAnalysis,
+                    viewType: selectedView,
+                    bridgeName: bridgeEvent.entityName
                 )
                 
                 // Bridge Info Section
@@ -443,6 +577,662 @@ struct BridgeDetailView: View {
     }
 }
 
+// MARK: - Dynamic Analysis Section
+struct DynamicAnalysisSection: View {
+    let events: [DrawbridgeEvent]
+    let analysisType: AnalysisType
+    let viewType: ViewType
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack {
+                Text(sectionTitle)
+                    .font(.headline)
+                Spacer()
+                Text(analysisDescription)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            // Content changes based on analysis and view type combination
+            Group {
+                switch (analysisType, viewType) {
+                case (.patterns, .activity):
+                    PatternsActivityView(events: events)
+                case (.patterns, .weekly):
+                    PatternsWeeklyView(events: events)
+                case (.patterns, .duration):
+                    PatternsDurationView(events: events)
+                case (.cascade, .activity):
+                    CascadeActivityView(events: events, bridgeName: bridgeName)
+                case (.cascade, .weekly):
+                    CascadeWeeklyView(events: events, bridgeName: bridgeName)
+                case (.cascade, .duration):
+                    CascadeDurationView(events: events, bridgeName: bridgeName)
+                case (.predictions, .activity):
+                    PredictionsActivityView(events: events, bridgeName: bridgeName)
+                case (.predictions, .weekly):
+                    PredictionsWeeklyView(events: events, bridgeName: bridgeName)
+                case (.predictions, .duration):
+                    PredictionsDurationView(events: events, bridgeName: bridgeName)
+                case (.impact, .activity):
+                    ImpactActivityView(events: events, bridgeName: bridgeName)
+                case (.impact, .weekly):
+                    ImpactWeeklyView(events: events, bridgeName: bridgeName)
+                case (.impact, .duration):
+                    ImpactDurationView(events: events, bridgeName: bridgeName)
+                }
+            }
+        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    private var sectionTitle: String {
+        switch analysisType {
+        case .patterns: return "Pattern Analysis"
+        case .cascade: return "Cascade Analysis"
+        case .predictions: return "Predictive Analysis"
+        case .impact: return "Traffic Impact Analysis"
+        }
+    }
+    
+    private var analysisDescription: String {
+        switch (analysisType, viewType) {
+        case (.patterns, .activity): return "Activity patterns over time"
+        case (.patterns, .weekly): return "Weekly opening patterns"
+        case (.patterns, .duration): return "Duration patterns analysis"
+        case (.cascade, .activity): return "Bridge interaction timeline"
+        case (.cascade, .weekly): return "Weekly cascade patterns"
+        case (.cascade, .duration): return "Duration cascade effects"
+        case (.predictions, .activity): return "Future activity predictions"
+        case (.predictions, .weekly): return "Weekly prediction patterns"
+        case (.predictions, .duration): return "Predicted durations"
+        case (.impact, .activity): return "Traffic impact timeline"
+        case (.impact, .weekly): return "Weekly traffic impact"
+        case (.impact, .duration): return "Duration impact analysis"
+        }
+    }
+}
+
+// MARK: - Patterns Analysis Views
+struct PatternsActivityView: View {
+    let events: [DrawbridgeEvent]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Hourly Activity Pattern")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Enhanced hourly distribution chart using SwiftUI Charts
+            Chart {
+                ForEach(hourlyChartData, id: \.hour) { data in
+                    BarMark(
+                        x: .value("Hour", data.hour),
+                        y: .value("Count", data.count)
+                    )
+                    .foregroundStyle(Color.blue.opacity(0.7))
+                    .cornerRadius(2)
+                }
+            }
+            .frame(height: 100)
+            .chartXAxis {
+                AxisMarks(values: .stride(by: 6)) { value in
+                    AxisGridLine()
+                    AxisValueLabel {
+                        if let intValue = value.as(Int.self) {
+                            Text("\(intValue)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+            }
+            .chartYAxis(.hidden)
+            
+            Text("Most Active Hours")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+                .padding(.top)
+            
+            ForEach(Array(hourlyStats.prefix(3).enumerated()), id: \.offset) { index, stat in
+                HStack {
+                    Circle()
+                        .fill(Color.blue.opacity(0.7))
+                        .frame(width: 8, height: 8)
+                    Text(String(format: "%02d:00 - %d openings", stat.hour, stat.count))
+                        .font(.caption)
+                    Spacer()
+                    Text("\(stat.percentage, specifier: "%.1f")%")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var hourlyChartData: [HourlyData] {
+        var hourCounts: [Int: Int] = [:]
+        let calendar = Calendar.current
+        
+        for event in events {
+            let hour = calendar.component(.hour, from: event.openDateTime)
+            hourCounts[hour, default: 0] += 1
+        }
+        
+        return (0..<24).map { hour in
+            HourlyData(hour: hour, count: hourCounts[hour] ?? 0)
+        }
+    }
+    
+    private var hourlyStats: [(hour: Int, count: Int, percentage: Double)] {
+        let calendar = Calendar.current
+        var hourCounts: [Int: Int] = [:]
+        
+        for event in events {
+            let hour = calendar.component(.hour, from: event.openDateTime)
+            hourCounts[hour, default: 0] += 1
+        }
+        
+        let total = Double(events.count)
+        return hourCounts
+            .map { (hour: $0.key, count: $0.value, percentage: Double($0.value) / total * 100) }
+            .sorted { $0.count > $1.count }
+    }
+}
+
+struct PatternsWeeklyView: View {
+    let events: [DrawbridgeEvent]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Activity Patterns")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("When bridges open most frequently")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            // Weekly area chart using SwiftUI Charts
+            Chart {
+                ForEach(weeklyChartData, id: \.dayIndex) { data in
+                    AreaMark(
+                        x: .value("Day", data.dayName),
+                        y: .value("Count", data.count)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: [Color.blue.opacity(0.8), Color.blue.opacity(0.3)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
+            }
+            .frame(height: 180)
+            .chartXAxis {
+                AxisMarks { value in
+                    AxisGridLine()
+                    AxisValueLabel {
+                        if let stringValue = value.as(String.self) {
+                            Text(String(stringValue.prefix(3)))
+                                .font(.caption2)
+                        }
+                    }
+                }
+            }
+            .chartYAxis {
+                AxisMarks(position: .leading) { value in
+                    AxisGridLine()
+                    AxisValueLabel {
+                        if let intValue = value.as(Int.self) {
+                            Text("\(intValue)")
+                                .font(.caption2)
+                        }
+                    }
+                }
+            }
+        }
+    }
+    
+    private var weeklyChartData: [WeeklyData] {
+        let calendar = Calendar.current
+        let formatter = DateFormatter()
+        formatter.dateFormat = "EEEE"
+        
+        var dayCounts: [String: Int] = [:]
+        
+        for event in events {
+            let dayName = formatter.string(from: event.openDateTime)
+            dayCounts[dayName, default: 0] += 1
+        }
+        
+        let daysOfWeek = ["Thursday", "Friday", "Saturday", "Sunday", "Monday", "Tuesday", "Wednesday"]
+        
+        return daysOfWeek.enumerated().map { index, day in
+            WeeklyData(dayIndex: index, dayName: day, count: dayCounts[day] ?? 0)
+        }
+    }
+}
+
+struct PatternsDurationView: View {
+    let events: [DrawbridgeEvent]
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Duration Distribution")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Duration ranges
+            ForEach(durationRanges, id: \.range) { stat in
+                HStack {
+                    Text(stat.range)
+                        .font(.caption)
+                        .frame(width: 80, alignment: .leading)
+                    
+                    ProgressView(value: stat.normalizedCount, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle(tint: .orange))
+                    
+                    Text("\(stat.count)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(width: 30, alignment: .trailing)
+                }
+            }
+            
+            // Average duration
+            if !events.isEmpty {
+                let avgDuration = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
+                Text("Average: \(avgDuration, specifier: "%.1f") minutes")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                    .padding(.top, 4)
+            }
+        }
+    }
+    
+    private var durationRanges: [(range: String, count: Int, normalizedCount: Double)] {
+        let ranges = [
+            (label: "< 5 min", min: 0.0, max: 5.0),
+            (label: "5-15 min", min: 5.0, max: 15.0),
+            (label: "15-30 min", min: 15.0, max: 30.0),
+            (label: "30-60 min", min: 30.0, max: 60.0),
+            (label: "> 60 min", min: 60.0, max: Double.infinity)
+        ]
+        
+        var rangeCounts: [String: Int] = [:]
+        
+        for event in events {
+            for range in ranges {
+                if event.minutesOpen >= range.min && event.minutesOpen < range.max {
+                    rangeCounts[range.label, default: 0] += 1
+                    break
+                }
+            }
+        }
+        
+        let maxCount = Double(rangeCounts.values.max() ?? 1)
+        
+        return ranges.map { range in
+            let count = rangeCounts[range.label] ?? 0
+            return (range: range.label, count: count, normalizedCount: Double(count) / maxCount)
+        }
+    }
+}
+
+// MARK: - Cascade Analysis Views
+struct CascadeActivityView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Bridge Interaction Timeline")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Analyzing how \(bridgeName) openings correlate with other bridge activity...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+            
+            // Placeholder for cascade analysis
+            HStack {
+                Image(systemName: "arrow.triangle.branch")
+                    .foregroundColor(.blue)
+                VStack(alignment: .leading) {
+                    Text("Feature Coming Soon")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    Text("Cascade analysis requires multiple bridge data correlation")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .padding()
+            .background(Color(.systemBackground))
+            .cornerRadius(8)
+        }
+    }
+}
+
+struct CascadeWeeklyView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Weekly Cascade Patterns")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: Weekly correlation analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+struct CascadeDurationView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Duration Cascade Effects")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: Duration impact on other bridges")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+// MARK: - Prediction Analysis Views
+struct PredictionsActivityView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Activity Predictions")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Next hour prediction
+            if let prediction = nextHourPrediction {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Next Hour Prediction")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    
+                    HStack {
+                        Text("Probability:")
+                        Spacer()
+                        Text(prediction.probabilityText)
+                            .foregroundColor(probabilityColor(prediction.probability))
+                            .fontWeight(.medium)
+                    }
+                    .font(.caption)
+                    
+                    HStack {
+                        Text("Expected Duration:")
+                        Spacer()
+                        Text(prediction.durationText)
+                            .foregroundColor(.orange)
+                    }
+                    .font(.caption)
+                    
+                    HStack {
+                        Text("Confidence:")
+                        Spacer()
+                        Text(prediction.confidenceText)
+                            .foregroundColor(.blue)
+                    }
+                    .font(.caption)
+                }
+                .padding()
+                .background(Color(.systemBackground))
+                .cornerRadius(8)
+            } else {
+                Text("Generating predictions from historical data...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+        }
+    }
+    
+    private var nextHourPrediction: BridgePrediction? {
+        // Create a mock bridge info for prediction
+        let bridgeInfo = DrawbridgeInfo(
+            entityID: events.first?.entityID ?? 0,
+            entityName: bridgeName,
+            entityType: events.first?.entityType ?? "Bridge",
+            latitude: events.first?.latitude ?? 0,
+            longitude: events.first?.longitude ?? 0
+        )
+        
+        // Calculate analytics and get prediction
+        let analytics = BridgeAnalyticsCalculator.calculateAnalytics(from: events)
+        return BridgeAnalytics.getCurrentPrediction(for: bridgeInfo, from: analytics)
+    }
+    
+    private func probabilityColor(_ probability: Double) -> Color {
+        switch probability {
+        case 0.0..<0.3: return .green
+        case 0.3..<0.6: return .orange
+        case 0.6...1.0: return .red
+        default: return .gray
+        }
+    }
+}
+
+struct PredictionsWeeklyView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Weekly Predictions")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: 7-day forecast based on historical patterns")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+struct PredictionsDurationView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Duration Predictions")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: Predicted opening durations")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+// MARK: - Impact Analysis Views
+struct ImpactActivityView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Traffic Impact Analysis")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Impact severity distribution
+            ForEach(impactLevels, id: \.level) { impact in
+                HStack {
+                    Circle()
+                        .fill(impact.color)
+                        .frame(width: 8, height: 8)
+                    
+                    Text(impact.level)
+                        .font(.caption)
+                        .frame(width: 80, alignment: .leading)
+                    
+                    ProgressView(value: impact.normalizedCount, total: 1.0)
+                        .progressViewStyle(LinearProgressViewStyle(tint: impact.color))
+                    
+                    Text("\(impact.count)")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .frame(width: 30, alignment: .trailing)
+                }
+            }
+            
+            // Traffic advice
+            Text("⚠️ High impact openings typically occur during rush hours (7-9 AM, 5-7 PM)")
+                .font(.caption2)
+                .foregroundColor(.orange)
+                .padding(.top, 4)
+        }
+    }
+    
+    private var impactLevels: [(level: String, count: Int, normalizedCount: Double, color: Color)] {
+        let levels = [
+            (label: "Low Impact", min: 0.0, max: 10.0, color: Color.green),
+            (label: "Medium Impact", min: 10.0, max: 30.0, color: Color.orange),
+            (label: "High Impact", min: 30.0, max: Double.infinity, color: Color.red)
+        ]
+        
+        var levelCounts: [String: Int] = [:]
+        
+        for event in events {
+            for level in levels {
+                if event.minutesOpen >= level.min && event.minutesOpen < level.max {
+                    levelCounts[level.label, default: 0] += 1
+                    break
+                }
+            }
+        }
+        
+        let maxCount = Double(levelCounts.values.max() ?? 1)
+        
+        return levels.map { level in
+            let count = levelCounts[level.label] ?? 0
+            return (level: level.label, count: count, normalizedCount: Double(count) / maxCount, color: level.color)
+        }
+    }
+}
+
+struct ImpactWeeklyView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Weekly Traffic Impact")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: Weekly traffic impact analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+struct ImpactDurationView: View {
+    let events: [DrawbridgeEvent]
+    let bridgeName: String
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Duration Impact Analysis")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Coming Soon: How opening duration affects traffic")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .italic()
+        }
+    }
+}
+
+// MARK: - Hourly Pattern Chart
+struct HourlyPatternChart: View {
+    let events: [DrawbridgeEvent]
+    
+    var body: some View {
+        Chart {
+            ForEach(hourlyChartData, id: \.hour) { data in
+                BarMark(
+                    x: .value("Hour", data.hour),
+                    y: .value("Count", data.count)
+                )
+                .foregroundStyle(Color.blue.opacity(0.7))
+            }
+        }
+        .frame(height: 120)
+        .chartXAxis {
+            AxisMarks(values: .stride(by: 6)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let intValue = value.as(Int.self) {
+                        Text("\(intValue)")
+                    }
+                }
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading)
+        }
+    }
+    
+    private var hourlyChartData: [HourlyData] {
+        var hourCounts: [Int: Int] = [:]
+        let calendar = Calendar.current
+        
+        for event in events {
+            let hour = calendar.component(.hour, from: event.openDateTime)
+            hourCounts[hour, default: 0] += 1
+        }
+        
+        return (0..<24).map { hour in
+            HourlyData(hour: hour, count: hourCounts[hour] ?? 0)
+        }
+    }
+}
+
+struct HourlyData {
+    let hour: Int
+    let count: Int
+}
+
+struct WeeklyData {
+    let dayIndex: Int
+    let dayName: String
+    let count: Int
+}
+
+// MARK: - Bridge Header Section
 struct BridgeHeaderSection: View {
     let bridgeName: String
     let lastKnownEvent: DrawbridgeEvent?
@@ -455,43 +1245,31 @@ struct BridgeHeaderSection: View {
                 .fontWeight(.bold)
             
             HStack {
-                if let event = lastKnownEvent {
-                    Text(lastKnownStatusText(for: event))
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(bridgeName)
                         .font(.headline)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(statusColor(for: event))
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
-                } else {
-                    Text("NO DATA")
-                        .font(.headline)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.gray)
-                        .foregroundColor(.white)
-                        .cornerRadius(8)
+                        .fontWeight(.medium)
+                    
+                    HStack(spacing: 8) {
+                        Circle()
+                            .fill(statusColor(for: lastKnownEvent))
+                            .frame(width: 8, height: 8)
+                        
+                        Text(lastKnownStatusText(for: lastKnownEvent))
+                            .font(.subheadline)
+                            .foregroundColor(.primary)
+                    }
                 }
                 
                 Spacer()
                 
-                VStack(alignment: .trailing) {
-                    Text("Total Events")
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Last Updated")
                         .font(.caption)
                         .foregroundColor(.secondary)
-                    Text("\(totalEvents)")
+                    Text(lastUpdateTime)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                }
-            }
-            
-            if let event = lastKnownEvent {
-                HStack {
-                    Image(systemName: "clock")
-                        .foregroundColor(.secondary)
-                    Text("Last activity \(timeAgoText(for: event))")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
                 }
             }
         }
@@ -500,28 +1278,37 @@ struct BridgeHeaderSection: View {
         .cornerRadius(12)
     }
     
-    private func lastKnownStatusText(for event: DrawbridgeEvent) -> String {
+    private func lastKnownStatusText(for event: DrawbridgeEvent?) -> String {
+        guard let event = event else { return "No Data" }
+        
         if event.closeDateTime != nil {
-            return "CLOSED"
+            return "Open to Traffic"
         } else {
-            return "WAS OPEN"
+            return "Was Open"
         }
     }
     
-    private func statusColor(for event: DrawbridgeEvent) -> Color {
+    private func statusColor(for event: DrawbridgeEvent?) -> Color {
+        guard let event = event else { return .gray }
+        
         if event.closeDateTime != nil {
-            return .green
+            return .green  // Bridge is closed (open to traffic)
         } else {
-            return .orange
+            return .orange // Bridge was open
         }
     }
     
-    private func timeAgoText(for event: DrawbridgeEvent) -> String {
+    private var lastUpdateTime: String {
+        guard let event = lastKnownEvent else { return "N/A" }
         let relevantDate = event.closeDateTime ?? event.openDateTime
-        return relevantDate.formatted(.relative(presentation: .named))
+        
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter.string(from: relevantDate)
     }
 }
 
+// MARK: - Functional Time Filter Section
 struct FunctionalTimeFilterSection: View {
     @Binding var selectedPeriod: TimePeriod
     let bridgeEvents: [DrawbridgeEvent]
@@ -567,9 +1354,11 @@ struct FunctionalTimeFilterSection: View {
     }
 }
 
+// MARK: - Bridge Statistics Section
 struct BridgeStatsSection: View {
     let events: [DrawbridgeEvent]
     let timePeriod: TimePeriod
+    let analysisType: AnalysisType
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -588,10 +1377,10 @@ struct BridgeStatsSection: View {
                 )
                 
                 StatCard(
-                    title: "Avg Duration",
-                    value: averageDurationText,
-                    icon: "timer",
-                    color: .orange
+                    title: analysisSpecificTitle,
+                    value: analysisSpecificValue,
+                    icon: analysisSpecificIcon,
+                    color: analysisSpecificColor
                 )
                 
                 StatCard(
@@ -623,10 +1412,62 @@ struct BridgeStatsSection: View {
         }
     }
     
-    private var averageDurationText: String {
-        guard !events.isEmpty else { return "0 min" }
-        let avg = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
-        return String(format: "%.0f min", avg)
+    private var analysisSpecificTitle: String {
+        switch analysisType {
+        case .patterns: return "Avg Duration"
+        case .cascade: return "Peak Hour"
+        case .predictions: return "Next Probability"
+        case .impact: return "High Impact"
+        }
+    }
+    
+    private var analysisSpecificValue: String {
+        switch analysisType {
+        case .patterns:
+            guard !events.isEmpty else { return "0 min" }
+            let avg = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
+            return String(format: "%.0f min", avg)
+        case .cascade:
+            return peakHour
+        case .predictions:
+            return "Coming Soon"
+        case .impact:
+            let highImpact = events.filter { $0.minutesOpen > 30 }.count
+            return "\(highImpact)"
+        }
+    }
+    
+    private var analysisSpecificIcon: String {
+        switch analysisType {
+        case .patterns: return "timer"
+        case .cascade: return "arrow.triangle.branch"
+        case .predictions: return "crystal.ball"
+        case .impact: return "exclamationmark.triangle.fill"
+        }
+    }
+    
+    private var analysisSpecificColor: Color {
+        switch analysisType {
+        case .patterns: return .orange
+        case .cascade: return .purple
+        case .predictions: return .blue
+        case .impact: return .red
+        }
+    }
+    
+    private var peakHour: String {
+        let calendar = Calendar.current
+        var hourCounts: [Int: Int] = [:]
+        
+        for event in events {
+            let hour = calendar.component(.hour, from: event.openDateTime)
+            hourCounts[hour, default: 0] += 1
+        }
+        
+        if let peak = hourCounts.max(by: { $0.value < $1.value }) {
+            return "\(peak.key):00"
+        }
+        return "None"
     }
     
     private var longestDurationText: String {
@@ -648,6 +1489,7 @@ struct BridgeStatsSection: View {
     }
 }
 
+// MARK: - Stat Card
 struct StatCard: View {
     let title: String
     let value: String
@@ -679,152 +1521,6 @@ struct StatCard: View {
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(8)
-    }
-}
-
-struct BridgeActivitySection: View {
-    let events: [DrawbridgeEvent]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Recent Activity")
-                    .font(.headline)
-                Spacer()
-                if !events.isEmpty {
-                    Text("\(events.count) events")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-            
-            if events.isEmpty {
-                VStack(spacing: 8) {
-                    Image(systemName: "clock.fill")
-                        .font(.largeTitle)
-                        .foregroundColor(.secondary)
-                    Text("No activity in selected period")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                .frame(maxWidth: .infinity)
-                .padding()
-            } else {
-                ForEach(events, id: \.id) { event in
-                    BridgeActivityRow(event: event)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-    }
-}
-
-struct BridgeActivityRow: View {
-    let event: DrawbridgeEvent
-    
-    var body: some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(event.openDateTime.formatted(.dateTime.month().day().hour().minute()))
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                    
-                    Text(statusText)
-                        .font(.caption)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(statusColor)
-                        .foregroundColor(.white)
-                        .cornerRadius(4)
-                }
-                
-                Text("Duration: \(String(format: "%.0f", event.minutesOpen)) minutes")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-        }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
-    }
-    
-    private var statusText: String {
-        if event.closeDateTime != nil {
-            return "OPENED & CLOSED"
-        } else {
-            return "OPENED"
-        }
-    }
-    
-    private var statusColor: Color {
-        if event.closeDateTime != nil {
-            return .green
-        } else {
-            return .orange
-        }
-    }
-}
-
-struct BridgeChartSection: View {
-    let bridgeName: String
-    let events: [DrawbridgeEvent]
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("\(bridgeName) Activity Patterns")
-                .font(.headline)
-            
-            Text("Opening frequency over time")
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            // Chart placeholder - will be implemented in Phase 3
-            VStack {
-                HStack(alignment: .bottom) {
-                    VStack(spacing: 20) {
-                        Text("8").font(.caption).foregroundColor(.secondary)
-                        Text("6").font(.caption).foregroundColor(.secondary)
-                        Text("4").font(.caption).foregroundColor(.secondary)
-                        Text("2").font(.caption).foregroundColor(.secondary)
-                        Text("0").font(.caption).foregroundColor(.secondary)
-                    }
-                    
-                    Rectangle()
-                        .fill(Color.blue.opacity(0.3))
-                        .frame(height: 120)
-                        .overlay(
-                            VStack {
-                                Text("Chart Preview")
-                                    .font(.caption)
-                                    .foregroundColor(.blue)
-                                Text("\(events.count) events to visualize")
-                                    .font(.caption2)
-                                    .foregroundColor(.secondary)
-                            }
-                        )
-                }
-                
-                HStack {
-                    Spacer()
-                    Text("Recent").font(.caption).foregroundColor(.secondary)
-                    Spacer()
-                    Text("Activity").font(.caption).foregroundColor(.secondary)
-                    Spacer()
-                    Text("Timeline").font(.caption).foregroundColor(.secondary)
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
     }
 }
 
@@ -873,7 +1569,7 @@ enum ViewType: CaseIterable {
     case activity, weekly, duration
 }
 
-// MARK: - Analysis Filter Section Component (Restored)
+// MARK: - Analysis Filter Section Component
 struct AnalysisFilterSection: View {
     @Binding var selectedAnalysis: AnalysisType
     
@@ -908,7 +1604,7 @@ struct AnalysisFilterSection: View {
     }
 }
 
-// MARK: - View Filter Section Component (Restored)
+// MARK: - View Filter Section Component
 struct ViewFilterSection: View {
     @Binding var selectedView: ViewType
     
@@ -937,7 +1633,7 @@ struct ViewFilterSection: View {
     }
 }
 
-// MARK: - Filter Button Component (Restored)
+// MARK: - Filter Button Component
 struct FilterButton: View {
     let title: String
     let isSelected: Bool
@@ -957,7 +1653,7 @@ struct FilterButton: View {
     }
 }
 
-// MARK: - Placeholder Views (FIXED)
+// MARK: - Bridge Views (Placeholder implementations)
 struct BridgesListView: View {
     let events: [DrawbridgeEvent]
     let bridgeInfo: [DrawbridgeInfo]
@@ -993,6 +1689,7 @@ struct StatisticsView: View {
     }
 }
 
+// MARK: - Info Row
 struct InfoRow: View {
     let label: String
     let value: String
@@ -1008,7 +1705,10 @@ struct InfoRow: View {
     }
 }
 
-#Preview {
-    ContentView()
-        .modelContainer(for: [DrawbridgeEvent.self, DrawbridgeInfo.self], inMemory: true)
+// MARK: - Preview
+struct ContentView_Previews: PreviewProvider {
+    static var previews: some View {
+        ContentView()
+            .modelContainer(for: [DrawbridgeEvent.self, DrawbridgeInfo.self], inMemory: true)
+    }
 }
