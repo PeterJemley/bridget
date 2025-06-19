@@ -38,6 +38,12 @@ public final class DrawbridgeEvent {
         CLLocation(latitude: latitude, longitude: longitude)
     }
     
+    public var relativeTimeText: String {
+        let formatter = RelativeDateTimeFormatter()
+        formatter.dateTimeStyle = .named
+        return formatter.localizedString(for: openDateTime, relativeTo: Date())
+    }
+    
     public init(
         entityType: String,
         entityName: String,

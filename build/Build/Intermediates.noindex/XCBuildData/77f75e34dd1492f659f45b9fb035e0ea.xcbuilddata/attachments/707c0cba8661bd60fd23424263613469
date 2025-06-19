@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/BridgetNetworking-master.dia",
+    "emit-module-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/BridgetNetworking-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/BridgetNetworking-master-emit-module.dia",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/BridgetNetworking-master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetNetworking/Sources/BridgetNetworking/DrawbridgeAPI.swift" : {
+    "const-values" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.swiftconstvalues",
+    "dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.d",
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.dia",
+    "index-unit-output-path" : "/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.o",
+    "llvm-bc" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.bc",
+    "object" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.o",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI.swiftdeps",
+    "swiftmodule" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetNetworking.build/Debug-iphonesimulator/BridgetNetworking.build/Objects-normal/arm64/DrawbridgeAPI~partial.swiftmodule"
+  }
+}

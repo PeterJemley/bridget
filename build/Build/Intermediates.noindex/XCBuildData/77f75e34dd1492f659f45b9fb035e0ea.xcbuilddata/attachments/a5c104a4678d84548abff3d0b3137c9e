@@ -1,0 +1,4 @@
+module BridgetSettings {
+header "BridgetSettings-Swift.h"
+export *
+}

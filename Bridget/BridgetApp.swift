@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import BridgetCore
 
 @main
 struct BridgetApp: App {

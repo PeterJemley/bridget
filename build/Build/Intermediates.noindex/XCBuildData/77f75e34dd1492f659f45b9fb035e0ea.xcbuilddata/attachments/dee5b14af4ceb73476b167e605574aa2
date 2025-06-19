@@ -1,0 +1,38 @@
+{
+  "" : {
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/Bridget-master.dia",
+    "emit-module-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/Bridget-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/Bridget-master-emit-module.dia",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/Bridget-master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Bridget/BridgetApp.swift" : {
+    "const-values" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.swiftconstvalues",
+    "dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.d",
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.dia",
+    "index-unit-output-path" : "/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.o",
+    "llvm-bc" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.bc",
+    "object" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.o",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp.swiftdeps",
+    "swiftmodule" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/BridgetApp~partial.swiftmodule"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Bridget/ContentViewModular.swift" : {
+    "const-values" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.swiftconstvalues",
+    "dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.d",
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.dia",
+    "index-unit-output-path" : "/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.o",
+    "llvm-bc" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.bc",
+    "object" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.o",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular.swiftdeps",
+    "swiftmodule" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/ContentViewModular~partial.swiftmodule"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "const-values" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftconstvalues",
+    "dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.d",
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.dia",
+    "index-unit-output-path" : "/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.o",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols.swiftdeps",
+    "swiftmodule" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/Bridget.build/Debug-iphonesimulator/Bridget.build/Objects-normal/arm64/GeneratedAssetSymbols~partial.swiftmodule"
+  }
+}

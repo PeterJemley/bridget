@@ -1,0 +1,4 @@
+module BridgetSharedUI {
+header "BridgetSharedUI-Swift.h"
+export *
+}

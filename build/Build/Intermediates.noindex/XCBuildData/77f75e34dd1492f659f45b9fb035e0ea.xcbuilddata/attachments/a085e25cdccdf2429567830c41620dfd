@@ -1,0 +1,4 @@
+module BridgetBridgeDetail {
+header "BridgetBridgeDetail-Swift.h"
+export *
+}

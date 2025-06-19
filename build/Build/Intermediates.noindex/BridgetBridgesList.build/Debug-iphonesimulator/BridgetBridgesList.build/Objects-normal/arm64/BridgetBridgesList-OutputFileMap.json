@@ -1,0 +1,18 @@
+{
+  "" : {
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgetBridgesList-master.dia",
+    "emit-module-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgetBridgesList-master-emit-module.d",
+    "emit-module-diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgetBridgesList-master-emit-module.dia",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgetBridgesList-master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetBridgesList/Sources/BridgetBridgesList/BridgesListView.swift" : {
+    "const-values" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.swiftconstvalues",
+    "dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.d",
+    "diagnostics" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.dia",
+    "index-unit-output-path" : "/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.o",
+    "llvm-bc" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.bc",
+    "object" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.o",
+    "swift-dependencies" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView.swiftdeps",
+    "swiftmodule" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/build/Build/Intermediates.noindex/BridgetBridgesList.build/Debug-iphonesimulator/BridgetBridgesList.build/Objects-normal/arm64/BridgesListView~partial.swiftmodule"
+  }
+}

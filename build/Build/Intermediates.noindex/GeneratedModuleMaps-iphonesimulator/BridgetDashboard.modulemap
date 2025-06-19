@@ -1,0 +1,4 @@
+module BridgetDashboard {
+header "BridgetDashboard-Swift.h"
+export *
+}
