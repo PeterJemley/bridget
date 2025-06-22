@@ -6,6 +6,7 @@
 //
 
 import SwiftUI
+import SwiftData
 import BridgetCore
 import BridgetSharedUI
 
@@ -13,6 +14,12 @@ public struct BridgeStatsSection: View {
     public let events: [DrawbridgeEvent]
     public let timePeriod: TimePeriod
     public let analysisType: AnalysisType
+    
+    @Environment(\.modelContext) private var modelContext
+    @Query private var allEvents: [DrawbridgeEvent]
+    @State private var analytics: [BridgeAnalytics] = []
+    @State private var currentPrediction: BridgePrediction?
+    @State private var isCalculatingPrediction = false
     
     public init(events: [DrawbridgeEvent], timePeriod: TimePeriod, analysisType: AnalysisType) {
         self.events = events
@@ -61,8 +68,45 @@ public struct BridgeStatsSection: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .onAppear {
+            calculatePredictions()
+        }
     }
     
+    // MARK: - ADD: Prediction Calculation
+    private func calculatePredictions() {
+        guard analysisType == .predictions && !events.isEmpty else { return }
+        
+        isCalculatingPrediction = true
+        
+        Task {
+            // Calculate analytics from all events
+            let calculatedAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: allEvents)
+            
+            // Get bridge info from events
+            guard let firstEvent = events.first else { return }
+            let bridgeInfo = DrawbridgeInfo(
+                entityID: firstEvent.entityID,
+                entityName: firstEvent.entityName,
+                entityType: firstEvent.entityType,
+                latitude: firstEvent.latitude,
+                longitude: firstEvent.longitude
+            )
+            
+            // Get current prediction
+            let prediction = BridgeAnalytics.getCurrentPrediction(
+                for: bridgeInfo,
+                from: calculatedAnalytics
+            )
+            
+            await MainActor.run {
+                self.analytics = calculatedAnalytics
+                self.currentPrediction = prediction
+                self.isCalculatingPrediction = false
+            }
+        }
+    }
+
     // MARK: - Computed Properties
     private var periodDescription: String {
         switch timePeriod {
@@ -91,7 +135,13 @@ public struct BridgeStatsSection: View {
         case .cascade:
             return peakHour
         case .predictions:
-            return "Coming Soon"
+            if isCalculatingPrediction {
+                return "Calculating..."
+            } else if let prediction = currentPrediction {
+                return prediction.probabilityText
+            } else {
+                return "No Data"
+            }
         case .impact:
             let highImpact = events.filter { $0.minutesOpen > 30 }.count
             return "\(highImpact)"
@@ -111,7 +161,17 @@ public struct BridgeStatsSection: View {
         switch analysisType {
         case .patterns: return .orange
         case .cascade: return .purple
-        case .predictions: return .blue
+        case .predictions: 
+            if let prediction = currentPrediction {
+                switch prediction.probability {
+                case 0.0..<0.3: return .green
+                case 0.3..<0.6: return .orange
+                case 0.6...1.0: return .red
+                default: return .blue
+                }
+            } else {
+                return .blue
+            }
         case .impact: return .red
         }
     }

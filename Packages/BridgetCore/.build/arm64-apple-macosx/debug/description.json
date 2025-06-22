@@ -1,0 +1,765 @@
+{
+  "builtTestProducts" : [
+    {
+      "binaryPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.xctest/Contents/MacOS/BridgetCorePackageTests",
+      "packagePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore",
+      "productName" : "BridgetCorePackageTests"
+    }
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.BridgetCore-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/sources",
+      "importPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/ARIMAPredictionEngine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/NeuralEngineARIMA.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BridgetCore",
+      "moduleOutputPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCore.swiftmodule",
+      "objects" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgetCore-Swift.h",
+        "-swift-version",
+        "5",
+        "-enable-upcoming-feature",
+        "BareSlashRegexLiterals",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "bridgetcore"
+      ],
+      "outputFileMapPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCore.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/ARIMAPredictionEngine.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/NeuralEngineARIMA.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift"
+      ],
+      "tempsPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.BridgetCorePackageTests-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/sources",
+      "importPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCoreTests.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BridgetCorePackageTests",
+      "moduleOutputPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCorePackageTests.swiftmodule",
+      "objects" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/BridgetCorePackageTests-Swift.h",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "bridgetcore"
+      ],
+      "outputFileMapPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCorePackageTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift"
+      ],
+      "tempsPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build",
+      "wholeModuleOptimization" : false
+    },
+    "C.BridgetCoreTests-arm64-apple-macosx15.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/sources",
+      "importPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgeAnalyticsTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgetCoreTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/CascadeDetectionTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/DrawbridgeEventTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCore.swiftmodule"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "BridgetCoreTests",
+      "moduleOutputPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCoreTests.swiftmodule",
+      "objects" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.swift.o",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx14.0",
+        "-enable-batch-mode",
+        "-index-store-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-Xfrontend",
+        "-enable-cross-import-overlays",
+        "-j16",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-module-cache-path",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-swift-version",
+        "5",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "bridgetcore"
+      ],
+      "outputFileMapPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules/BridgetCoreTests.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgeAnalyticsTests.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgetCoreTests.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/CascadeDetectionTests.swift",
+        "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/DrawbridgeEventTests.swift"
+      ],
+      "tempsPath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "BridgetCore" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BridgetCore",
+      "-package-name",
+      "bridgetcore",
+      "-incremental",
+      "-c",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/ARIMAPredictionEngine.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/NeuralEngineARIMA.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift",
+      "-I",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgetCore-Swift.h",
+      "-swift-version",
+      "5",
+      "-enable-upcoming-feature",
+      "BareSlashRegexLiterals",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "bridgetcore",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "BridgetCorePackageTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BridgetCorePackageTests",
+      "-package-name",
+      "bridgetcore",
+      "-incremental",
+      "-c",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift",
+      "-I",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/BridgetCorePackageTests-Swift.h",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "bridgetcore",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ],
+    "BridgetCoreTests" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "BridgetCoreTests",
+      "-package-name",
+      "bridgetcore",
+      "-incremental",
+      "-c",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgeAnalyticsTests.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgetCoreTests.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/CascadeDetectionTests.swift",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/DrawbridgeEventTests.swift",
+      "-I",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx14.0",
+      "-enable-batch-mode",
+      "-index-store-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-Xfrontend",
+      "-enable-cross-import-overlays",
+      "-j16",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-module-cache-path",
+      "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-swift-version",
+      "5",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX15.5.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "bridgetcore",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "BridgetCore" : [
+
+    ],
+    "BridgetCorePackageTests" : [
+      "BridgetCoreTests",
+      "BridgetCore"
+    ],
+    "BridgetCoreTests" : [
+      "BridgetCore"
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift" : {
+      "inputs" : [
+
+      ],
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift"
+        }
+      ]
+    }
+  },
+  "traitConfiguration" : {
+    "enableAllTraits" : false
+  },
+  "writeCommands" : {
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/ARIMAPredictionEngine.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/NeuralEngineARIMA.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/sources"
+    },
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/sources"
+    },
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.product/Objects.LinkFileList" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<link-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.swift.o"
+        }
+      ],
+      "outputFilePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.product/Objects.LinkFileList"
+    },
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgeAnalyticsTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgetCoreTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/CascadeDetectionTests.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/DrawbridgeEventTests.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/sources"
+    },
+    "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

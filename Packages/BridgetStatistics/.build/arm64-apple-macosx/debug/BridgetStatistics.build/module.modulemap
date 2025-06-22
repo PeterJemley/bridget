@@ -1,0 +1,4 @@
+module BridgetStatistics {
+    header "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetStatistics/.build/arm64-apple-macosx/debug/BridgetStatistics.build/BridgetStatistics-Swift.h"
+    requires objc
+}

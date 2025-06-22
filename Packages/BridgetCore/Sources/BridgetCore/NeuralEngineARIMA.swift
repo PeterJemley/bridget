@@ -2,7 +2,7 @@
 //  NeuralEngineARIMA.swift
 //  BridgetCore
 //
-//  Neural Engine-Optimized ARIMA Prediction
+//  Neural Engine-Optimized ARIMA Prediction (Simplified Version)
 //  Compatible with A12 Bionic (2018) through A18 Pro (2025)
 //
 //  Created by Alex on 6/22/25.
@@ -10,7 +10,6 @@
 
 import Foundation
 import CoreML
-import SwiftData
 
 // MARK: - Multi-Generation Neural Engine Manager
 
@@ -148,7 +147,6 @@ public class NeuralEngineARIMAPredictor {
     
     private let neuralGeneration: NeuralEngineManager.NeuralEngineGeneration
     private let modelComplexity: NeuralEngineManager.ModelComplexity
-    private var coreMLModel: MLModel?
     
     public init() {
         let config = NeuralEngineManager.getOptimalConfig()
@@ -715,7 +713,7 @@ public class NeuralEngineARIMAPredictor {
     }
 }
 
-// MARK: - Neural Engine Data Models
+// MARK: - Neural Engine Data Models (Simplified Structs)
 
 public struct NeuralTimeSeriesPoint {
     public let entityID: Int
@@ -748,25 +746,12 @@ public struct NeuralTimeSeriesPoint {
     }
 }
 
-@Model
 public final class NeuralARIMAModel {
-    @Attribute(.unique) public var id: String
-    
-    public var entityID: Int
-    public var entityName: String
-    public var neuralGeneration: String
-    
-    public var modelComplexityRawValue: String
-    
-    // Computed property for enum access
-    public var modelComplexity: NeuralEngineManager.ModelComplexity {
-        get {
-            return NeuralEngineManager.ModelComplexity(rawValue: modelComplexityRawValue) ?? .simple
-        }
-        set {
-            modelComplexityRawValue = newValue.rawValue
-        }
-    }
+    public let id: String
+    public let entityID: Int
+    public let entityName: String
+    public let neuralGeneration: NeuralEngineManager.NeuralEngineGeneration
+    public let modelComplexity: NeuralEngineManager.ModelComplexity
     
     // ARIMA parameters
     public var arCoefficients: [Double] = []
@@ -783,6 +768,19 @@ public final class NeuralARIMAModel {
     public var lastTrained: Date
     public var trainingDataSize: Int = 0
     
+    // Computed properties
+    public var arimaOrder: (p: Int, d: Int, q: Int) {
+        return modelComplexity.arimaOrder
+    }
+    
+    public var coreCount: Int {
+        return neuralGeneration.coreCount
+    }
+    
+    public var topsCapability: Double {
+        return neuralGeneration.topsCapability
+    }
+    
     public init(
         entityID: Int,
         entityName: String,
@@ -792,8 +790,8 @@ public final class NeuralARIMAModel {
         self.id = "neural-arima-\(entityID)-\(neuralGeneration.rawValue)-\(modelComplexity.rawValue)"
         self.entityID = entityID
         self.entityName = entityName
-        self.neuralGeneration = neuralGeneration.rawValue
-        self.modelComplexityRawValue = modelComplexity.rawValue
+        self.neuralGeneration = neuralGeneration
+        self.modelComplexity = modelComplexity
         self.lastTrained = Date()
     }
 }

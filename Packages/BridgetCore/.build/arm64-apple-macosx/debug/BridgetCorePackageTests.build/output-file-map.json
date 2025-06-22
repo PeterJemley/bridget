@@ -1,0 +1,11 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.derived/runner.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/runner.swiftdeps"
+  }
+}

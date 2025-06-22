@@ -77,8 +77,8 @@ public struct DashboardView: View {
                 }
                 .padding()
             }
-            .navigationTitle("Bridge Monitor")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarBackButtonHidden(true)
+            .navigationBarHidden(true)
         }
     }
     

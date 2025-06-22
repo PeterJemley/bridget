@@ -9,254 +9,238 @@ import Foundation
 import BridgetCore
 
 public struct DrawbridgeAPI {
-    public static let baseURL = "https://data.seattle.gov/resource/gm8h-9449.json"
+    private static let baseURL = "https://data.seattle.gov/resource/gm8h-9449.json"
     
-    struct APIResponse: Codable {
-        let entitytype: String
-        let entityname: String
-        let entityid: String
-        let opendatetime: String
-        let closedatetime: String?
-        let minutesopen: String
-        let latitude: String
-        let longitude: String
-    }
-    
-    public struct ImportProgress {
-        public let totalRecords: Int
-        public let currentBatch: Int
-        public let totalBatches: Int
-        public let recordsImported: Int
-        public let isComplete: Bool
-        public let currentBridge: String?
-        
-        public var progressPercentage: Double {
-            guard totalRecords > 0 else { return 0 }
-            return Double(recordsImported) / Double(totalRecords)
-        }
-        
-        public init(totalRecords: Int, currentBatch: Int, totalBatches: Int, recordsImported: Int, isComplete: Bool, currentBridge: String?) {
-            self.totalRecords = totalRecords
-            self.currentBatch = currentBatch
-            self.totalBatches = totalBatches
-            self.recordsImported = recordsImported
-            self.isComplete = isComplete
-            self.currentBridge = currentBridge
-        }
-    }
-    
-    public static func fetchDrawbridgeData(limit: Int = 1000) async throws -> [DrawbridgeEvent] {
-        guard let url = URL(string: "\(baseURL)?$limit=\(limit)&$order=opendatetime DESC") else {
-            throw APIError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let responses = try JSONDecoder().decode([APIResponse].self, from: data)
-        
-        return responses.compactMap { response in
-            guard let entityID = Int(response.entityid),
-                  let openDate = DateFormatter.iso8601WithFractionalSeconds.date(from: response.opendatetime),
-                  let minutesOpen = Double(response.minutesopen),
-                  let latitude = Double(response.latitude),
-                  let longitude = Double(response.longitude) else {
-                return nil
-            }
-            
-            let closeDate = response.closedatetime.flatMap { 
-                DateFormatter.iso8601WithFractionalSeconds.date(from: $0) 
-            }
-            
-            return DrawbridgeEvent(
-                entityType: response.entitytype,
-                entityName: response.entityname,
-                entityID: entityID,
-                openDateTime: openDate,
-                closeDateTime: closeDate,
-                minutesOpen: minutesOpen,
-                latitude: latitude,
-                longitude: longitude
-            )
-        }
-    }
-    
-    public static func getTotalRecordCount() async throws -> Int {
-        guard let url = URL(string: "\(baseURL)?$select=count(*)") else {
-            throw APIError.invalidURL
-        }
-        
-        let (data, _) = try await URLSession.shared.data(from: url)
-        if let jsonArray = try JSONSerialization.jsonObject(with: data) as? [[String: Any]],
-           let firstRecord = jsonArray.first,
-           let countString = firstRecord["count"] as? String,
-           let count = Int(countString) {
-            return count
-        }
-        
-        throw APIError.noData
-    }
-    
-    public static func importAllHistoricalData(
-        batchSize: Int = 2000,
-        progressCallback: @escaping (ImportProgress) -> Void
-    ) async throws -> [DrawbridgeEvent] {
-        
-        // First, get total record count
-        let totalRecords = try await getTotalRecordCount()
-        let totalBatches = (totalRecords + batchSize - 1) / batchSize // Ceiling division
+    /// Fetch drawbridge data from Seattle Open Data API with pagination
+    public static func fetchDrawbridgeData(limit: Int = 50000) async throws -> [DrawbridgeEvent] {
+        print("🌐 [API] Starting drawbridge data fetch - Target: ALL DATA (~4,113 rows)")
+        print("🌐 [API] Using correct endpoint: \(baseURL)")
         
         var allEvents: [DrawbridgeEvent] = []
-        var recordsImported = 0
+        var offset = 0
+        let batchSize = 1000 // Seattle API limit per request
+        let startTime = Date()
         
-        print("📊 Starting bulk import of \(totalRecords) records in \(totalBatches) batches")
-        
-        for batchIndex in 0..<totalBatches {
-            let offset = batchIndex * batchSize
+        while true {
+            print("🌐 [API] Fetching batch \(offset/batchSize + 1) - Offset: \(offset), Limit: \(batchSize)")
             
-            // Update progress
-            let progress = ImportProgress(
-                totalRecords: totalRecords,
-                currentBatch: batchIndex + 1,
-                totalBatches: totalBatches,
-                recordsImported: recordsImported,
-                isComplete: false,
-                currentBridge: nil
-            )
-            progressCallback(progress)
+            let batchEvents = try await fetchBatch(offset: offset, limit: batchSize)
             
-            // Fetch batch
-            let batchEvents = try await fetchBatch(
-                limit: batchSize,
-                offset: offset
-            )
+            if batchEvents.isEmpty {
+                print("🌐 [API] No more data - stopping pagination")
+                break
+            }
             
             allEvents.append(contentsOf: batchEvents)
-            recordsImported += batchEvents.count
+            print("🌐 [API] Batch \(offset/batchSize + 1) complete: +\(batchEvents.count) events (Total: \(allEvents.count))")
             
-            print("✅ Batch \(batchIndex + 1)/\(totalBatches): \(batchEvents.count) records imported")
+            // If we got less than batchSize, we've reached the end
+            if batchEvents.count < batchSize {
+                print("🌐 [API] Last batch detected (\(batchEvents.count) < \(batchSize)) - stopping")
+                break
+            }
             
-            // Small delay to prevent API rate limiting
-            try await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
+            offset += batchSize
+            
+            // Safety limit to prevent infinite loop
+            if offset > 10000 {
+                print("🌐 [API WARNING] Safety limit reached at \(offset) - stopping")
+                break
+            }
         }
         
-        // Final progress update
-        let finalProgress = ImportProgress(
-            totalRecords: totalRecords,
-            currentBatch: totalBatches,
-            totalBatches: totalBatches,
-            recordsImported: recordsImported,
-            isComplete: true,
-            currentBridge: nil
-        )
-        progressCallback(finalProgress)
+        let fetchTime = Date().timeIntervalSince(startTime)
+        print("🌐 [API] Pagination complete!")
+        print("🌐 [API] FINAL RESULTS:")
+        print("🌐 [API]    • Total events fetched: \(allEvents.count)")
+        print("🌐 [API]    • Expected from UI: ~4,113 events")
+        print("🌐 [API]    • Data completeness: \(allEvents.count >= 4000 ? "✅ EXCELLENT" : allEvents.count >= 3000 ? "✅ GOOD" : "⚠️ INCOMPLETE") (\(String(format: "%.1f", Double(allEvents.count) / 4113.0 * 100))%)")
+        print("🌐 [API]    • Total time: \(String(format: "%.2f", fetchTime))s")
+        print("🌐 [API]    • Batches fetched: \(offset/batchSize + 1)")
         
-        print("🎉 Bulk import complete: \(recordsImported) records imported")
+        // Log data analysis
+        logDataAnalysis(events: allEvents)
+        
         return allEvents
     }
     
-    public static func fetchBatch(limit: Int, offset: Int) async throws -> [DrawbridgeEvent] {
-        guard let url = URL(string: "\(baseURL)?$limit=\(limit)&$offset=\(offset)&$order=opendatetime DESC") else {
-            throw APIError.invalidURL
+    /// Fetch a single batch with offset
+    private static func fetchBatch(offset: Int, limit: Int) async throws -> [DrawbridgeEvent] {
+        guard let url = URL(string: "\(baseURL)?$limit=\(limit)&$offset=\(offset)") else {
+            print("🌐 [API ERROR] Invalid URL: \(baseURL)?$limit=\(limit)&$offset=\(offset)")
+            throw URLError(.badURL)
         }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let responses = try JSONDecoder().decode([APIResponse].self, from: data)
+        let (data, response) = try await URLSession.shared.data(from: url)
         
-        return responses.compactMap { response in
-            guard let entityID = Int(response.entityid),
-                  let openDate = DateFormatter.iso8601WithFractionalSeconds.date(from: response.opendatetime),
-                  let minutesOpen = Double(response.minutesopen),
-                  let latitude = Double(response.latitude),
-                  let longitude = Double(response.longitude) else {
-                return nil
+        // Log HTTP response for first batch
+        if offset == 0, let httpResponse = response as? HTTPURLResponse {
+            print("🌐 [API] HTTP Status: \(httpResponse.statusCode)")
+            if httpResponse.statusCode != 200 {
+                print("🌐 [API ERROR] HTTP \(httpResponse.statusCode) - \(String(data: data, encoding: .utf8) ?? "No response body")")
+                throw URLError(.badServerResponse)
+            }
+        }
+        
+        // Parse JSON
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+        
+        do {
+            let rawEvents = try decoder.decode([DrawbridgeEventResponse].self, from: data)
+            
+            // Convert to DrawbridgeEvent objects
+            let events = rawEvents.compactMap { response in
+                convertToDrawbridgeEvent(from: response)
             }
             
-            let closeDate = response.closedatetime.flatMap { 
-                DateFormatter.iso8601WithFractionalSeconds.date(from: $0) 
-            }
+            return events
             
-            return DrawbridgeEvent(
-                entityType: response.entitytype,
-                entityName: response.entityname,
-                entityID: entityID,
-                openDateTime: openDate,
-                closeDateTime: closeDate,
-                minutesOpen: minutesOpen,
-                latitude: latitude,
-                longitude: longitude
-            )
+        } catch {
+            print("🌐 [API ERROR] JSON parsing failed for batch at offset \(offset): \(error)")
+            if offset == 0 {
+                print("🌐 [API ERROR] Raw data preview: \(String(data: data.prefix(500), encoding: .utf8) ?? "Unable to decode")")
+            }
+            throw error
         }
     }
     
-    public static func fetchDataInDateRange(
-        startDate: Date,
-        endDate: Date,
-        limit: Int = 5000
-    ) async throws -> [DrawbridgeEvent] {
-        let dateFormatter = ISO8601DateFormatter()
-        let startISO = dateFormatter.string(from: startDate)
-        let endISO = dateFormatter.string(from: endDate)
+    /// Log detailed data analysis
+    private static func logDataAnalysis(events: [DrawbridgeEvent]) {
+        print("\n🌐 [DATA ANALYSIS] ================")
+        print("🌐 [DATA ANALYSIS] Total Events: \(events.count)")
         
-        let query = "$where=opendatetime between '\(startISO)' and '\(endISO)'"
-        let encodedQuery = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? ""
-        
-        guard let url = URL(string: "\(baseURL)?\(encodedQuery)&$limit=\(limit)&$order=opendatetime ASC") else {
-            throw APIError.invalidURL
+        if let earliest = events.map(\.openDateTime).min(),
+           let latest = events.map(\.openDateTime).max() {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .medium
+            formatter.timeStyle = .short
+            print("🌐 [DATA ANALYSIS] Date Range: \(formatter.string(from: earliest)) to \(formatter.string(from: latest))")
+            
+            let timeSpan = latest.timeIntervalSince(earliest) / (24 * 3600)
+            print("🌐 [DATA ANALYSIS] Time Span: \(String(format: "%.1f", timeSpan)) days")
         }
         
-        let (data, _) = try await URLSession.shared.data(from: url)
-        let responses = try JSONDecoder().decode([APIResponse].self, from: data)
-        
-        return responses.compactMap { response in
-            guard let entityID = Int(response.entityid),
-                  let openDate = DateFormatter.iso8601WithFractionalSeconds.date(from: response.opendatetime),
-                  let minutesOpen = Double(response.minutesopen),
-                  let latitude = Double(response.latitude),
-                  let longitude = Double(response.longitude) else {
-                return nil
-            }
-            
-            let closeDate = response.closedatetime?.isEmpty == false ? 
-                DateFormatter.iso8601WithFractionalSeconds.date(from: response.closedatetime!) : nil
-            
-            return DrawbridgeEvent(
-                entityType: response.entitytype,
-                entityName: response.entityname,
-                entityID: entityID,
-                openDateTime: openDate,
-                closeDateTime: closeDate,
-                minutesOpen: minutesOpen,
-                latitude: latitude,
-                longitude: longitude
-            )
+        // Bridge breakdown
+        let bridgeGroups = Dictionary(grouping: events, by: \.entityName)
+        print("🌐 [DATA ANALYSIS] Bridges (\(bridgeGroups.count)):")
+        for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
+            let percentage = String(format: "%.1f", Double(bridgeEvents.count) / Double(events.count) * 100)
+            print("🌐 [DATA ANALYSIS]   • \(bridgeName): \(bridgeEvents.count) events (\(percentage)%)")
         }
+        
+        // Verify 1st Ave South count
+        if let firstAveEvents = bridgeGroups["1st Ave South"] {
+            print("🌐 [DATA ANALYSIS] 1st Ave South Verification:")
+            print("🌐 [DATA ANALYSIS]    • Our data: \(firstAveEvents.count) events")
+            print("🌐 [DATA ANALYSIS]    • Expected: ~210 events")
+            print("🌐 [DATA ANALYSIS]    • Status: \(firstAveEvents.count >= 200 ? "CORRECT" : "MISSING DATA")")
+        }
+        
+        // Status breakdown
+        let openEvents = events.filter { $0.closeDateTime == nil }
+        let closedEvents = events.filter { $0.closeDateTime != nil }
+        print("🌐 [DATA ANALYSIS] Status: \(openEvents.count) open, \(closedEvents.count) closed")
+        
+        print("🌐 [DATA ANALYSIS] ================\n")
     }
-}
-
-public enum APIError: Error {
-    case invalidURL
-    case noData
-    case decodingError
-    case rateLimitExceeded
     
-    public var localizedDescription: String {
-        switch self {
-        case .invalidURL:
-            return "Invalid API URL"
-        case .noData:
-            return "No data received from API"
-        case .decodingError:
-            return "Failed to decode API response"
-        case .rateLimitExceeded:
-            return "API rate limit exceeded"
+    /// Convert API response to DrawbridgeEvent
+    private static func convertToDrawbridgeEvent(from response: DrawbridgeEventResponse) -> DrawbridgeEvent? {
+        // Validate and convert required fields
+        guard let entityIDString = response.entityid,
+              let entityID = Int(entityIDString),
+              let entityName = response.entityname,
+              let entityType = response.entitytype,
+              let openDateTimeString = response.opendatetime,
+              let latitudeString = response.latitude,
+              let latitude = Double(latitudeString),
+              let longitudeString = response.longitude,
+              let longitude = Double(longitudeString) else {
+            print("🌐 [API WARNING] Skipping event with missing/invalid fields")
+            return nil
         }
+        
+        // Parse open date - handle different format
+        let openDateTime: Date
+        
+        // Try multiple date formats since the API format seems inconsistent
+        let dateFormatter1 = DateFormatter()
+        dateFormatter1.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        dateFormatter1.timeZone = TimeZone.current
+        
+        let isoFormatter1 = ISO8601DateFormatter()
+        isoFormatter1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        let isoFormatter2 = ISO8601DateFormatter()
+        isoFormatter2.formatOptions = [.withInternetDateTime]
+        
+        let dateFormatter2 = DateFormatter()
+        dateFormatter2.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        dateFormatter2.timeZone = TimeZone.current
+        
+        // Try each formatter until one works
+        if let date = dateFormatter1.date(from: openDateTimeString) {
+            openDateTime = date
+        } else if let date = isoFormatter1.date(from: openDateTimeString) {
+            openDateTime = date
+        } else if let date = isoFormatter2.date(from: openDateTimeString) {
+            openDateTime = date
+        } else if let date = dateFormatter2.date(from: openDateTimeString) {
+            openDateTime = date
+        } else {
+            print("🌐 [API WARNING] Could not parse opendatetime with any format: \(openDateTimeString)")
+            return nil
+        }
+        
+        // Parse close date if present using the same logic
+        var closeDateTime: Date?
+        if let closeDateTimeString = response.closedatetime {
+            if let date = dateFormatter1.date(from: closeDateTimeString) {
+                closeDateTime = date
+            } else if let date = isoFormatter1.date(from: closeDateTimeString) {
+                closeDateTime = date
+            } else if let date = isoFormatter2.date(from: closeDateTimeString) {
+                closeDateTime = date
+            } else if let date = dateFormatter2.date(from: closeDateTimeString) {
+                closeDateTime = date
+            }
+        }
+        
+        // Calculate minutes open - try API field first, then calculate
+        var minutesOpen: Double = 0.0
+        
+        if let minutesOpenString = response.minutesopen,
+           let apiMinutes = Double(minutesOpenString) {
+            minutesOpen = apiMinutes
+        } else if let closeDateTime = closeDateTime {
+            minutesOpen = closeDateTime.timeIntervalSince(openDateTime) / 60.0
+        } else {
+            // For currently open bridges, calculate time since opening
+            minutesOpen = Date().timeIntervalSince(openDateTime) / 60.0
+        }
+        
+        return DrawbridgeEvent(
+            entityType: entityType,
+            entityName: entityName,
+            entityID: entityID,
+            openDateTime: openDateTime,
+            closeDateTime: closeDateTime,
+            minutesOpen: max(0, minutesOpen),
+            latitude: latitude,
+            longitude: longitude
+        )
     }
 }
 
-extension DateFormatter {
-    public static let iso8601WithFractionalSeconds: DateFormatter = {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
-        formatter.timeZone = TimeZone(identifier: "America/Los_Angeles") // Seattle time
-        return formatter
-    }()
+// MARK: - API Response Models
+private struct DrawbridgeEventResponse: Codable {
+    let entityid: String?
+    let entityname: String?
+    let entitytype: String?
+    let opendatetime: String?
+    let closedatetime: String?
+    let latitude: String?
+    let longitude: String?
+    let minutesopen: String?
 }

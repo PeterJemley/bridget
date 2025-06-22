@@ -11,6 +11,8 @@ import CoreLocation
 
 @Model
 public final class DrawbridgeEvent {
+    @Attribute(.unique) public var id: String
+    
     public var entityType: String
     public var entityName: String
     public var entityID: Int
@@ -54,6 +56,7 @@ public final class DrawbridgeEvent {
         latitude: Double,
         longitude: Double
     ) {
+        self.id = "\(entityID)-\(Int(openDateTime.timeIntervalSince1970))"
         self.entityType = entityType
         self.entityName = entityName
         self.entityID = entityID

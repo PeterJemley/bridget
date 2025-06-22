@@ -1,0 +1,29 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgeAnalyticsTests.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgeAnalyticsTests.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/BridgetCoreTests.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/BridgetCoreTests.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/CascadeDetectionTests.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/CascadeDetectionTests.swiftdeps"
+  },
+  "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/Tests/BridgetCoreTests/DrawbridgeEventTests.swift": {
+    "dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.d",
+    "object": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.swift.o",
+    "swiftmodule": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Library/Mobile Documents/com~apple~CloudDocs/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCoreTests.build/DrawbridgeEventTests.swiftdeps"
+  }
+}
