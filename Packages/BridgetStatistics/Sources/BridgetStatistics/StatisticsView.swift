@@ -232,7 +232,14 @@ public struct StatisticsView: View {
     private func generateEnhancedPredictions() -> [ARIMABridgePrediction] {
         var enhancedPredictions: [ARIMABridgePrediction] = []
 
-        for bridge in bridgeInfo {
+        // OPTIMIZATION: Limit to top 5 bridges to prevent hanging
+        let topBridges = bridgeInfo.sorted { bridge1, bridge2 in
+            let events1 = events.filter { $0.entityID == bridge1.entityID }.count
+            let events2 = events.filter { $0.entityID == bridge2.entityID }.count
+            return events1 > events2
+        }.prefix(5)
+
+        for bridge in topBridges {
             if let prediction = BridgeAnalytics.getARIMAEnhancedPrediction(
                 for: bridge,
                 events: Array(events),
@@ -249,7 +256,14 @@ public struct StatisticsView: View {
     private func generateCurrentPredictions() -> [BridgePrediction] {
         var predictions: [BridgePrediction] = []
 
-        for bridge in bridgeInfo {
+        // OPTIMIZATION: Limit to top 5 bridges to prevent hanging
+        let topBridges = bridgeInfo.sorted { bridge1, bridge2 in
+            let events1 = events.filter { $0.entityID == bridge1.entityID }.count
+            let events2 = events.filter { $0.entityID == bridge2.entityID }.count
+            return events1 > events2
+        }.prefix(5)
+
+        for bridge in topBridges {
             if let prediction = BridgeAnalytics.getCurrentPrediction(
                 for: bridge,
                 from: Array(analytics)
@@ -263,37 +277,84 @@ public struct StatisticsView: View {
 
     private func calculateAnalytics() {
         print("📊 [STATS] Starting analytics calculation with \(events.count) events...")
+        
+        // SAFETY: Capture events array immediately to avoid threading issues
+        let eventsSnapshot = Array(events)
+        
+        guard !eventsSnapshot.isEmpty else {
+            print("📊 [STATS] No events available for analytics")
+            return
+        }
+        
         isCalculating = true
 
-        Task.detached(priority: .userInitiated) {
+        Task.detached(priority: .userInitiated) { [eventsSnapshot] in
             print("📊 [STATS] Running analytics on background thread...")
             
-            // Run analytics calculation on background thread with timeout protection
-            let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: Array(events))
+            // OPTIMIZATION: Limit events to prevent hanging (use most recent 2000 events)
+            let limitedEvents = Array(eventsSnapshot.sorted { $0.openDateTime > $1.openDateTime }.prefix(2000))
+            print("📊 [STATS] Using \(limitedEvents.count) most recent events for analytics (from \(eventsSnapshot.count) total)")
             
-            print("📊 [STATS] Analytics calculation complete: \(newAnalytics.count) records")
+            do {
+                // Run analytics calculation on background thread with timeout protection
+                let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
+                
+                print("📊 [STATS] Analytics calculation complete: \(newAnalytics.count) records")
 
-            await MainActor.run {
-                print("📊 [STATS] Updating UI on main thread...")
-                isCalculating = false
+                await MainActor.run {
+                    print("📊 [STATS] Updating UI on main thread...")
+                    isCalculating = false
+                }
+            } catch {
+                print("❌ [STATS] Analytics calculation failed: \(error)")
+                await MainActor.run {
+                    isCalculating = false
+                }
             }
         }
     }
 
     private func calculateAnalyticsAsync() async {
         print("📊 [STATS] Starting async analytics calculation...")
-        isCalculating = true
+        
+        // SAFETY: Capture events array immediately on main thread to avoid threading issues
+        let eventsSnapshot = Array(events)
+        
+        guard !eventsSnapshot.isEmpty else {
+            print("📊 [STATS] No events available for analytics")
+            await MainActor.run {
+                isCalculating = false
+            }
+            return
+        }
+        
+        await MainActor.run {
+            isCalculating = true
+        }
 
-        // Run analytics calculation with proper isolation
-        let newAnalytics = await Task.detached(priority: .userInitiated) {
-            print("📊 [STATS] Background analytics calculation starting...")
-            let result = BridgeAnalyticsCalculator.calculateAnalytics(from: Array(events))
-            print("📊 [STATS] Background analytics calculation complete: \(result.count) records")
-            return result
-        }.value
+        // OPTIMIZATION: Limit events to prevent hanging (use most recent 2000 events)
+        let limitedEvents = Array(eventsSnapshot.sorted { $0.openDateTime > $1.openDateTime }.prefix(2000))
+        print("📊 [STATS] Using \(limitedEvents.count) most recent events for async analytics")
 
-        print("📊 [STATS] Analytics complete, updating UI...")
-        isCalculating = false
+        do {
+            // Run analytics calculation with proper isolation and error handling
+            let newAnalytics = try await Task.detached(priority: .userInitiated) {
+                print("📊 [STATS] Background analytics calculation starting...")
+                let result = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
+                print("📊 [STATS] Background analytics calculation complete: \(result.count) records")
+                return result
+            }.value
+
+            await MainActor.run {
+                print("📊 [STATS] Analytics complete, updating UI...")
+                isCalculating = false
+            }
+        } catch {
+            print("❌ [STATS] Analytics calculation failed: \(error)")
+            await MainActor.run {
+                isCalculating = false
+            }
+        }
     }
 }
 
@@ -917,7 +978,7 @@ struct ARIMAModelDetailCard: View {
                 Text("Model Performance")
                     .font(.subheadline)
                     .fontWeight(.medium)
-
+                
                 HStack {
                     VStack(alignment: .leading) {
                         Text("Accuracy")
@@ -927,9 +988,9 @@ struct ARIMAModelDetailCard: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .leading) {
                         Text("RMSE")
                             .font(.caption)
@@ -938,9 +999,9 @@ struct ARIMAModelDetailCard: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .leading) {
                         Text("MAPE")
                             .font(.caption)
@@ -950,13 +1011,13 @@ struct ARIMAModelDetailCard: View {
                             .fontWeight(.semibold)
                     }
                 }
-
+                
                 Divider()
-
+                
                 Text("Current Prediction")
                     .font(.subheadline)
                     .fontWeight(.medium)
-
+                
                 HStack {
                     VStack(alignment: .leading) {
                         Text("Probability")
@@ -967,9 +1028,9 @@ struct ARIMAModelDetailCard: View {
                             .fontWeight(.bold)
                             .foregroundColor(probabilityColor)
                     }
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .leading) {
                         Text("Duration")
                             .font(.caption)
@@ -978,9 +1039,9 @@ struct ARIMAModelDetailCard: View {
                             .font(.title3)
                             .fontWeight(.semibold)
                     }
-
+                    
                     Spacer()
-
+                    
                     VStack(alignment: .leading) {
                         Text("Confidence")
                             .font(.caption)
@@ -991,7 +1052,7 @@ struct ARIMAModelDetailCard: View {
                     }
                 }
             }
-
+            
             Text(prediction.reasoning)
                 .font(.caption)
                 .foregroundColor(.secondary)

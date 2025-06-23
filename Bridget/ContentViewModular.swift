@@ -91,34 +91,51 @@ struct ContentViewModular: View {
                 }
             }
         }
+        .refreshable {
+            print("🏠 [MAIN] Manual refresh triggered")
+            await forceDataRefresh()
+        }
     }
     
     // Initial data loading function
     private func loadInitialDataIfNeeded() async {
-        // Only fetch if we have no data and haven't already tried
-        guard events.isEmpty && !initialDataLoaded else { 
-            print("🏠 [MAIN] Skipping data load - Events: \(events.count), Already loaded: \(initialDataLoaded)")
+        // FIXED: Allow reloading if data was deleted (events.isEmpty) regardless of initialDataLoaded flag
+        print("🏠 [MAIN] Data check - Events: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
+        
+        guard events.isEmpty else { 
+            print("🏠 [MAIN] Skipping data load - already have \(events.count) events")
+            
+            if bridgeInfo.isEmpty {
+                print("🏠 [MAIN] Have events but no bridge info - creating...")
+                await MainActor.run {
+                    updateBridgeInfo(from: events)
+                    do {
+                        try modelContext.save()
+                        print("🏠 [MAIN] ✅ Bridge info created and saved")
+                    } catch {
+                        print("❌ [MAIN ERROR] Failed to save bridge info: \(error)")
+                    }
+                }
+            }
             return 
         }
         
-        print("🏠 [MAIN] Starting initial data load...")
+        print("🏠 [MAIN] Starting data load (events.isEmpty: \(events.isEmpty))...")
         
         await MainActor.run {
             isLoadingInitialData = true
             dataFetchError = nil
+            // RESET: Allow reloading after data deletion
+            initialDataLoaded = false
         }
         
         do {
-            print("🏠 [MAIN] Calling DrawbridgeAPI.fetchDrawbridgeData with NO LIMIT...")
+            print("🏠 [MAIN] Calling DrawbridgeAPI.fetchDrawbridgeData...")
             
             // Using modular DrawbridgeAPI from BridgetNetworking - get all available data
             let fetchedEvents = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10000)
             
             print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEvents.count) EVENTS")
-            print("🏠 [MAIN] 📊 EXPECTED vs ACTUAL:")
-            print("🏠 [MAIN]    • Expected (based on CSV): ~4,000+ events")
-            print("🏠 [MAIN]    • Actual received: \(fetchedEvents.count) events")
-            print("🏠 [MAIN]    • Data completeness: \(fetchedEvents.count >= 3000 ? "✅ GOOD" : "⚠️ MAY BE INCOMPLETE")")
             
             await MainActor.run {
                 print("🏠 [MAIN] Storing \(fetchedEvents.count) events in SwiftData...")
@@ -131,16 +148,16 @@ struct ContentViewModular: View {
                 }
                 
                 print("🏠 [MAIN] ✅ Inserted \(insertedCount) events into SwiftData")
-                print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
                 
                 // Log per-bridge event counts
                 let bridgeGroups = Dictionary(grouping: fetchedEvents, by: \.entityName)
+                print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
                 for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
                     print("🏠 [MAIN]    • \(bridgeName): \(bridgeEvents.count) events")
                 }
                 
                 // Update bridge info
-                print("🏠 [MAIN] Updating bridge info...")
+                print("🏠 [MAIN] Creating bridge info...")
                 updateBridgeInfo(from: fetchedEvents)
                 
                 do {
@@ -153,15 +170,15 @@ struct ContentViewModular: View {
                 initialDataLoaded = true
                 isLoadingInitialData = false
                 
-                print("🏠 [MAIN] ✅ INITIAL DATA LOAD COMPLETE")
+                print("🏠 [MAIN] ✅ DATA LOAD COMPLETE")
                 print("🏠 [MAIN] 🎯 FINAL STATS: \(fetchedEvents.count) total events across \(bridgeGroups.count) bridges")
             }
         } catch {
-            print("❌ [MAIN ERROR] Initial data load failed: \(error)")
+            print("❌ [MAIN ERROR] Data load failed: \(error)")
             await MainActor.run {
                 dataFetchError = error.localizedDescription
                 isLoadingInitialData = false
-                initialDataLoaded = true // Don't keep trying
+                initialDataLoaded = false // Don't block future attempts
             }
         }
     }
@@ -212,6 +229,12 @@ struct ContentViewModular: View {
         }
         
         print("🏗️ [BRIDGE INFO] ✅ Bridge info update complete - Created: \(createdCount), Updated: \(updatedCount)")
+    }
+    
+    public func forceDataRefresh() async {
+        print("🏠 [MAIN] 🔄 Force refresh initiated")
+        initialDataLoaded = false
+        await loadInitialDataIfNeeded()
     }
 }
 

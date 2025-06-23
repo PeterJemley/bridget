@@ -7,6 +7,7 @@
 
 import SwiftUI
 import BridgetCore
+import BridgetBridgeDetail
 
 public struct LastKnownStatusSection: View {
     public let events: [DrawbridgeEvent]
@@ -20,10 +21,10 @@ public struct LastKnownStatusSection: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Last Known Status")
+                Text("Recently Active Bridges")
                     .font(.headline)
                 Spacer()
-                Text("Historical Data")
+                Text("Last 24H")
                     .font(.caption)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
@@ -32,23 +33,59 @@ public struct LastKnownStatusSection: View {
                     .cornerRadius(8)
             }
             
-            if events.isEmpty {
-                Text("No bridge data available")
+            if recentlyActiveBridges.isEmpty {
+                Text("No recent bridge activity")
                     .foregroundColor(.secondary)
                     .italic()
                     .padding()
             } else {
-                ForEach(events) { event in
-                    NavigationLink(destination: BridgeDetailPlaceholderView(event: event)) {
-                        BridgeHistoricalStatusRow(event: event)
+                ForEach(recentlyActiveBridges.prefix(3), id: \.entityID) { bridgeInfo in
+                    NavigationLink(destination: BridgeDetailView(
+                        bridgeEvent: getMostRecentEvent(for: bridgeInfo.entityID)
+                    )) {
+                        BridgeHistoricalStatusRow(event: getMostRecentEvent(for: bridgeInfo.entityID))
                     }
                     .buttonStyle(PlainButtonStyle())
+                }
+                
+                if recentlyActiveBridges.count > 3 {
+                    NavigationLink("View All Bridges") {
+                        // This will navigate to the Bridges tab content
+                        Text("All Bridges View")
+                    }
+                    .font(.caption)
+                    .foregroundColor(.blue)
                 }
             }
         }
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+    }
+    
+    // MARK: - Helper Methods
+    
+    private var recentlyActiveBridges: [DrawbridgeInfo] {
+        let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+        let recentEvents = events.filter { $0.openDateTime >= oneDayAgo }
+        let recentBridgeIDs = Set(recentEvents.map(\.entityID))
+        
+        return bridgeInfo.filter { recentBridgeIDs.contains($0.entityID) }
+            .sorted { bridge1, bridge2 in
+                let events1 = recentEvents.filter { $0.entityID == bridge1.entityID }
+                let events2 = recentEvents.filter { $0.entityID == bridge2.entityID }
+                
+                // Sort by most recent activity
+                let mostRecent1 = events1.map(\.openDateTime).max() ?? Date.distantPast
+                let mostRecent2 = events2.map(\.openDateTime).max() ?? Date.distantPast
+                
+                return mostRecent1 > mostRecent2
+            }
+    }
+    
+    private func getMostRecentEvent(for entityID: Int) -> DrawbridgeEvent {
+        let bridgeEvents = events.filter { $0.entityID == entityID }
+        return bridgeEvents.max { $0.openDateTime < $1.openDateTime } ?? bridgeEvents.first!
     }
 }
 

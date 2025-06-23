@@ -15,7 +15,6 @@ let package = Package(
     ],
     dependencies: [
         .package(path: "../BridgetCore"),
-        .package(path: "../BridgetNetworking"),
         .package(path: "../BridgetSharedUI"),
         .package(path: "../BridgetBridgeDetail")
     ],
@@ -24,8 +23,7 @@ let package = Package(
             name: "BridgetDashboard",
             dependencies: [
                 "BridgetCore",
-                "BridgetNetworking", 
-                "BridgetSharedUI",
+                "BridgetSharedUI", 
                 "BridgetBridgeDetail"
             ]),
         .testTarget(

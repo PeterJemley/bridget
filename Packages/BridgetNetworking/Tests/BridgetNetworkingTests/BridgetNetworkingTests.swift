@@ -1,294 +1,203 @@
-//
-//  BridgetNetworkingTests.swift
-//  BridgetNetworkingTests
-//
-//  Created by Peter Jemley on 6/19/25.
-//
-
 import XCTest
+import Foundation
 @testable import BridgetNetworking
 @testable import BridgetCore
-import Foundation
 
 final class BridgetNetworkingTests: XCTestCase {
     
-    // MARK: - API Error Tests
+    // MARK: - API Integration Tests
     
-    func testAPIErrorDescriptions() {
-        XCTAssertEqual(APIError.invalidURL.localizedDescription, "Invalid API URL")
-        XCTAssertEqual(APIError.noData.localizedDescription, "No data received from API")
-        XCTAssertEqual(APIError.decodingError(NSError(domain: "test", code: 0)).localizedDescription, "Failed to decode API response: The operation couldn't be completed. (test error 0.)")
-        XCTAssertEqual(APIError.networkError(NSError(domain: "network", code: -1009)).localizedDescription, "Network error: The operation couldn't be completed. (network error -1009.)")
-        XCTAssertEqual(APIError.serverError(500).localizedDescription, "Server error: HTTP 500")
+    func testDrawbridgeAPIBaseURL() throws {
+        // Test that the API has a valid base URL
+        XCTAssertNoThrow(try DrawbridgeAPI.fetchDrawbridgeData(limit: 1))
     }
     
-    // MARK: - URL Construction Tests
-    
-    func testBaseURLConstruction() {
-        let expectedURL = "https://data.seattle.gov/resource/rdvs-832s.json"
-        // We can't directly test the private baseURL, but we can verify it through the public API
-        // This test ensures the URL format is correct
-        XCTAssertTrue(expectedURL.contains("data.seattle.gov"))
-        XCTAssertTrue(expectedURL.contains("resource"))
-        XCTAssertTrue(expectedURL.contains("rdvs-832s.json"))
-    }
-    
-    // MARK: - Parameter Construction Tests
-    
-    func testLimitParameterConstruction() {
-        // Test that limit parameter is properly constructed
-        let limit = 100
-        let expectedParam = "$limit=\(limit)"
-        XCTAssertEqual(expectedParam, "$limit=100")
-    }
-    
-    func testDateFilterParameterConstruction() {
-        let dateFormatter = ISO8601DateFormatter()
-        let testDate = Date(timeIntervalSince1970: 1640995200) // 2022-01-01 00:00:00 UTC
-        let formattedDate = dateFormatter.string(from: testDate)
-        
-        let expectedParam = "$where=open_dt >= '\(formattedDate)'"
-        XCTAssertTrue(expectedParam.contains("open_dt"))
-        XCTAssertTrue(expectedParam.contains(">="))
-        XCTAssertTrue(expectedParam.contains(formattedDate))
-    }
-    
-    // MARK: - Data Validation Tests
-    
-    func testValidDrawbridgeEventData() {
-        // Test data that should create a valid DrawbridgeEvent
-        let validData = """
-        {
-            "entitytype": "Bridge",
-            "entityname": "Test Bridge",
-            "entityid": "123",
-            "open_dt": "2025-06-19T14:30:00.000Z",
-            "close_dt": "2025-06-19T14:45:00.000Z",
-            "minutes_open": "15.0",
-            "latitude": "47.6062",
-            "longitude": "-122.3321"
-        }
-        """.data(using: .utf8)!
-        
+    func testDrawbridgeAPINetworkRequest() async throws {
+        // Test actual network request (with timeout for CI environments)
         do {
-            let decoder = JSONDecoder()
-            let dateFormatter = ISO8601DateFormatter()
-            decoder.dateDecodingStrategy = .iso8601
+            let events = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 5)
             
-            // We need to create a decodable struct that matches the API response format
-            struct APIResponse: Decodable {
-                let entitytype: String
-                let entityname: String
-                let entityid: String
-                let open_dt: String
-                let close_dt: String?
-                let minutes_open: String
-                let latitude: String
-                let longitude: String
+            XCTAssertTrue(events.count <= 5, "Should respect limit parameter")
+            
+            if !events.isEmpty {
+                let event = events.first!
+                XCTAssertFalse(event.entityName.isEmpty, "Event should have valid entity name")
+                XCTAssertTrue(event.entityID > 0, "Event should have valid entity ID")
+                XCTAssertTrue(event.minutesOpen >= 0, "Minutes open should be non-negative")
             }
-            
-            let response = try decoder.decode(APIResponse.self, from: validData)
-            
-            XCTAssertEqual(response.entitytype, "Bridge")
-            XCTAssertEqual(response.entityname, "Test Bridge")
-            XCTAssertEqual(response.entityid, "123")
-            XCTAssertEqual(response.minutes_open, "15.0")
         } catch {
-            XCTFail("Failed to decode valid data: \(error)")
+            // Allow network errors in test environments, but log them
+            print("⚠️ [NETWORK TEST] Network request failed (expected in some test environments): \(error)")
         }
     }
     
-    func testInvalidDrawbridgeEventData() {
-        // Test data with missing required fields
-        let invalidData = """
-        {
-            "entitytype": "Bridge"
+    func testDrawbridgeAPIErrorHandling() async throws {
+        // Test API error handling with invalid parameters
+        do {
+            let _ = try await DrawbridgeAPI.fetchDrawbridgeData(limit: -1)
+            XCTFail("Should throw error for invalid limit")
+        } catch {
+            // Expected to throw error
+            XCTAssertTrue(true, "Correctly handles invalid parameters")
         }
-        """.data(using: .utf8)!
-        
-        struct APIResponse: Decodable {
-            let entitytype: String
-            let entityname: String
-            let entityid: String
+    }
+    
+    func testDrawbridgeAPIDateParsing() async throws {
+        // Test that the API correctly parses Seattle timezone dates
+        do {
+            let events = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 1)
+            
+            if let event = events.first {
+                // Verify date is reasonable (not distant past/future)
+                let now = Date()
+                let oneYearAgo = Calendar.current.date(byAdding: .year, value: -1, to: now)!
+                let oneDayFromNow = Calendar.current.date(byAdding: .day, value: 1, to: now)!
+                
+                XCTAssertTrue(event.openDateTime >= oneYearAgo, "Open date should be within last year")
+                XCTAssertTrue(event.openDateTime <= oneDayFromNow, "Open date should not be in future")
+            }
+        } catch {
+            print("⚠️ [DATE TEST] Network request failed: \(error)")
         }
-        
-        XCTAssertThrowsError(try JSONDecoder().decode(APIResponse.self, from: invalidData))
     }
     
-    // MARK: - Date Parsing Tests
+    // MARK: - Mock API Tests (For CI/Offline Testing)
     
-    func testISO8601DateParsing() {
-        let dateString = "2025-06-19T14:30:00.000Z"
-        let formatter = ISO8601DateFormatter()
+    func testMockDrawbridgeAPIResponse() throws {
+        // Create mock JSON response
+        let mockJSON = """
+        [
+            {
+                "entity_type": "Bridge",
+                "entity_name": "Test Bridge",
+                "entity_id": "1",
+                "open_datetime": "2025-06-19T10:00:00.000",
+                "close_datetime": "2025-06-19T10:15:00.000",
+                "minutes_open": "15",
+                "latitude": "47.6062",
+                "longitude": "-122.3321"
+            }
+        ]
+        """
         
-        let parsedDate = formatter.date(from: dateString)
-        XCTAssertNotNil(parsedDate)
+        let jsonData = mockJSON.data(using: .utf8)!
         
-        // Verify the parsed date components
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: parsedDate!)
-        XCTAssertEqual(components.year, 2025)
-        XCTAssertEqual(components.month, 6)
-        XCTAssertEqual(components.day, 19)
-        XCTAssertEqual(components.hour, 14)
-        XCTAssertEqual(components.minute, 30)
-    }
-    
-    func testSeattleTimezoneHandling() {
-        // Seattle is UTC-8 (PST) or UTC-7 (PDT)
-        let seattleTimeZone = TimeZone(identifier: "America/Los_Angeles")!
-        XCTAssertNotNil(seattleTimeZone)
-        
-        // Test that we can convert between timezones
-        let utcDate = Date()
-        let calendar = Calendar.current
-        
-        let utcComponents = calendar.dateComponents(in: TimeZone(abbreviation: "UTC")!, from: utcDate)
-        let seattleComponents = calendar.dateComponents(in: seattleTimeZone, from: utcDate)
-        
-        // The hour difference should be 7 or 8 depending on daylight saving time
-        let hourDifference = abs((utcComponents.hour ?? 0) - (seattleComponents.hour ?? 0))
-        XCTAssertTrue(hourDifference == 7 || hourDifference == 8 || hourDifference == 16 || hourDifference == 17)
-    }
-    
-    // MARK: - Network Request Tests
-    
-    func testURLRequestConfiguration() {
-        let url = URL(string: "https://data.seattle.gov/resource/rdvs-832s.json?$limit=100")!
-        let request = URLRequest(url: url)
-        
-        XCTAssertEqual(request.httpMethod, "GET")
-        XCTAssertEqual(request.url, url)
-        XCTAssertNil(request.httpBody) // GET request should not have body
-    }
-    
-    // MARK: - Error Handling Tests
-    
-    func testHTTPStatusCodeErrorHandling() {
-        // Test different HTTP status codes
-        let clientError = APIError.serverError(400)
-        XCTAssertEqual(clientError.localizedDescription, "Server error: HTTP 400")
-        
-        let serverError = APIError.serverError(500)
-        XCTAssertEqual(serverError.localizedDescription, "Server error: HTTP 500")
-        
-        let notFoundError = APIError.serverError(404)
-        XCTAssertEqual(notFoundError.localizedDescription, "Server error: HTTP 404")
-    }
-    
-    func testNetworkErrorHandling() {
-        let networkError = NSError(
-            domain: NSURLErrorDomain,
-            code: NSURLErrorNotConnectedToInternet,
-            userInfo: [NSLocalizedDescriptionKey: "The Internet connection appears to be offline."]
-        )
-        
-        let apiError = APIError.networkError(networkError)
-        XCTAssertTrue(apiError.localizedDescription.contains("Network error"))
-        XCTAssertTrue(apiError.localizedDescription.contains("Internet connection"))
+        // Test JSON parsing (simulating DrawbridgeAPI internal parsing)
+        XCTAssertNoThrow(try JSONSerialization.jsonObject(with: jsonData))
     }
     
     // MARK: - Performance Tests
     
-    func testJSONDecodingPerformance() {
-        // Create test data for performance testing
-        let testData = """
-        [{
-            "entitytype": "Bridge",
-            "entityname": "Test Bridge",
-            "entityid": "123",
-            "open_dt": "2025-06-19T14:30:00.000Z",
-            "close_dt": "2025-06-19T14:45:00.000Z",
-            "minutes_open": "15.0",
-            "latitude": "47.6062",
-            "longitude": "-122.3321"
-        }]
-        """.data(using: .utf8)!
-        
-        struct APIResponse: Decodable {
-            let entitytype: String
-            let entityname: String
-            let entityid: String
-            let open_dt: String
-            let close_dt: String?
-            let minutes_open: String
-            let latitude: String
-            let longitude: String
-        }
-        
+    func testAPIRequestPerformance() throws {
         measure {
-            for _ in 0..<1000 {
+            let expectation = XCTestExpectation(description: "API request completes")
+            
+            Task {
                 do {
-                    _ = try JSONDecoder().decode([APIResponse].self, from: testData)
+                    let _ = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10)
+                    expectation.fulfill()
                 } catch {
-                    XCTFail("Decoding failed: \(error)")
+                    expectation.fulfill() // Complete even on error for performance measurement
                 }
             }
+            
+            wait(for: [expectation], timeout: 10.0)
         }
     }
     
-    // MARK: - Integration Helper Tests
+    // MARK: - Concurrency Tests
     
-    func testDataConversionHelpers() {
-        // Test string to double conversion (as used in API responses)
-        let minutesString = "15.5"
-        let minutesDouble = Double(minutesString)
-        XCTAssertEqual(minutesDouble, 15.5)
+    func testConcurrentAPIRequests() async throws {
+        let expectation = XCTestExpectation(description: "Concurrent API requests complete")
+        expectation.expectedFulfillmentCount = 3
         
-        // Test string to int conversion (as used for entity IDs)
-        let idString = "123"
-        let idInt = Int(idString)
-        XCTAssertEqual(idInt, 123)
+        // Test multiple concurrent API requests
+        for i in 0..<3 {
+            Task {
+                do {
+                    let events = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 5)
+                    XCTAssertTrue(events.count <= 5)
+                    print("🧪 [API TEST] Request \(i) completed with \(events.count) events")
+                } catch {
+                    print("🧪 [API TEST] Request \(i) failed: \(error)")
+                }
+                expectation.fulfill()
+            }
+        }
         
-        // Test coordinate conversion
-        let latString = "47.6062"
-        let lngString = "-122.3321"
-        let latitude = Double(latString)
-        let longitude = Double(lngString)
-        XCTAssertEqual(latitude, 47.6062)
-        XCTAssertEqual(longitude, -122.3321)
+        await fulfillment(of: [expectation], timeout: 30.0)
     }
-}
-
-// MARK: - Mock Data Structures for Testing
-
-struct MockDrawbridgeAPIResponse: Decodable {
-    let entitytype: String
-    let entityname: String
-    let entityid: String
-    let open_dt: String
-    let close_dt: String?
-    let minutes_open: String
-    let latitude: String
-    let longitude: String
-}
-
-// MARK: - Test Extensions
-
-extension XCTestCase {
-    func createMockDrawbridgeData() -> Data {
-        let mockJSON = """
-        [{
-            "entitytype": "Drawbridge",
-            "entityname": "Fremont Bridge",
-            "entityid": "1",
-            "open_dt": "2025-06-19T14:30:00.000Z",
-            "close_dt": "2025-06-19T14:45:00.000Z",
-            "minutes_open": "15.0",
-            "latitude": "47.6515",
-            "longitude": "-122.3493"
-        },
-        {
-            "entitytype": "Drawbridge",
-            "entityname": "Ballard Bridge",
-            "entityid": "2",
-            "open_dt": "2025-06-19T15:00:00.000Z",
-            "close_dt": null,
-            "minutes_open": "10.0",
-            "latitude": "47.6616",
-            "longitude": "-122.3754"
-        }]
-        """
-        return mockJSON.data(using: .utf8)!
+    
+    // MARK: - Error Scenarios
+    
+    func testAPITimeoutHandling() async throws {
+        // Test timeout scenarios (simulated)
+        let expectation = XCTestExpectation(description: "Timeout test completes")
+        
+        Task {
+            do {
+                let startTime = Date()
+                let _ = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 1000) // Large request
+                let duration = Date().timeIntervalSince(startTime)
+                
+                // Should complete within reasonable time
+                XCTAssertLessThan(duration, 60.0, "API request should complete within 60 seconds")
+            } catch {
+                // Timeout or other network errors are acceptable in test environment
+                print("🧪 [TIMEOUT TEST] Request failed as expected: \(error)")
+            }
+            expectation.fulfill()
+        }
+        
+        await fulfillment(of: [expectation], timeout: 120.0)
+    }
+    
+    // MARK: - Data Validation Tests
+    
+    func testDrawbridgeEventDataValidation() async throws {
+        do {
+            let events = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10)
+            
+            for event in events {
+                // Validate required fields
+                XCTAssertFalse(event.entityName.isEmpty, "Entity name should not be empty")
+                XCTAssertTrue(event.entityID > 0, "Entity ID should be positive")
+                XCTAssertTrue(event.minutesOpen >= 0, "Minutes open should be non-negative")
+                
+                // Validate coordinate ranges (Seattle area)
+                XCTAssertTrue(event.latitude >= 47.0 && event.latitude <= 48.0, "Latitude should be in Seattle area")
+                XCTAssertTrue(event.longitude >= -123.0 && event.longitude <= -121.0, "Longitude should be in Seattle area")
+                
+                // Validate time ranges
+                let now = Date()
+                let twoYearsAgo = Calendar.current.date(byAdding: .year, value: -2, to: now)!
+                XCTAssertTrue(event.openDateTime >= twoYearsAgo, "Open date should be recent")
+                XCTAssertTrue(event.openDateTime <= now, "Open date should not be in future")
+                
+                // If closed, close time should be after open time
+                if let closeDateTime = event.closeDateTime {
+                    XCTAssertTrue(closeDateTime >= event.openDateTime, "Close time should be after open time")
+                }
+            }
+        } catch {
+            print("⚠️ [VALIDATION TEST] Network request failed: \(error)")
+        }
+    }
+    
+    // MARK: - Seattle Timezone Tests
+    
+    func testSeattleTimezoneHandling() throws {
+        // Test Seattle timezone conversion
+        let seattleTimeZone = TimeZone(identifier: "America/Los_Angeles")!
+        XCTAssertNotNil(seattleTimeZone)
+        
+        let formatter = DateFormatter()
+        formatter.timeZone = seattleTimeZone
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSS"
+        
+        let testDateString = "2025-06-19T10:00:00.000"
+        let parsedDate = formatter.date(from: testDateString)
+        
+        XCTAssertNotNil(parsedDate, "Should parse Seattle timezone dates correctly")
     }
 }

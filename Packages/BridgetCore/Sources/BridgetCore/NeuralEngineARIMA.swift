@@ -171,10 +171,14 @@ public class NeuralEngineARIMAPredictor {
         let startTime = Date()
         var predictions: [NeuralARIMAPrediction] = []
         
+        // OPTIMIZATION: Limit bridges to prevent hanging with large datasets
         let uniqueBridgeIDs = Array(Set(events.map { $0.entityID }))
-        print("🧠 [Neural ARIMA] Processing \(uniqueBridgeIDs.count) bridges with \(events.count) events")
+        let maxBridges = events.count > 3000 ? 3 : 5 // Limit to 3 bridges for large datasets
+        let limitedBridgeIDs = Array(uniqueBridgeIDs.prefix(maxBridges))
         
-        for (index, bridgeID) in uniqueBridgeIDs.enumerated() {
+        print("🧠 [Neural ARIMA] Processing \(limitedBridgeIDs.count) bridges (limited from \(uniqueBridgeIDs.count)) with \(events.count) events")
+        
+        for (index, bridgeID) in limitedBridgeIDs.enumerated() {
             let bridgeStartTime = Date()
             
             if let prediction = generateBridgePrediction(
