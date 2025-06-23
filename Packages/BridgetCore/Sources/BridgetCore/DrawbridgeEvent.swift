@@ -8,6 +8,7 @@
 import Foundation
 import SwiftData
 import CoreLocation
+import SwiftUI
 
 @Model
 public final class DrawbridgeEvent {
@@ -46,6 +47,48 @@ public final class DrawbridgeEvent {
         return formatter.localizedString(for: openDateTime, relativeTo: Date())
     }
     
+    // Smart traffic impact classification (replaces "Moderate" everywhere)
+    public var trafficImpact: TrafficImpact {
+        let calendar = Calendar.current
+        let hour = calendar.component(.hour, from: openDateTime)
+        let weekday = calendar.component(.weekday, from: openDateTime)
+        let isWeekend = weekday == 1 || weekday == 7
+        let isRushHour = !isWeekend && ((hour >= 7 && hour <= 9) || (hour >= 16 && hour <= 18))
+        
+        // Smart impact calculation based on duration, time, and bridge type
+        switch minutesOpen {
+        case 0..<5:
+            return isRushHour ? .low : .minimal
+        case 5..<15:
+            if isRushHour {
+                return entityName.lowercased().contains("fremont") ? .high : .moderate
+            } else {
+                return .low
+            }
+        case 15..<30:
+            if isRushHour {
+                return .high
+            } else {
+                return entityName.lowercased().contains("fremont") ? .moderate : .low
+            }
+        case 30..<60:
+            return isRushHour ? .severe : .high
+        default:
+            return .severe
+        }
+    }
+
+    // Impact severity for UI display with variety
+    public var impactSeverity: ImpactSeverity {
+        switch trafficImpact {
+        case .minimal: return ImpactSeverity(level: "Minimal", color: .green, systemImage: "checkmark.circle")
+        case .low: return ImpactSeverity(level: "Low", color: .blue, systemImage: "info.circle")
+        case .moderate: return ImpactSeverity(level: "Moderate", color: .orange, systemImage: "exclamationmark.triangle")
+        case .high: return ImpactSeverity(level: "High", color: .red, systemImage: "exclamationmark.triangle.fill")
+        case .severe: return ImpactSeverity(level: "Severe", color: .purple, systemImage: "xmark.octagon.fill")
+        }
+    }
+    
     public init(
         entityType: String,
         entityName: String,
@@ -65,6 +108,27 @@ public final class DrawbridgeEvent {
         self.minutesOpen = minutesOpen
         self.latitude = latitude
         self.longitude = longitude
+    }
+}
+
+// Traffic impact enums and supporting types
+public enum TrafficImpact: String, CaseIterable {
+    case minimal = "Minimal"
+    case low = "Low"
+    case moderate = "Moderate"
+    case high = "High"
+    case severe = "Severe"
+}
+
+public struct ImpactSeverity {
+    public let level: String
+    public let color: Color
+    public let systemImage: String
+    
+    public init(level: String, color: Color, systemImage: String) {
+        self.level = level
+        self.color = color
+        self.systemImage = systemImage
     }
 }
 

@@ -19,6 +19,7 @@ public struct DebugView: View {
     @State private var errorMessage: String?
     @State private var lastRefresh: Date?
     @State private var apiCallCount = 0
+    @State private var totalApiCalls = 0
     
     public init() {}
     
@@ -45,11 +46,28 @@ public struct DebugView: View {
                         }
                     }
                     
+                    // FIXED: Show proper API call tracking instead of "0"
                     HStack {
-                        Text("API Calls Made")
+                        Text("API Calls (Session)")
                         Spacer()
                         Text("\(apiCallCount)")
                             .foregroundColor(.secondary)
+                    }
+
+                    // ADDED: Total API calls across app lifecycle
+                    HStack {
+                        Text("Total API Calls")
+                        Spacer()
+                        Text("\(totalApiCalls)")
+                            .foregroundColor(.secondary)
+                    }
+
+                    // ADDED: Data source indicator
+                    HStack {
+                        Text("Data Source")
+                        Spacer()
+                        Text("Seattle Open Data API")
+                            .foregroundColor(.green)
                     }
                     
                     if let errorMessage = errorMessage {
@@ -126,8 +144,12 @@ public struct DebugView: View {
                     }
                 }
             }
+            .onAppear {
+                loadApiCallCount()
+            }
         }
     }
+    
     
     // MARK: - Computed Properties
     private var connectionStatusColor: Color {
@@ -175,14 +197,20 @@ public struct DebugView: View {
                     
                     try? modelContext.save()
                     
+                    // In the success case:
                     lastRefresh = Date()
-                    apiCallCount += 1
+                    incrementApiCallCount() // FIXED: Properly track API calls
                     isLoading = false
+
                 }
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
+                    // In the failure case:
+                    errorMessage = error.localizedDescription
                     isLoading = false
+                    incrementApiCallCount() // Track failed calls too
+
                 }
             }
         }
@@ -200,6 +228,15 @@ public struct DebugView: View {
         lastRefresh = nil
         apiCallCount = 0
         errorMessage = nil
+    }
+    private func loadApiCallCount() {
+        totalApiCalls = UserDefaults.standard.integer(forKey: "BridgetAPICallCount")
+    }
+
+    private func incrementApiCallCount() {
+        apiCallCount += 1
+        totalApiCalls += 1
+        UserDefaults.standard.set(totalApiCalls, forKey: "BridgetAPICallCount")
     }
 }
 

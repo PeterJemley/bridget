@@ -21,60 +21,59 @@ public struct StatisticsView: View {
 
     @State private var isCalculating = false
     @State private var showingARIMADetails = false
+    @State private var neuralEngineStatus = "Ready"
 
     public init() {}
+    
+    private func updateNeuralEngineStatus() {
+        let neuralGeneration = NeuralEngineManager.detectNeuralEngineGeneration()
+        neuralEngineStatus = "\(neuralGeneration.rawValue) (\(neuralGeneration.coreCount) cores)"
+    }
 
     public var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
-                    // Header
-                    VStack(spacing: 8) {
-                        HStack {
-                            Image(systemName: "chart.line.uptrend.xyaxis")
-                                .font(.title2)
-                                .foregroundColor(.blue)
-                            
-                            Text("Predictions")
-                                .font(.title2)
-                                .fontWeight(.semibold)
-                        }
+                VStack(spacing: 8) {
+                    HStack {
+                        Image(systemName: "chart.line.uptrend.xyaxis")
+                            .font(.title2)
+                            .foregroundColor(.blue)
                         
-                        Text("AI-powered bridge opening predictions")
+                        Text("Analytics & Predictions")
+                            .font(.title2)
+                            .fontWeight(.semibold)
+                    }
+                    
+                    Text("AI-powered bridge opening predictions")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                    
+                    // FIXED: Show actual Neural Engine status instead of "integration in progress..."
+                    HStack {
+                        Image(systemName: "cpu")
+                            .foregroundColor(.green)
+                        Text("Neural Engine: \(neuralEngineStatus)")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
-                        HStack {
-                            Image(systemName: "database")
-                                .foregroundColor(.green)
-                            Text("Dataset: \(events.count) total events across \(Set(events.map(\.entityID)).count) bridges")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
                     }
-                    .padding(.horizontal)
-
-                    // Current Predictions (Safe Implementation)
-                    if !analytics.isEmpty {
-                        currentPredictionsSection
-                    } else if !isCalculating {
-                        // Calculate analytics if none exist
-                        Button("Generate Predictions") {
-                            calculateAnalytics()
-                        }
-                        .buttonStyle(.borderedProminent)
-                        .padding()
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
+                    
+                    HStack {
+                        Image(systemName: "database")
+                            .foregroundColor(.green)
+                        Text("Dataset: \(events.count) total events across \(Set(events.map(\.entityID)).count) bridges")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
                     }
-
-                    if isCalculating {
-                        ProgressView("Calculating analytics...")
-                            .padding()
-                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 6)
+                    .background(Color(.systemGray6))
+                    .cornerRadius(8)
                 }
+                .padding(.horizontal)
                 .padding()
             }
             .navigationTitle("Statistics")
@@ -84,6 +83,13 @@ public struct StatisticsView: View {
                 if analytics.isEmpty && !events.isEmpty && !isCalculating {
                     calculateAnalytics()
                 }
+            }
+        }
+        .onAppear {
+            print("⚙️ [STATS] StatisticsView Appeared – events.count = \(events.count)")
+            updateNeuralEngineStatus() // ADDED: Update status on appear
+            if analytics.isEmpty && !events.isEmpty && !isCalculating {
+                calculateAnalytics()
             }
         }
     }

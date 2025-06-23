@@ -18,63 +18,66 @@ public struct BridgeHistoricalStatusRow: View {
     }
     
     public var body: some View {
-        HStack(spacing: 12) {
-            // Bridge Status Icon
-            Circle()
-                .fill(statusColor)
-                .frame(width: 12, height: 12)
+        HStack {
+            Text(event.entityName)
+                .font(.subheadline)
+                .fontWeight(.medium)
             
-            VStack(alignment: .leading, spacing: 4) {
-                HStack {
-                    Text(event.entityName)
-                        .font(.subheadline)
-                        .fontWeight(.medium)
-                    
-                    Spacer()
-                    
-                    // Prediction Display
-                    if isCalculatingPrediction {
-                        HStack(spacing: 4) {
-                            ProgressView()
-                                .scaleEffect(0.6)
-                            Text("Calculating...")
-                                .font(.caption2)
-                                .foregroundColor(.secondary)
-                        }
-                    } else if let prediction = prediction {
-                        Text(prediction.probabilityText)
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                            .padding(.horizontal, 6)
-                            .padding(.vertical, 2)
-                            .background(predictionColor.opacity(0.2))
-                            .foregroundColor(predictionColor)
-                            .cornerRadius(4)
-                    } else {
-                        Text("No Prediction")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                }
+            Spacer()
+            
+            // FIXED: Show smart impact level instead of repetitive "Moderate"
+            HStack(spacing: 4) {
+                Image(systemName: event.impactSeverity.systemImage)
+                    .font(.caption2)
+                    .foregroundColor(event.impactSeverity.color)
                 
-                HStack {
-                    Text(statusText)
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(statusColor)
-                    
-                    Spacer()
-                    
-                    Text(event.relativeTimeText)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text(event.impactSeverity.level)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .padding(.horizontal, 6)
+                    .padding(.vertical, 2)
+                    .background(event.impactSeverity.color.opacity(0.15))
+                    .foregroundColor(event.impactSeverity.color)
+                    .cornerRadius(4)
             }
+        }
+
+        HStack {
+            Text(statusText)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(statusColor)
             
-            // Navigation Arrow
-            Image(systemName: "chevron.right")
+            Spacer()
+            
+            Text(event.relativeTimeText)
                 .font(.caption)
                 .foregroundColor(.secondary)
+        }
+
+        // IMPROVED: Duration and prediction info
+        HStack {
+            Text("Duration: \(String(format: "%.0f", event.minutesOpen)) min")
+                .font(.caption2)
+                .foregroundColor(.secondary)
+            
+            Spacer()
+            
+            // Prediction Display
+            if isCalculatingPrediction {
+                HStack(spacing: 4) {
+                    ProgressView()
+                        .scaleEffect(0.5)
+                    Text("Calculating...")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+            } else if let prediction = prediction {
+                Text("Next: \(prediction.probabilityText)")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(predictionColor)
+            }
         }
         .padding(.vertical, 8)
         .onAppear {
