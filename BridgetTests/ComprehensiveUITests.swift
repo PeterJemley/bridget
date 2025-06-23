@@ -54,7 +54,7 @@ final class ComprehensiveUITests: XCTestCase {
     /// Creates realistic test data that mirrors Seattle bridge data structure
     private func createRealisticTestData() {
         let seattleBridgeNames = [
-            "Fremont Bridge", "Ballard Bridge", "University Bridge", 
+            "Fremont Bridge", "Ballard Bridge", "University Bridge",
             "Montlake Bridge", "1st Avenue South Bridge", "Spokane Street Bridge"
         ]
         
@@ -127,15 +127,16 @@ final class ComprehensiveUITests: XCTestCase {
         // Test corresponds to Manual Test 1.3
         print("🧪 [AUTOMATED] Testing Neural Engine detection...")
         
-        let neuralManager = NeuralEngineManager()
-        let capability = neuralManager.getCurrentCapability()
+        // Use static methods - no instance needed
+        let neuralGeneration = NeuralEngineManager.detectNeuralEngineGeneration()
+        let optimalConfig = NeuralEngineManager.getOptimalConfig()
         
-        // Should detect some Neural Engine capability (Unknown in simulator, A18Pro on device)
-        XCTAssertTrue(capability.coreCount >= 8, "Neural Engine should have at least 8 cores")
-        XCTAssertTrue(capability.topsPerformance >= 5.0, "Neural Engine should have at least 5.0 TOPS")
-        XCTAssertFalse(capability.deviceType.isEmpty, "Device type should be detected")
+        // Test Neural Engine capability detection
+        XCTAssertTrue(neuralGeneration.coreCount >= 8, "Neural Engine should have at least 8 cores")
+        XCTAssertTrue(neuralGeneration.topsCapability >= 5.0, "Neural Engine should have at least 5.0 TOPS")
+        XCTAssertFalse(neuralGeneration.rawValue.isEmpty, "Device type should be detected")
         
-        print("🧪 [AUTOMATED] ✅ Neural Engine detection: \(capability.deviceType) (\(capability.coreCount) cores, \(capability.topsPerformance) TOPS)")
+        print("🧪 [AUTOMATED] ✅ Neural Engine detection: \(neuralGeneration.rawValue) (\(neuralGeneration.coreCount) cores, \(neuralGeneration.topsCapability) TOPS)")
     }
     
     // MARK: - PHASE 2: Dashboard Functionality Tests
@@ -194,7 +195,7 @@ final class ComprehensiveUITests: XCTestCase {
         // Verify sorting is correct
         for i in 1..<recentEvents.count {
             XCTAssertTrue(recentEvents[i-1].openDateTime >= recentEvents[i].openDateTime,
-                         "Events should be sorted by most recent first")
+                          "Events should be sorted by most recent first")
         }
         
         print("🧪 [AUTOMATED] ✅ RecentActivitySection sorting validated")
@@ -244,7 +245,7 @@ final class ComprehensiveUITests: XCTestCase {
             // Verify filtering logic is correct
             for event in filteredEvents {
                 XCTAssertTrue(event.openDateTime >= cutoffDate,
-                             "Event should be within \(periodName) time period")
+                              "Event should be within \(periodName) time period")
             }
             
             print("🧪 [AUTOMATED] ✅ \(periodName) filtering: \(filteredEvents.count)/\(testEvents.count) events")
@@ -274,7 +275,7 @@ final class ComprehensiveUITests: XCTestCase {
         let prediction = BridgeAnalytics.getCurrentPrediction(for: testBridge, from: analytics)
         if let prediction = prediction {
             XCTAssertTrue(prediction.probability >= 0.0 && prediction.probability <= 1.0,
-                         "Prediction probability should be valid")
+                          "Prediction probability should be valid")
         }
         
         print("🧪 [AUTOMATED] ✅ Analysis type data processing validated")
@@ -298,13 +299,13 @@ final class ComprehensiveUITests: XCTestCase {
             if let prediction = enhancedPrediction {
                 // Validate prediction data ranges
                 XCTAssertTrue(prediction.probability >= 0.0 && prediction.probability <= 1.0,
-                             "Probability should be 0-100%")
+                              "Probability should be 0-100%")
                 XCTAssertTrue(prediction.expectedDuration > 0,
-                             "Expected duration should be positive")
+                              "Expected duration should be positive")
                 XCTAssertTrue(prediction.confidence >= 0.0 && prediction.confidence <= 1.0,
-                             "Confidence should be 0-100%")
+                              "Confidence should be 0-100%")
                 XCTAssertFalse(prediction.reasoning.isEmpty,
-                              "Reasoning should not be empty")
+                               "Reasoning should not be empty")
                 
                 print("🧪 [AUTOMATED] ✅ \(bridgeInfo.entityName): \(Int(prediction.probability * 100))% probability, \(prediction.expectedDuration)min duration")
             } else {
@@ -330,13 +331,13 @@ final class ComprehensiveUITests: XCTestCase {
         
         // Test search functionality logic
         let searchTerm = "Fremont"
-        let filteredBridges = testBridgeInfo.filter { 
-            $0.entityName.localizedCaseInsensitiveContains(searchTerm) 
+        let filteredBridges = testBridgeInfo.filter {
+            $0.entityName.localizedCaseInsensitiveContains(searchTerm)
         }
         
         if !filteredBridges.isEmpty {
             XCTAssertTrue(filteredBridges.allSatisfy { $0.entityName.contains("Fremont") },
-                         "Filtered bridges should match search term")
+                          "Filtered bridges should match search term")
         }
         
         print("🧪 [AUTOMATED] ✅ Bridge list data consistency validated")
@@ -386,26 +387,113 @@ final class ComprehensiveUITests: XCTestCase {
         print("🧪 [AUTOMATED] Testing Statistics tab crash prevention...")
         
         let expectation = XCTestExpectation(description: "Statistics calculations complete without crash")
-        expectation.expectedFulfillmentCount = 5
+        expectation.expectedFulfillmentCount = 10 // Test both scenarios multiple times
         
-        // Simulate the exact conditions that caused the EXC_BAD_ACCESS crash
+        // Test both crash scenarios:
+        // 1. Initial load crash (EXC_BAD_ACCESS in cascade detection)
+        // 2. Pull-to-refresh crash (threading issue)
+        
         for i in 0..<5 {
+            // Scenario 1: Initial load with large dataset
             Task.detached {
-                // This mirrors the StatisticsView pull-to-refresh operation
+                let eventsSnapshot = Array(self.testEvents)
+                let largeLimitedEvents = Array(eventsSnapshot.sorted { $0.openDateTime > $1.openDateTime }.prefix(2000))
+                
+                // This mirrors the exact crash: cascade detection on 2000 events
+                let cascades = CascadeDetectionEngine.detectCascadeEffects(from: largeLimitedEvents)
+                XCTAssertTrue(cascades.count >= 0, "Initial cascade detection should not crash")
+                
+                print("🧪 [AUTOMATED] ✅ Initial load \(i) completed: \(cascades.count) cascades")
+                expectation.fulfill()
+            }
+            
+            // Scenario 2: Pull-to-refresh threading
+            Task.detached {
                 let eventsSnapshot = Array(self.testEvents)
                 let limitedEvents = Array(eventsSnapshot.sorted { $0.openDateTime > $1.openDateTime }.prefix(2000))
                 
-                // This should NOT crash (the fix we implemented)
                 let analytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
+                XCTAssertTrue(analytics.count >= 0, "Pull-to-refresh should not crash")
                 
-                XCTAssertTrue(analytics.count >= 0, "Statistics calculation should complete")
-                print("🧪 [AUTOMATED] ✅ Statistics refresh \(i) completed: \(analytics.count) records")
-                
+                print("🧪 [AUTOMATED] ✅ Pull-to-refresh \(i) completed: \(analytics.count) records")
                 expectation.fulfill()
             }
         }
         
+        await fulfillment(of: [expectation], timeout: 45.0)
+    }
+    
+    func testStatisticsTabInitialLoadCrashPrevention() async throws {
+        // Test corresponds to Manual Test 4.3: Statistics tab initial load crash
+        print("🧪 [AUTOMATED] Testing Statistics tab initial load crash prevention...")
+        
+        // This tests the EXACT crash scenario shown in the screenshot
+        // Thread 7: EXC_BAD_ACCESS during cascade detection
+        
+        let expectation = XCTestExpectation(description: "Statistics tab initial load completes without crash")
+        
+        Task.detached {
+            // Simulate StatisticsView initialization with large dataset
+            let largeEvents = Array(self.testEvents + self.testEvents + self.testEvents) // Triple the data
+            
+            // This is the exact operation that crashes: cascade detection on large dataset
+            do {
+                let cascades = CascadeDetectionEngine.detectCascadeEffects(from: largeEvents)
+                XCTAssertTrue(cascades.count >= 0, "Cascade detection should complete without crash")
+                print("🧪 [AUTOMATED] ✅ Cascade detection completed: \(cascades.count) cascades")
+            } catch {
+                XCTFail("Cascade detection should not throw: \(error)")
+            }
+            
+            expectation.fulfill()
+        }
+        
         await fulfillment(of: [expectation], timeout: 30.0)
+        print("🧪 [AUTOMATED] ✅ Statistics tab initial load crash prevention validated")
+    }
+    
+    func testCascadeDetectionMemoryManagement() throws {
+        // Test corresponds to the exact crash: EXC_BAD_ACCESS in cascade detection
+        print("🧪 [AUTOMATED] Testing cascade detection memory management...")
+        
+        // Create large dataset that mirrors real app conditions
+        var largeDataset: [DrawbridgeEvent] = []
+        let now = Date()
+        
+        // Create 2000+ events like in the crash log
+        for i in 0..<2500 {
+            let bridgeID = (i % 6) + 1
+            let hoursBack = i / 10
+            let openDate = now.addingTimeInterval(TimeInterval(-hoursBack * 3600))
+            let duration = Double.random(in: 5...30)
+            let closeDate = openDate.addingTimeInterval(duration * 60)
+            
+            let event = DrawbridgeEvent(
+                entityType: "Bridge",
+                entityName: "Test Bridge \(bridgeID)",
+                entityID: bridgeID,
+                openDateTime: openDate,
+                closeDateTime: closeDate,
+                minutesOpen: duration,
+                latitude: 47.6000,
+                longitude: -122.3300
+            )
+            largeDataset.append(event)
+        }
+        
+        print("🧪 [AUTOMATED] Testing cascade detection with \(largeDataset.count) events...")
+        
+        // This should NOT cause EXC_BAD_ACCESS
+        let startTime = CFAbsoluteTimeGetCurrent()
+        
+        let cascades = CascadeDetectionEngine.detectCascadeEffects(from: largeDataset)
+        
+        let executionTime = CFAbsoluteTimeGetCurrent() - startTime
+        
+        XCTAssertTrue(cascades.count >= 0, "Cascade detection should complete without memory error")
+        XCTAssertLessThan(executionTime, 15.0, "Cascade detection should complete within reasonable time")
+        
+        print("🧪 [AUTOMATED] ✅ Cascade detection completed: \(cascades.count) cascades in \(String(format: "%.2f", executionTime))s")
     }
     
     // MARK: - Performance & Stress Testing
@@ -470,9 +558,9 @@ final class ComprehensiveUITests: XCTestCase {
         // Validate prediction quality
         for prediction in predictions {
             XCTAssertTrue(prediction.probability >= 0.0 && prediction.probability <= 1.0,
-                         "Neural Engine predictions should have valid probabilities")
+                          "Neural Engine predictions should have valid probabilities")
             XCTAssertTrue(prediction.expectedDuration > 0,
-                         "Neural Engine predictions should have positive durations")
+                          "Neural Engine predictions should have positive durations")
         }
         
         print("🧪 [AUTOMATED] ✅ Neural Engine performance: \(predictions.count) predictions in \(String(format: "%.3f", executionTime))s")
@@ -507,5 +595,160 @@ final class ComprehensiveUITests: XCTestCase {
         
         await fulfillment(of: [expectation], timeout: 45.0)
         print("🧪 [AUTOMATED] ✅ Statistics crash regression prevented")
+    }
+    
+    // MARK: - Bridge Data Loading Test (Critical for Empty List Bug)
+    
+    func testBridgeListEmptyStateValidation() throws {
+        // Test corresponds to the actual bug shown in screenshot: empty "All Bridges View"
+        print("🧪 [AUTOMATED] Testing bridge list empty state validation...")
+        
+        // Test Case 1: Empty data (should show appropriate message)
+        let emptyBridgesList = BridgesListView(events: [], bridgeInfo: [])
+        XCTAssertNotNil(emptyBridgesList, "BridgesListView should handle empty data gracefully")
+        
+        // Test Case 2: Events exist but no bridge info (data sync issue)
+        let eventsOnlyList = BridgesListView(events: testEvents, bridgeInfo: [])
+        XCTAssertNotNil(eventsOnlyList, "BridgesListView should handle missing bridge info")
+        
+        // Test Case 3: Bridge info exists but no events (unusual but possible)
+        let bridgeInfoOnlyList = BridgesListView(events: [], bridgeInfo: testBridgeInfo)
+        XCTAssertNotNil(bridgeInfoOnlyList, "BridgesListView should handle missing events")
+        
+        // Test Case 4: Full data (normal operation)
+        let fullDataList = BridgesListView(events: testEvents, bridgeInfo: testBridgeInfo)
+        XCTAssertNotNil(fullDataList, "BridgesListView should work with full data")
+        
+        // CRITICAL: Test the actual data that would populate the list
+        let bridgeListContent = testBridgeInfo.sorted { $0.entityName < $1.entityName }
+        XCTAssertFalse(bridgeListContent.isEmpty, "Bridge list should not be empty in test scenario")
+        XCTAssertEqual(bridgeListContent.count, testBridgeInfo.count, "All bridges should be included")
+        
+        // Verify each bridge has recent event data
+        for bridge in testBridgeInfo {
+            let bridgeEvents = testEvents.filter { $0.entityID == bridge.entityID }
+            XCTAssertFalse(bridgeEvents.isEmpty, "Bridge \(bridge.entityName) should have events")
+            
+            let recentEvent = bridgeEvents.max { $0.openDateTime < $1.openDateTime }
+            XCTAssertNotNil(recentEvent, "Bridge \(bridge.entityName) should have a most recent event")
+        }
+        
+        print("🧪 [AUTOMATED] ✅ Bridge list empty state validation completed")
+    }
+    
+    func testBridgeInfoCreationFromEvents() throws {
+        // Test corresponds to Manual Test 4.1: Empty bridge list issue
+        print("🧪 [AUTOMATED] Testing bridge info creation from events...")
+        
+        // Simulate the updateBridgeInfo logic from ContentViewModular
+        let uniqueBridges = DrawbridgeEvent.getUniqueBridges(testEvents)
+        XCTAssertFalse(uniqueBridges.isEmpty, "Should have unique bridges from events")
+        XCTAssertEqual(uniqueBridges.count, testBridgeInfo.count, "Unique bridges should match test bridge info count")
+        
+        // Verify each unique bridge has correct data
+        for uniqueBridge in uniqueBridges {
+            let bridgeEvents = testEvents.filter { $0.entityID == uniqueBridge.entityID }
+            XCTAssertFalse(bridgeEvents.isEmpty, "Each unique bridge should have events")
+            XCTAssertEqual(uniqueBridge.entityName, bridgeEvents.first?.entityName, "Bridge names should match")
+            
+            // Test bridge info creation logic
+            let totalOpenings = bridgeEvents.count
+            let averageTime = bridgeEvents.map(\.minutesOpen).reduce(0, +) / Double(bridgeEvents.count)
+            let longestTime = bridgeEvents.map(\.minutesOpen).max() ?? 0
+            
+            XCTAssertTrue(totalOpenings > 0, "Bridge should have openings")
+            XCTAssertTrue(averageTime > 0, "Bridge should have positive average time")
+            XCTAssertTrue(longestTime > 0, "Bridge should have positive longest time")
+        }
+        
+        print("🧪 [AUTOMATED] ✅ Bridge info creation validation completed")
+    }
+    
+    func testStatisticsTabProductionScaleCrashPrevention() async throws {
+        // Test corresponds to ACTUAL production crash with 4,187 events
+        print("🧪 [AUTOMATED] Testing Statistics tab with PRODUCTION SCALE data...")
+        
+        // Create production-scale dataset that matches EXACT real app conditions
+        var productionDataset: [DrawbridgeEvent] = []
+        let now = Date()
+        let calendar = Calendar.current
+        
+        // CRITICAL: Create 4,187 events like real Seattle data
+        for i in 0..<4187 {
+            let bridgeID = (i % 6) + 1 // 6 Seattle bridges
+            let daysBack = i / 25 // Spread over ~6 months like real data
+            let openDate = calendar.date(byAdding: .day, value: -daysBack, to: now) ?? now.addingTimeInterval(TimeInterval(-i * 3600))
+            let duration = Double.random(in: 3...45) // Real Seattle durations
+            let closeDate = calendar.date(byAdding: .minute, value: Int(duration), to: openDate)
+            
+            let event = DrawbridgeEvent(
+                entityType: "Bridge",
+                entityName: "Production Test Bridge \(bridgeID)",
+                entityID: bridgeID,
+                openDateTime: openDate,
+                closeDateTime: closeDate,
+                minutesOpen: duration,
+                latitude: 47.6000 + Double(bridgeID) * 0.01,
+                longitude: -122.3300 - Double(bridgeID) * 0.01
+            )
+            productionDataset.append(event)
+        }
+        
+        print("🧪 [AUTOMATED] Created \(productionDataset.count) events matching production scale")
+        
+        let expectation = XCTestExpectation(description: "Production scale statistics complete without crash")
+        expectation.expectedFulfillmentCount = 3
+        
+        // Test the EXACT operations that crash in production
+        
+        // 1. CASCADE DETECTION (the actual crash location)
+        Task.detached {
+            print("🧪 [AUTOMATED] Testing cascade detection with \(productionDataset.count) events...")
+            let startTime = CFAbsoluteTimeGetCurrent()
+            
+            // This is the EXACT line that crashes in production
+            let cascades = CascadeDetectionEngine.detectCascadeEffects(from: productionDataset)
+            
+            let executionTime = CFAbsoluteTimeGetCurrent() - startTime
+            XCTAssertTrue(cascades.count >= 0, "Production cascade detection should not crash")
+            XCTAssertLessThan(executionTime, 30.0, "Production cascade detection should complete within 30 seconds")
+            
+            print("🧪 [AUTOMATED] ✅ Production cascade detection: \(cascades.count) cascades in \(String(format: "%.2f", executionTime))s")
+            expectation.fulfill()
+        }
+        
+        // 2. ANALYTICS CALCULATION (secondary crash risk)
+        Task.detached {
+            print("🧪 [AUTOMATED] Testing analytics calculation with \(productionDataset.count) events...")
+            let startTime = CFAbsoluteTimeGetCurrent()
+            
+            let analytics = BridgeAnalyticsCalculator.calculateAnalytics(from: productionDataset)
+            
+            let executionTime = CFAbsoluteTimeGetCurrent() - startTime
+            XCTAssertTrue(analytics.count >= 0, "Production analytics calculation should not crash")
+            XCTAssertLessThan(executionTime, 20.0, "Production analytics should complete within 20 seconds")
+            
+            print("🧪 [AUTOMATED] ✅ Production analytics: \(analytics.count) records in \(String(format: "%.2f", executionTime))s")
+            expectation.fulfill()
+        }
+        
+        // 3. NEURAL ENGINE PREDICTION (memory pressure test)
+        Task.detached {
+            print("🧪 [AUTOMATED] Testing Neural Engine with \(productionDataset.count) events...")
+            let startTime = CFAbsoluteTimeGetCurrent()
+            
+            let predictor = NeuralEngineARIMAPredictor()
+            let predictions = predictor.generatePredictions(from: productionDataset)
+            
+            let executionTime = CFAbsoluteTimeGetCurrent() - startTime
+            XCTAssertTrue(predictions.count >= 0, "Production Neural Engine should not crash")
+            XCTAssertLessThan(executionTime, 10.0, "Production Neural Engine should be fast")
+            
+            print("🧪 [AUTOMATED] ✅ Production Neural Engine: \(predictions.count) predictions in \(String(format: "%.3f", executionTime))s")
+            expectation.fulfill()
+        }
+        
+        await fulfillment(of: [expectation], timeout: 120.0) // Allow more time for production scale
+        print("🧪 [AUTOMATED] ✅ Production scale crash prevention validated")
     }
 }

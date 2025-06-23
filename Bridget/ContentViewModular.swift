@@ -28,6 +28,7 @@ struct ContentViewModular: View {
     @State private var isLoadingInitialData = false
     @State private var initialDataLoaded = false
     @State private var dataFetchError: String?
+    @State private var bridgeInfoSyncInProgress = false
     
     var body: some View {
         ZStack {
@@ -79,15 +80,19 @@ struct ContentViewModular: View {
         .onAppear {
             print("🏠 [MAIN] ContentView appeared - Events: \(events.count), Bridge Info: \(bridgeInfo.count)")
             
-            // If we have events but no bridge info, create it
-            if !events.isEmpty && bridgeInfo.isEmpty {
-                print("🏠 [MAIN] Events exist but no bridge info - updating...")
-                updateBridgeInfo(from: events)
-                do {
-                    try modelContext.save()
-                    print("🏠 [MAIN] ✅ Bridge info created and saved")
-                } catch {
-                    print("❌ [MAIN ERROR] Failed to save bridge info: \(error)")
+            // IMPROVED: Always check for bridge info sync on appear
+            Task {
+                await ensureBridgeInfoSynchronized()
+            }
+        }
+        .onChange(of: events.count) { oldCount, newCount in
+            // FIXED: Trigger bridge info sync when events change
+            print("🏠 [MAIN] Events count changed: \(oldCount) → \(newCount)")
+            
+            if newCount > 0 && bridgeInfo.count == 0 && !bridgeInfoSyncInProgress {
+                print("🏠 [MAIN] Events loaded but no bridge info - triggering sync...")
+                Task {
+                    await ensureBridgeInfoSynchronized()
                 }
             }
         }
@@ -97,26 +102,59 @@ struct ContentViewModular: View {
         }
     }
     
+    // IMPROVED: Dedicated bridge info synchronization function
+    private func ensureBridgeInfoSynchronized() async {
+        guard !events.isEmpty else {
+            print("🏠 [SYNC] No events available for bridge info sync")
+            return
+        }
+        
+        guard bridgeInfo.isEmpty else {
+            print("🏠 [SYNC] Bridge info already exists (\(bridgeInfo.count) bridges)")
+            return
+        }
+        
+        guard !bridgeInfoSyncInProgress else {
+            print("🏠 [SYNC] Bridge info sync already in progress")
+            return
+        }
+        
+        await MainActor.run {
+            bridgeInfoSyncInProgress = true
+        }
+        
+        print("🏠 [SYNC] Starting bridge info synchronization...")
+        print("🏠 [SYNC] Have \(events.count) events, \(bridgeInfo.count) bridge info records")
+        
+        await MainActor.run {
+            createBridgeInfoFromEvents()
+            
+            // CRITICAL: Force save and wait for completion
+            do {
+                try modelContext.save()
+                print("🏠 [SYNC] ✅ Bridge info saved to SwiftData")
+                
+                // Give SwiftData time to update @Query
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    bridgeInfoSyncInProgress = false
+                    print("🏠 [SYNC] ✅ Bridge info sync completed - Final count: \(bridgeInfo.count)")
+                }
+            } catch {
+                print("❌ [SYNC ERROR] Failed to save bridge info: \(error)")
+                bridgeInfoSyncInProgress = false
+            }
+        }
+    }
+    
     // Initial data loading function
     private func loadInitialDataIfNeeded() async {
-        // FIXED: Allow reloading if data was deleted (events.isEmpty) regardless of initialDataLoaded flag
         print("🏠 [MAIN] Data check - Events: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
         
         guard events.isEmpty else { 
             print("🏠 [MAIN] Skipping data load - already have \(events.count) events")
             
-            if bridgeInfo.isEmpty {
-                print("🏠 [MAIN] Have events but no bridge info - creating...")
-                await MainActor.run {
-                    updateBridgeInfo(from: events)
-                    do {
-                        try modelContext.save()
-                        print("🏠 [MAIN] ✅ Bridge info created and saved")
-                    } catch {
-                        print("❌ [MAIN ERROR] Failed to save bridge info: \(error)")
-                    }
-                }
-            }
+            // IMPROVED: Use dedicated sync function
+            await ensureBridgeInfoSynchronized()
             return 
         }
         
@@ -125,7 +163,6 @@ struct ContentViewModular: View {
         await MainActor.run {
             isLoadingInitialData = true
             dataFetchError = nil
-            // RESET: Allow reloading after data deletion
             initialDataLoaded = false
         }
         
@@ -137,80 +174,76 @@ struct ContentViewModular: View {
             
             print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEvents.count) EVENTS")
             
+            // FIXED: Remove nested MainActor.run - just do the work directly
+            print("🏠 [MAIN] Storing \(fetchedEvents.count) events in SwiftData...")
+            
+            // Store events FIRST
+            for event in fetchedEvents {
+                modelContext.insert(event)
+            }
+            
+            // CRITICAL: Save events first, then create bridge info
+            do {
+                try modelContext.save()
+                print("🏠 [MAIN] ✅ Events saved to SwiftData")
+            } catch {
+                print("❌ [MAIN ERROR] Failed to save events: \(error)")
+                await MainActor.run {
+                    dataFetchError = error.localizedDescription
+                    isLoadingInitialData = false
+                    initialDataLoaded = false
+                }
+                return
+            }
+            
+            // Log per-bridge event counts
+            let bridgeGroups = Dictionary(grouping: fetchedEvents, by: \.entityName)
+            print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
+            for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
+                print("🏠 [MAIN]    • \(bridgeName): \(bridgeEvents.count) events")
+            }
+            
             await MainActor.run {
-                print("🏠 [MAIN] Storing \(fetchedEvents.count) events in SwiftData...")
-                
-                // Store events
-                var insertedCount = 0
-                for event in fetchedEvents {
-                    modelContext.insert(event)
-                    insertedCount += 1
-                }
-                
-                print("🏠 [MAIN] ✅ Inserted \(insertedCount) events into SwiftData")
-                
-                // Log per-bridge event counts
-                let bridgeGroups = Dictionary(grouping: fetchedEvents, by: \.entityName)
-                print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
-                for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
-                    print("🏠 [MAIN]    • \(bridgeName): \(bridgeEvents.count) events")
-                }
-                
-                // Update bridge info
-                print("🏠 [MAIN] Creating bridge info...")
-                updateBridgeInfo(from: fetchedEvents)
-                
-                do {
-                    try modelContext.save()
-                    print("🏠 [MAIN] ✅ SwiftData context saved successfully")
-                } catch {
-                    print("❌ [MAIN ERROR] Failed to save SwiftData context: \(error)")
-                }
-                
                 initialDataLoaded = true
                 isLoadingInitialData = false
-                
-                print("🏠 [MAIN] ✅ DATA LOAD COMPLETE")
-                print("🏠 [MAIN] 🎯 FINAL STATS: \(fetchedEvents.count) total events across \(bridgeGroups.count) bridges")
             }
+            
+            print("🏠 [MAIN] ✅ DATA LOAD COMPLETE")
+            print("🏠 [MAIN] 🎯 FINAL STATS: \(fetchedEvents.count) total events across \(bridgeGroups.count) bridges")
+            
+            // IMPROVED: Bridge info creation happens after events are saved
+            await ensureBridgeInfoSynchronized()
+            
         } catch {
             print("❌ [MAIN ERROR] Data load failed: \(error)")
             await MainActor.run {
                 dataFetchError = error.localizedDescription
                 isLoadingInitialData = false
-                initialDataLoaded = false // Don't block future attempts
+                initialDataLoaded = false
             }
         }
     }
     
-    // Bridge info update function
-    private func updateBridgeInfo(from events: [DrawbridgeEvent]) {
-        print("🏗️ [BRIDGE INFO] Starting bridge info update...")
+    // SIMPLIFIED: Bridge info creation function (must run on MainActor)
+    @MainActor
+    private func createBridgeInfoFromEvents() {
+        print("🏗️ [BRIDGE INFO] Starting bridge info creation...")
         
         let uniqueBridges = DrawbridgeEvent.getUniqueBridges(events)
-        print("🏗️ [BRIDGE INFO] Found \(uniqueBridges.count) unique bridges")
+        print("🏗️ [BRIDGE INFO] Found \(uniqueBridges.count) unique bridges from \(events.count) events")
         
-        var updatedCount = 0
         var createdCount = 0
         
         for bridgeData in uniqueBridges {
-            // Get all events for this specific bridge
-            let allBridgeEvents = events.filter { $0.entityID == bridgeData.entityID }
-            print("🏗️ [BRIDGE INFO] \(bridgeData.entityName) (ID: \(bridgeData.entityID)): \(allBridgeEvents.count) events")
-            
-            // Check if bridge info already exists
+            // Check if bridge info already exists (prevent duplicates)
             let existingInfo = bridgeInfo.first { $0.entityID == bridgeData.entityID }
             
-            if let existing = existingInfo {
-                print("🏗️ [BRIDGE INFO] Updating existing info for \(bridgeData.entityName)")
-                // Update existing info
-                existing.totalOpenings = allBridgeEvents.count
-                existing.averageOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).reduce(0, +) / Double(allBridgeEvents.count)
-                existing.longestOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).max() ?? 0
-                existing.lastUpdated = Date()
-                updatedCount += 1
-            } else {
-                print("🏗️ [BRIDGE INFO] Creating new info for \(bridgeData.entityName)")
+            if existingInfo == nil {
+                print("🏗️ [BRIDGE INFO] Creating new info for \(bridgeData.entityName) (ID: \(bridgeData.entityID))")
+                
+                // Get all events for this specific bridge
+                let allBridgeEvents = events.filter { $0.entityID == bridgeData.entityID }
+                
                 // Create new bridge info
                 let newBridgeInfo = DrawbridgeInfo(
                     entityID: bridgeData.entityID,
@@ -219,21 +252,37 @@ struct ContentViewModular: View {
                     latitude: bridgeData.latitude,
                     longitude: bridgeData.longitude
                 )
+                
+                // Calculate statistics
                 newBridgeInfo.totalOpenings = allBridgeEvents.count
-                newBridgeInfo.averageOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).reduce(0, +) / Double(allBridgeEvents.count)
-                newBridgeInfo.longestOpenTimeMinutes = allBridgeEvents.map(\.minutesOpen).max() ?? 0
+                if !allBridgeEvents.isEmpty {
+                    let durations = allBridgeEvents.map(\.minutesOpen)
+                    newBridgeInfo.averageOpenTimeMinutes = durations.reduce(0, +) / Double(durations.count)
+                    newBridgeInfo.longestOpenTimeMinutes = durations.max() ?? 0
+                }
+                newBridgeInfo.lastUpdated = Date()
                 
                 modelContext.insert(newBridgeInfo)
                 createdCount += 1
+                
+                print("🏗️ [BRIDGE INFO] ✅ Created \(bridgeData.entityName): \(allBridgeEvents.count) events, avg \(String(format: "%.1f", newBridgeInfo.averageOpenTimeMinutes))min")
+            } else {
+                print("🏗️ [BRIDGE INFO] Bridge info already exists for \(bridgeData.entityName)")
             }
         }
         
-        print("🏗️ [BRIDGE INFO] ✅ Bridge info update complete - Created: \(createdCount), Updated: \(updatedCount)")
+        print("🏗️ [BRIDGE INFO] ✅ Bridge info creation complete - Created: \(createdCount) new records")
     }
     
+    // IMPROVED: Force refresh with proper synchronization
     public func forceDataRefresh() async {
         print("🏠 [MAIN] 🔄 Force refresh initiated")
-        initialDataLoaded = false
+        
+        await MainActor.run {
+            initialDataLoaded = false
+            bridgeInfoSyncInProgress = false
+        }
+        
         await loadInitialDataIfNeeded()
     }
 }
