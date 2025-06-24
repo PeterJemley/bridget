@@ -98,29 +98,57 @@ public struct DynamicAnalysisSection: View {
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
-            // Real-time cascade alerts
+            if currentBridgeAnalytics?.cascadeInfluence == 0.0 && currentBridgeAnalytics?.cascadeSusceptibility == 0.0 {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        Image(systemName: "info.circle")
+                            .foregroundColor(.blue)
+                        Text("Cascade Analysis Building...")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
+                    
+                    Text("Cascade effects show how bridge openings influence each other. This helps predict when multiple bridges might open in sequence, affecting your commute route.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(8)
+            }
+            
+            // Real-time cascade alerts with actionable information
             if !currentCascadeAlerts.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("🚨 Active Cascade Alerts")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.red)
+                    HStack {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.red)
+                        Text("🚨 Cascade Alert - Route Planning")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.red)
+                    }
                     
                     ForEach(currentCascadeAlerts.prefix(3), id: \.targetBridge) { alert in
                         cascadeAlertRow(alert)
                     }
+                    
+                    Text("💡 Consider alternative routes or delay departure to avoid cascade-affected bridges.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .italic()
                 }
                 .padding()
                 .background(Color.red.opacity(0.1))
                 .cornerRadius(8)
             }
             
-            // Cascade influence metrics
+            // Cascade influence metrics with user explanations
             if let bridgeAnalytics = currentBridgeAnalytics {
                 cascadeMetricsView(bridgeAnalytics)
             }
             
-            // Recent cascade events
+            // Recent cascade events with commuter context
             if !recentCascadeEvents.isEmpty {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Recent Cascade Events")
@@ -130,7 +158,27 @@ public struct DynamicAnalysisSection: View {
                     ForEach(recentCascadeEvents.prefix(5), id: \.id) { cascade in
                         cascadeEventRow(cascade)
                     }
+                    
+                    Text("💡 These events show how bridge openings affect each other. Use this data to plan alternative routes during peak cascade times.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .italic()
+                        .padding(.top, 4)
                 }
+            } else {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("No Recent Cascade Events")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
+                    
+                    Text("✅ Good news! No recent cascade effects detected. Bridge openings are operating independently.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
             }
         }
     }
@@ -210,13 +258,17 @@ public struct DynamicAnalysisSection: View {
                 .font(.caption)
             
             VStack(alignment: .leading, spacing: 2) {
-                Text("\(alert.targetBridge) opening expected")
+                Text("\(alert.targetBridge) may open soon")
                     .font(.caption)
                     .fontWeight(.medium)
                 
-                Text("in \(alert.timeUntilExpected) • \(alert.probabilityText) probability")
+                Text("Expected in \(alert.timeUntilExpected) • \(alert.probabilityText) probability")
                     .font(.caption2)
                     .foregroundColor(.secondary)
+                
+                Text("🚗 Consider Route \(getAlternativeRoute(for: alert.targetBridge))")
+                    .font(.caption2)
+                    .foregroundColor(.blue)
             }
             
             Spacer()
@@ -224,38 +276,85 @@ public struct DynamicAnalysisSection: View {
     }
     
     private func cascadeMetricsView(_ analytics: BridgeAnalytics) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-            StatCard(
-                title: "Cascade Influence",
-                value: String(format: "%.1f%%", analytics.cascadeInfluence * 100),
-                icon: "arrow.branch",
-                color: analytics.cascadeInfluence > 0.5 ? .red : .blue
-            )
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Cascade Impact on Your Commute")
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.primary)
             
-            StatCard(
-                title: "Susceptibility",
-                value: String(format: "%.1f%%", analytics.cascadeSusceptibility * 100),
-                icon: "target",
-                color: analytics.cascadeSusceptibility > 0.5 ? .orange : .green
-            )
-            
-            if analytics.cascadeProbability > 0 {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 StatCard(
-                    title: "Cascade Probability",
-                    value: String(format: "%.1f%%", analytics.cascadeProbability * 100),
-                    icon: "percent",
-                    color: .purple
+                    title: "Triggers Others",
+                    value: analytics.cascadeInfluence > 0.0 ? String(format: "%.1f%%", analytics.cascadeInfluence * 100) : "Low",
+                    icon: "arrow.branch",
+                    color: analytics.cascadeInfluence > 0.5 ? .red : analytics.cascadeInfluence > 0.1 ? .orange : .green
                 )
+                
+                StatCard(
+                    title: "Triggered by Others", 
+                    value: analytics.cascadeSusceptibility > 0.0 ? String(format: "%.1f%%", analytics.cascadeSusceptibility * 100) : "Low",
+                    icon: "target",
+                    color: analytics.cascadeSusceptibility > 0.5 ? .orange : analytics.cascadeSusceptibility > 0.1 ? .yellow : .green
+                )
+                
+                if analytics.cascadeProbability > 0 {
+                    StatCard(
+                        title: "Chain Reaction Risk",
+                        value: String(format: "%.1f%%", analytics.cascadeProbability * 100),
+                        icon: "link",
+                        color: analytics.cascadeProbability > 0.3 ? .red : .blue
+                    )
+                } else {
+                    StatCard(
+                        title: "Chain Reaction Risk",
+                        value: "Minimal",
+                        icon: "link",
+                        color: .green
+                    )
+                }
+                
+                if analytics.cascadeDelay > 0 {
+                    StatCard(
+                        title: "Typical Delay",
+                        value: String(format: "%.0f min", analytics.cascadeDelay),
+                        icon: "clock",
+                        color: analytics.cascadeDelay > 15 ? .red : .indigo
+                    )
+                } else {
+                    StatCard(
+                        title: "Typical Delay",
+                        value: "< 5 min",
+                        icon: "clock",
+                        color: .green
+                    )
+                }
             }
             
-            if analytics.cascadeDelay > 0 {
-                StatCard(
-                    title: "Avg Cascade Delay",
-                    value: String(format: "%.0f min", analytics.cascadeDelay),
-                    icon: "clock",
-                    color: .indigo
-                )
+            VStack(alignment: .leading, spacing: 4) {
+                Text("Understanding Cascade Effects:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                
+                if analytics.cascadeInfluence > 0.3 {
+                    Text("🔴 High Trigger: This bridge often causes others to open. Plan extra time.")
+                        .font(.caption2)
+                        .foregroundColor(.red)
+                }
+                
+                if analytics.cascadeSusceptibility > 0.3 {
+                    Text("🟡 High Response: This bridge often opens after others. Watch nearby bridges.")
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                }
+                
+                if analytics.cascadeInfluence <= 0.3 && analytics.cascadeSusceptibility <= 0.3 {
+                    Text("🟢 Independent: This bridge operates independently. Easier to predict.")
+                        .font(.caption2)
+                        .foregroundColor(.green)
+                }
             }
+            .padding(.top, 8)
         }
     }
     
@@ -746,6 +845,21 @@ public struct DynamicAnalysisSection: View {
         }
     }
     
+    private func getAlternativeRoute(for bridgeName: String) -> String {
+        switch bridgeName.lowercased() {
+        case let name where name.contains("fremont"):
+            return "Aurora (99) or I-5"
+        case let name where name.contains("ballard"):
+            return "15th Ave or Market St"
+        case let name where name.contains("university"):
+            return "I-5 or 45th St"
+        case let name where name.contains("montlake"):
+            return "I-90 or 520"
+        default:
+            return "nearby arterials"
+        }
+    }
+
     private var sectionTitle: String {
         switch analysisType {
         case .patterns: return "Pattern Analysis"
