@@ -359,7 +359,7 @@ final class ComprehensiveUITests: XCTestCase {
                 XCTAssertFalse(hourlyData.isEmpty, "Frequency analysis should produce hourly data")
                 
             case "Duration":
-                let durations = testEvents.compactMap { $0.duration }
+                let durations = testEvents.compactMap { $0.minutesOpen }
                 XCTAssertFalse(durations.isEmpty, "Duration analysis should have duration data")
                 
             case "Timeline":

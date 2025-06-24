@@ -167,8 +167,8 @@ final class BridgetCoreTests: XCTestCase {
             longitude: -122.3321
         )
         
-        XCTAssertNotNil(event.duration)
-        XCTAssertEqual(event.duration!, 900, accuracy: 1.0)
+        XCTAssertEqual(event.minutesOpen, 15.0)
+        XCTAssertEqual(event.minutesOpen * 60, 900, accuracy: 1.0) // 15 minutes = 900 seconds
     }
     
     func testDrawbridgeEventRelativeTimeText() throws {

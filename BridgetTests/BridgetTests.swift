@@ -62,7 +62,7 @@ struct BridgetIntegrationTests {
     
     // MARK: - App Launch Tests
     
-    @Test func appLaunchDataLoading() async throws {
+    @Test @MainActor func appLaunchDataLoading() async throws {
         // Test that app can launch and load data without crashing
         let contentView = ContentViewModular()
         #expect(contentView != nil)
@@ -86,7 +86,7 @@ struct BridgetIntegrationTests {
         }
     }
     
-    @Test func bridgeDetailDataBinding() async throws {
+    @Test @MainActor func bridgeDetailDataBinding() async throws {
         // Test that BridgeDetailView can properly bind to data
         let testEvent = testEvents.first!
         
@@ -219,12 +219,12 @@ final class BridgetXCTestIntegrationTests: XCTestCase {
     
     // MARK: - UI Integration Tests
     
-    func testContentViewModularInitialization() throws {
+    @MainActor func testContentViewModularInitialization() throws {
         let contentView = ContentViewModular()
         XCTAssertNotNil(contentView)
     }
     
-    func testTabViewNavigation() throws {
+    @MainActor func testTabViewNavigation() throws {
         // Test that all tab views can be created
         let dashboard = DashboardView(events: testEvents, bridgeInfo: [])
         let statistics = StatisticsView()
