@@ -19,23 +19,32 @@ public struct FunctionalTimeFilterSection: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Text("Time Period")
-                    .font(.headline)
-                Spacer()
-                Text("Showing \(eventsInPeriod) events")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Time Period")
+                .font(.headline)
             
-            HStack(spacing: 12) {
+            Text("Showing \(eventsInPeriod) events")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 4), spacing: 8) {
                 ForEach(TimePeriod.allCases, id: \.self) { period in
-                    FilterButton(
-                        title: periodTitle(for: period),
-                        isSelected: selectedPeriod == period,
-                        action: { selectedPeriod = period }
-                    )
+                    Button(action: {
+                        selectedPeriod = period
+                    }) {
+                        Text(periodTitle(for: period))
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                selectedPeriod == period ? Color.blue : Color(.systemGray5)
+                            )
+                            .foregroundColor(
+                                selectedPeriod == period ? .white : .primary
+                            )
+                            .cornerRadius(8)
+                    }
                 }
             }
         }

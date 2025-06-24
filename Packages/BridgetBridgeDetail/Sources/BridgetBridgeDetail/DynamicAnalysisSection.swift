@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import Charts
 import BridgetCore
 import BridgetSharedUI
 
@@ -16,13 +17,9 @@ public struct DynamicAnalysisSection: View {
     public let viewType: ViewType
     public let bridgeName: String
     
-    // PHASE 2: Add cascade data
     @Environment(\.modelContext) private var modelContext
     @Query private var allEvents: [DrawbridgeEvent]
-    @Query private var cascadeEvents: [CascadeEvent]
-    @State private var analytics: [BridgeAnalytics] = []
     @State private var isAnalyzing = false
-    @State private var calculatedPrediction: BridgePrediction?
     
     public init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
         self.events = events
@@ -33,6 +30,7 @@ public struct DynamicAnalysisSection: View {
     
     public var body: some View {
         VStack(alignment: .leading, spacing: 16) {
+            // Section Header
             HStack {
                 Text(sectionTitle)
                     .font(.headline)
@@ -42,640 +40,831 @@ public struct DynamicAnalysisSection: View {
                     .foregroundColor(.secondary)
             }
             
-            // Dynamic content based on analysis type
+            // Dynamic content based on analysis and view type combination
             Group {
-                switch analysisType {
-                case .cascade:
-                    cascadeAnalysisContent
-                case .patterns:
-                    patternsAnalysisContent
-                case .predictions:
-                    predictionsAnalysisContent
-                case .impact:
-                    impactAnalysisContent
+                switch (analysisType, viewType) {
+                case (.patterns, .activity):
+                    patternsActivityView
+                case (.patterns, .weekly):
+                    patternsWeeklyView
+                case (.patterns, .duration):
+                    patternsDurationView
+                case (.cascade, .activity):
+                    cascadeActivityView
+                case (.cascade, .weekly):
+                    cascadeWeeklyView
+                case (.cascade, .duration):
+                    cascadeDurationView
+                case (.predictions, .activity):
+                    predictionsActivityView
+                case (.predictions, .weekly):
+                    predictionsWeeklyView
+                case (.predictions, .duration):
+                    predictionsDurationView
+                case (.impact, .activity):
+                    impactActivityView
+                case (.impact, .weekly):
+                    impactWeeklyView
+                case (.impact, .duration):
+                    impactDurationView
                 }
             }
             .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(8)
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
-        .onAppear {
-            calculateAnalytics()
+            .background(Color(.systemGray6))
+            .cornerRadius(12)
         }
     }
     
-    // MARK: - PHASE 2: Cascade Analysis Content
+    // MARK: - Patterns Analysis Views
     
-    private var cascadeAnalysisContent: some View {
+    @ViewBuilder
+    private var patternsActivityView: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if isAnalyzing {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text("Analyzing cascade patterns...")
+            Text("Activity Patterns")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            if events.count >= 5 {
+                // Hourly activity chart
+                hourlyActivityChart
+                
+                // Most active hours
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Most Active Hours")
                         .font(.caption)
+                        .fontWeight(.medium)
+                    
+                    ForEach(getMostActiveHours().prefix(3), id: \.hour) { hourData in
+                        HStack {
+                            Text(formatHour(hourData.hour))
+                                .font(.caption)
+                                .frame(width: 60, alignment: .leading)
+                            
+                            ProgressView(value: Double(hourData.count), total: Double(hourData.maxCount))
+                                .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                            
+                            Text("\(hourData.count) events")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
+                // Duration insights
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Duration Insights")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    
+                    let avgDuration = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
+                    let maxDuration = events.map(\.minutesOpen).max() ?? 0
+                    
+                    Text("Average: \(String(format: "%.1f", avgDuration)) min")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Longest: \(String(format: "%.1f", maxDuration)) min")
+                        .font(.caption2)
                         .foregroundColor(.secondary)
                 }
             } else {
-                switch viewType {
-                case .activity:
-                    cascadeActivityView
-                case .weekly:
-                    cascadeWeeklyView
-                case .duration:
-                    cascadeDurationView
+                Text("Limited exact-time data. Using baseline patterns from \(events.count) total bridge events.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var patternsWeeklyView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Weekly Patterns")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            if events.count >= 7 {
+                // Weekly pattern chart using SwiftUI Charts
+                weeklyPatternChart
+                
+                // Weekly insights
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Weekly Insights")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    
+                    let weekdayEvents = events.filter { !isWeekend($0.openDateTime) }.count
+                    let weekendEvents = events.filter { isWeekend($0.openDateTime) }.count
+                    
+                    Text("Weekdays: \(weekdayEvents) events")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text("Weekends: \(weekendEvents) events")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    if weekendEvents > weekdayEvents {
+                        Text("📈 More active on weekends")
+                            .font(.caption2)
+                            .foregroundColor(.blue)
+                    } else {
+                        Text("🏢 More active on weekdays")
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                    }
+                }
+            } else {
+                Text("Need at least 7 events for weekly pattern analysis")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var patternsDurationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Duration Patterns")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            if events.count >= 5 {
+                // Duration distribution
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Duration Distribution")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    
+                    let durationRanges = calculateDurationRanges()
+                    
+                    ForEach(durationRanges, id: \.range) { rangeData in
+                        HStack {
+                            Text(rangeData.range)
+                                .font(.caption)
+                                .frame(width: 80, alignment: .leading)
+                            
+                            ProgressView(value: Double(rangeData.count), total: Double(events.count))
+                                .progressViewStyle(LinearProgressViewStyle(tint: .green))
+                            
+                            Text("\(rangeData.count)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                }
+                
+                // Duration trends
+                let avgDuration = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
+                Text("Average Duration: \(String(format: "%.1f", avgDuration)) minutes")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            } else {
+                Text("Need at least 5 events for duration pattern analysis")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
+            }
+        }
+    }
+    
+    // MARK: - Cascade Analysis Views
+    
+    @ViewBuilder
+    private var cascadeActivityView: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Bridge Connection Activity")
+                .font(.headline)
+            
+            Text("Analyzing how this bridge's openings connect to other Seattle bridges...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+            
+            // Connection analysis content would go here
+            Text("Connection Analysis Coming Soon")
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private var cascadeWeeklyView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Weekly Bridge Connections")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Weekly bridge connection analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private var cascadeDurationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Connection Duration Effects")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Connection duration effect analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    // MARK: - Predictions Analysis Views
+    
+    @ViewBuilder
+    private var predictionsActivityView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Current Predictions")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            // Bridge-specific prediction
+            if let bridgeInfo = getBridgeInfo() {
+                let prediction = BridgeAnalytics.getCurrentPrediction(for: bridgeInfo, from: [])
+                
+                if let prediction = prediction {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack {
+                            Text("Next Hour Probability")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            Text(prediction.probabilityText)
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(probabilityColor(prediction.probability))
+                        }
+                        
+                        Text("Expected Duration: \(prediction.durationText)")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text(prediction.reasoning)
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .italic()
+                    }
+                    .padding()
+                    .background(Color(.systemBackground))
+                    .cornerRadius(8)
+                } else {
+                    Text("Generating prediction...")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
         }
     }
     
-    private var cascadeActivityView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Cascade Activity Timeline")
+    @ViewBuilder
+    private var predictionsWeeklyView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Weekly Prediction Patterns")
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
-            if currentBridgeAnalytics?.cascadeInfluence == 0.0 && currentBridgeAnalytics?.cascadeSusceptibility == 0.0 {
-                VStack(alignment: .leading, spacing: 8) {
+            Text("Weekly prediction pattern analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private var predictionsDurationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Duration Predictions")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Duration prediction analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    // MARK: - Impact Analysis Views
+    
+    @ViewBuilder
+    private var impactActivityView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Traffic Impact Analysis")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            if events.isEmpty {
+                // Show helpful message when no events in time period
+                VStack(spacing: 12) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("No Bridge Openings")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.green)
+                    }
+                    
+                    Text("Great news! No bridge openings recorded in this time period. Traffic flow was uninterrupted.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.leading)
+                    
+                    // Suggest different time periods
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("💡 Try viewing a longer time period:")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                        
+                        Text("• 7D or 30D for historical patterns")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("• Check recent activity on Dashboard")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
+            } else if events.count >= 3 {
+                // Traffic impact severity breakdown
+                impactSeverityBreakdown
+                
+                // Impact severity detail section
+                impactSeverityDetailSection
+                
+                // Rush hour impact analysis
+                if hasRushHourEvents {
+                    rushHourImpactAnalysis
+                }
+            } else {
+                // Show analysis for 1-2 events
+                VStack(spacing: 12) {
                     HStack {
                         Image(systemName: "info.circle")
                             .foregroundColor(.blue)
-                        Text("Cascade Analysis Building...")
+                        Text("Limited Data Analysis")
                             .font(.caption)
                             .fontWeight(.medium)
                     }
                     
-                    Text("Cascade effects show how bridge openings influence each other. This helps predict when multiple bridges might open in sequence, affecting your commute route.")
+                    Text("Found \(events.count) bridge opening\(events.count == 1 ? "" : "s") in this period.")
                         .font(.caption2)
                         .foregroundColor(.secondary)
+                    
+                    // Show basic info about the events
+                    if let firstEvent = events.first {
+                        let impact = firstEvent.impactSeverity
+                        
+                        HStack {
+                            Circle()
+                                .fill(impact.color)
+                                .frame(width: 12, height: 12)
+                            
+                            Text("\(impact.level) Impact")
+                                .font(.caption)
+                                .fontWeight(.medium)
+                            
+                            Spacer()
+                            
+                            Text("\(String(format: "%.0f", firstEvent.minutesOpen)) min")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        .padding()
+                        .background(Color(.systemBackground))
+                        .cornerRadius(8)
+                    }
+                    
+                    Text("Need 3+ events for comprehensive impact analysis")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .italic()
                 }
                 .padding()
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(8)
             }
+        }
+    }
+    
+    @ViewBuilder
+    private var impactWeeklyView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Weekly Traffic Impact")
+                .font(.subheadline)
+                .fontWeight(.semibold)
             
-            // Real-time cascade alerts with actionable information
-            if !currentCascadeAlerts.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
+            Text("Weekly traffic impact analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    @ViewBuilder
+    private var impactDurationView: some View {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Duration Impact Analysis")
+                .font(.subheadline)
+                .fontWeight(.semibold)
+            
+            Text("Duration impact analysis")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+    }
+    
+    // MARK: - Impact Analysis Components
+    
+    @ViewBuilder
+    private var impactSeverityBreakdown: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Impact Severity Overview")
+                .font(.caption)
+                .fontWeight(.medium)
+            
+            let severityBreakdown = calculateSeverityBreakdown()
+            
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
+                ForEach(severityBreakdown, id: \.severity) { breakdown in
+                    VStack(spacing: 4) {
+                        HStack {
+                            Circle()
+                                .fill(breakdown.color)
+                                .frame(width: 8, height: 8)
+                            Text(breakdown.severity)
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                            Spacer()
+                        }
+                        
+                        HStack {
+                            Text("\(breakdown.count)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(breakdown.color)
+                            Spacer()
+                            Text("\(Int(breakdown.percentage * 100))%")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    .padding(8)
+                    .background(Color(.systemBackground))
+                    .cornerRadius(6)
+                }
+            }
+        }
+    }
+    
+    @ViewBuilder
+    private var impactSeverityDetailSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                Image(systemName: "chart.pie")
+                    .foregroundColor(.blue)
+                Text("Impact Severity Breakdown")
+                    .font(.caption)
+                    .fontWeight(.medium)
+            }
+            
+            let severityBreakdown = calculateSeverityBreakdown()
+            
+            if severityBreakdown.allSatisfy({ $0.severity == "Minimal" || $0.severity == "Low" }) {
+                VStack(spacing: 8) {
                     HStack {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .foregroundColor(.red)
-                        Text("🚨 Cascade Alert - Route Planning")
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundColor(.green)
+                        Text("No High-Impact Events")
                             .font(.caption)
                             .fontWeight(.medium)
-                            .foregroundColor(.red)
+                            .foregroundColor(.green)
                     }
                     
-                    ForEach(currentCascadeAlerts.prefix(3), id: \.targetBridge) { alert in
-                        cascadeAlertRow(alert)
-                    }
-                    
-                    Text("💡 Consider alternative routes or delay departure to avoid cascade-affected bridges.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .italic()
-                }
-                .padding()
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(8)
-            }
-            
-            // Cascade influence metrics with user explanations
-            if let bridgeAnalytics = currentBridgeAnalytics {
-                cascadeMetricsView(bridgeAnalytics)
-            }
-            
-            // Recent cascade events with commuter context
-            if !recentCascadeEvents.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("Recent Cascade Events")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                    
-                    ForEach(recentCascadeEvents.prefix(5), id: \.id) { cascade in
-                        cascadeEventRow(cascade)
-                    }
-                    
-                    Text("💡 These events show how bridge openings affect each other. Use this data to plan alternative routes during peak cascade times.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .italic()
-                        .padding(.top, 4)
-                }
-            } else {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("No Recent Cascade Events")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Text("✅ Good news! No recent cascade effects detected. Bridge openings are operating independently.")
+                    Text("All bridge openings in this period had minimal to moderate traffic impact. Great for commuters!")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
                 .padding()
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(8)
-            }
-        }
-    }
-    
-    private var cascadeWeeklyView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Weekly Cascade Patterns")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            if let analytics = currentBridgeAnalytics {
-                weeklyPatternGrid(analytics)
-            }
-            
-            // Day-of-week cascade analysis
-            Text("Cascade frequency varies by day:")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            ForEach(weeklyPattern, id: \.day) { pattern in
-                HStack {
-                    Text(pattern.day)
-                        .font(.caption)
-                        .frame(width: 30, alignment: .leading)
+            } else {
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
+                    ForEach(severityBreakdown, id: \.severity) { breakdown in
+                        VStack(spacing: 6) {
+                            HStack {
+                                Circle()
+                                    .fill(breakdown.color)
+                                    .frame(width: 12, height: 12)
+                                
+                                Text(breakdown.severity)
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                
+                                Spacer()
+                            }
+                            
+                            HStack {
+                                Text("\(breakdown.count)")
+                                    .font(.title3)
+                                    .fontWeight(.bold)
+                                    .foregroundColor(breakdown.color)
+                                
+                                Spacer()
+                                
+                                Text("\(Int(breakdown.percentage * 100))%")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            ProgressView(value: breakdown.percentage, total: 1.0)
+                                .progressViewStyle(LinearProgressViewStyle(tint: breakdown.color))
+                                .frame(height: 4)
+                        }
+                        .padding()
+                        .background(Color(.systemBackground))
+                        .cornerRadius(8)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: 8)
+                                .stroke(breakdown.color.opacity(0.3), lineWidth: 1)
+                        )
+                    }
+                }
+                
+                // Severity explanation
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Impact Severity Criteria:")
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .foregroundColor(.secondary)
                     
-                    ProgressView(value: pattern.frequency, total: 1.0)
-                        .progressViewStyle(LinearProgressViewStyle(tint: .blue))
+                    Text("• Minimal/Low: < 15 min, off-peak hours")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
                     
-                    Text("\(Int(pattern.frequency * 100))%")
+                    Text("• Moderate: 15-30 min or during rush hour")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    
+                    Text("• High/Severe: 30+ min, especially during rush hour")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                 }
+                .padding(.top, 8)
             }
         }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
     }
     
-    private var cascadeDurationView: some View {
+    @ViewBuilder
+    private var rushHourImpactAnalysis: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Cascade Duration Effects")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            if let analytics = currentBridgeAnalytics {
-                durationEffectsGrid(analytics)
-            }
-            
-            // Duration correlation analysis
-            Text("How cascade effects influence opening durations:")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            ForEach(durationEffects, id: \.type) { effect in
-                HStack {
-                    Circle()
-                        .fill(effect.color)
-                        .frame(width: 8, height: 8)
-                    
-                    Text(effect.type)
-                        .font(.caption)
-                    
-                    Spacer()
-                    
-                    Text(effect.effect)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            }
-        }
-    }
-    
-    // MARK: - Cascade Helper Views
-    
-    private func cascadeAlertRow(_ alert: CascadeAlert) -> some View {
-        HStack {
-            Image(systemName: "exclamationmark.triangle.fill")
-                .foregroundColor(.orange)
-                .font(.caption)
-            
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(alert.targetBridge) may open soon")
+            HStack {
+                Image(systemName: "car.2.fill")
+                    .foregroundColor(.red)
+                Text("Rush Hour Impact")
                     .font(.caption)
                     .fontWeight(.medium)
-                
-                Text("Expected in \(alert.timeUntilExpected) • \(alert.probabilityText) probability")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                Text("🚗 Consider Route \(getAlternativeRoute(for: alert.targetBridge))")
-                    .font(.caption2)
-                    .foregroundColor(.blue)
             }
             
-            Spacer()
-        }
-    }
-    
-    private func cascadeMetricsView(_ analytics: BridgeAnalytics) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Cascade Impact on Your Commute")
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(.primary)
-            
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                StatCard(
-                    title: "Triggers Others",
-                    value: analytics.cascadeInfluence > 0.0 ? String(format: "%.1f%%", analytics.cascadeInfluence * 100) : "Low",
-                    icon: "arrow.branch",
-                    color: analytics.cascadeInfluence > 0.5 ? .red : analytics.cascadeInfluence > 0.1 ? .orange : .green
-                )
-                
-                StatCard(
-                    title: "Triggered by Others", 
-                    value: analytics.cascadeSusceptibility > 0.0 ? String(format: "%.1f%%", analytics.cascadeSusceptibility * 100) : "Low",
-                    icon: "target",
-                    color: analytics.cascadeSusceptibility > 0.5 ? .orange : analytics.cascadeSusceptibility > 0.1 ? .yellow : .green
-                )
-                
-                if analytics.cascadeProbability > 0 {
-                    StatCard(
-                        title: "Chain Reaction Risk",
-                        value: String(format: "%.1f%%", analytics.cascadeProbability * 100),
-                        icon: "link",
-                        color: analytics.cascadeProbability > 0.3 ? .red : .blue
-                    )
-                } else {
-                    StatCard(
-                        title: "Chain Reaction Risk",
-                        value: "Minimal",
-                        icon: "link",
-                        color: .green
-                    )
-                }
-                
-                if analytics.cascadeDelay > 0 {
-                    StatCard(
-                        title: "Typical Delay",
-                        value: String(format: "%.0f min", analytics.cascadeDelay),
-                        icon: "clock",
-                        color: analytics.cascadeDelay > 15 ? .red : .indigo
-                    )
-                } else {
-                    StatCard(
-                        title: "Typical Delay",
-                        value: "< 5 min",
-                        icon: "clock",
-                        color: .green
-                    )
-                }
-            }
+            let rushHourEvents = events.filter { isRushHour($0.openDateTime) }
+            let avgRushHourDuration = rushHourEvents.isEmpty ? 0 : 
+                rushHourEvents.map(\.minutesOpen).reduce(0, +) / Double(rushHourEvents.count)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text("Understanding Cascade Effects:")
+                Text("\(rushHourEvents.count) events during rush hours")
                     .font(.caption2)
-                    .fontWeight(.medium)
                     .foregroundColor(.secondary)
                 
-                if analytics.cascadeInfluence > 0.3 {
-                    Text("🔴 High Trigger: This bridge often causes others to open. Plan extra time.")
+                Text("Average rush hour duration: \(String(format: "%.1f", avgRushHourDuration)) min")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                
+                if avgRushHourDuration > 20 {
+                    Text("⚠️ Significant rush hour delays expected")
                         .font(.caption2)
                         .foregroundColor(.red)
-                }
-                
-                if analytics.cascadeSusceptibility > 0.3 {
-                    Text("🟡 High Response: This bridge often opens after others. Watch nearby bridges.")
-                        .font(.caption2)
-                        .foregroundColor(.orange)
-                }
-                
-                if analytics.cascadeInfluence <= 0.3 && analytics.cascadeSusceptibility <= 0.3 {
-                    Text("🟢 Independent: This bridge operates independently. Easier to predict.")
+                } else {
+                    Text("✅ Manageable rush hour impact")
                         .font(.caption2)
                         .foregroundColor(.green)
                 }
             }
-            .padding(.top, 8)
-        }
-    }
-    
-    private func cascadeEventRow(_ cascade: CascadeEvent) -> some View {
-        HStack {
-            VStack(alignment: .leading, spacing: 2) {
-                Text("\(cascade.triggerBridgeName) → \(cascade.targetBridgeName)")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                
-                Text("\(Int(cascade.delayMinutes)) min delay • \(cascade.cascadeType)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text(String(format: "%.1f", cascade.cascadeStrength))
-                .font(.caption)
-                .fontWeight(.medium)
-                .padding(.horizontal, 6)
-                .padding(.vertical, 2)
-                .background(cascadeStrengthColor(cascade.cascadeStrength).opacity(0.2))
-                .foregroundColor(cascadeStrengthColor(cascade.cascadeStrength))
-                .cornerRadius(4)
-        }
-    }
-    
-    private func weeklyPatternGrid(_ analytics: BridgeAnalytics) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-            StatCard(
-                title: "Weekend Cascade",
-                value: analytics.isWeekendPattern ? "Higher" : "Lower",
-                icon: "calendar.day.weekend",
-                color: analytics.isWeekendPattern ? .green : .gray
-            )
-            
-            StatCard(
-                title: "Summer Effect",
-                value: analytics.isSummerPattern ? "+20%" : "Normal",
-                icon: "sun.max",
-                color: analytics.isSummerPattern ? .orange : .blue
-            )
-        }
-    }
-    
-    private func durationEffectsGrid(_ analytics: BridgeAnalytics) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-            StatCard(
-                title: "Trigger Effect",
-                value: analytics.cascadeInfluence > 0.5 ? "Longer" : "Normal",
-                icon: "arrow.up.right",
-                color: analytics.cascadeInfluence > 0.5 ? .red : .gray
-            )
-            
-            StatCard(
-                title: "Response Effect",
-                value: analytics.cascadeSusceptibility > 0.5 ? "Shorter" : "Normal",
-                icon: "arrow.down.left",
-                color: analytics.cascadeSusceptibility > 0.5 ? .green : .gray
-            )
-        }
-    }
-    
-    // MARK: - Other Analysis Types (Patterns, Predictions, Impact)
-    
-    private var patternsAnalysisContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Analysis View: \(analysisType.description) - \(viewType.description)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            Text("Bridge: \(bridgeName)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text("Events in period: \(events.count)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            if !events.isEmpty {
-                Text("Latest event: \(events.first?.openDateTime.formatted(.dateTime) ?? "N/A")")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-            }
-            
-            // Placeholder for future patterns implementation
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray5))
-                .frame(height: 120)
-                .overlay(
-                    Text("Patterns Analysis\nComing in Phase 3")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                )
-        }
-    }
-    
-    private var predictionsAnalysisContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            if isAnalyzing {
-                HStack {
-                    ProgressView()
-                        .scaleEffect(0.8)
-                    Text("Calculating predictions...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
-            } else {
-                switch viewType {
-                case .activity:
-                    predictionsActivityView
-                case .weekly:
-                    predictionsWeeklyView
-                case .duration:
-                    predictionsDurationView
-                }
-            }
-        }
-    }
-    
-    private var impactAnalysisContent: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Analysis View: \(analysisType.description) - \(viewType.description)")
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            Text("Bridge: \(bridgeName)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text("Events in period: \(events.count)")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            // Placeholder for future impact implementation
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color(.systemGray5))
-                .frame(height: 120)
-                .overlay(
-                    Text("Neural Impact Analysis\nComing in Phase 4")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                )
-        }
-    }
-    
-    private var predictionsActivityView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Current Prediction")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            if let prediction = currentPrediction {
-                predictionDetailsCard(prediction)
-            } else {
-                Text("No prediction data available")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .italic()
-            }
-            
-            // Show prediction analytics if available
-            if let analytics = currentBridgeAnalytics {
-                predictionAnalyticsGrid(analytics)
-            }
-        }
-    }
-    
-    private var predictionsWeeklyView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Weekly Prediction Patterns")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            if !weeklyPredictionPattern.isEmpty {
-                ForEach(weeklyPredictionPattern, id: \.day) { pattern in
-                    HStack {
-                        Text(pattern.day)
-                            .font(.caption)
-                            .frame(width: 30, alignment: .leading)
-                        
-                        ProgressView(value: pattern.probability, total: 1.0)
-                            .progressViewStyle(LinearProgressViewStyle(tint: probabilityColor(pattern.probability)))
-                        
-                        Text("\(Int(pattern.probability * 100))%")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-            } else {
-                Text("Not enough data for weekly patterns")
-                    .font(.caption)
-                    .foregroundColor(.secondary)
-                    .italic()
-            }
-        }
-    }
-    
-    private var predictionsDurationView: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            Text("Duration Predictions")
-                .font(.subheadline)
-                .fontWeight(.semibold)
-            
-            if let prediction = currentPrediction {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Text("Expected Duration:")
-                        Spacer()
-                        Text(prediction.durationText)
-                            .fontWeight(.medium)
-                    }
-                    
-                    HStack {
-                        Text("Confidence:")
-                        Spacer()
-                        Text(prediction.confidenceText)
-                            .foregroundColor(confidenceColor(prediction.confidence))
-                    }
-                    
-                    Text("Reasoning:")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                    
-                    Text(prediction.reasoning)
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .padding(.leading, 8)
-                }
-                .padding()
-                .background(Color(.systemGray6))
-                .cornerRadius(8)
-            }
-        }
-    }
-    
-    
-    private func predictionDetailsCard(_ prediction: BridgePrediction) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Circle()
-                    .fill(probabilityColor(prediction.probability))
-                    .frame(width: 12, height: 12)
-                
-                Text("Opening Probability")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                
-                Spacer()
-                
-                Text(prediction.probabilityText)
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .foregroundColor(probabilityColor(prediction.probability))
-            }
-            
-            HStack {
-                Text("Time Frame:")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                Text(prediction.timeFrame)
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                
-                Spacer()
-                
-                Text("Duration: \(prediction.durationText)")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
-            
-            Text(prediction.reasoning)
-                .font(.caption2)
-                .foregroundColor(.secondary)
-                .italic()
         }
         .padding()
         .background(Color(.systemBackground))
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .stroke(probabilityColor(prediction.probability).opacity(0.3), lineWidth: 1)
-        )
         .cornerRadius(8)
     }
     
-    private func predictionAnalyticsGrid(_ analytics: BridgeAnalytics) -> some View {
-        LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-            StatCard(
-                title: "Seasonal Trend",
-                value: analytics.trendComponent > 0 ? "↗ Rising" : "↘ Falling",
-                icon: analytics.trendComponent > 0 ? "arrow.up.right" : "arrow.down.right",
-                color: analytics.trendComponent > 0 ? .green : .red
-            )
+    // MARK: - Chart Components
+    
+    @ViewBuilder
+    private var hourlyActivityChart: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Hourly Activity Pattern")
+                .font(.caption)
+                .fontWeight(.medium)
             
-            StatCard(
-                title: "Pattern Type",
-                value: patternTypeText(analytics),
-                icon: patternTypeIcon(analytics),
-                color: .blue
-            )
-            
-            StatCard(
-                title: "Confidence",
-                value: String(format: "%.0f%%", analytics.confidence * 100),
-                icon: "checkmark.seal",
-                color: confidenceColor(analytics.confidence)
-            )
-            
-            StatCard(
-                title: "Data Points",
-                value: "\(analytics.openingCount)",
-                icon: "chart.bar",
-                color: .purple
-            )
+            if #available(iOS 16.0, *) {
+                Chart(getHourlyData(), id: \.hour) { hourData in
+                    BarMark(
+                        x: .value("Hour", hourData.hour),
+                        y: .value("Events", hourData.count)
+                    )
+                    .foregroundStyle(.blue)
+                }
+                .frame(height: 120)
+                .chartXAxis {
+                    AxisMarks(values: .stride(by: 4)) { hour in
+                        AxisValueLabel {
+                            Text("\(hour.as(Int.self) ?? 0)")
+                                .font(.caption2)
+                        }
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks { count in
+                        AxisValueLabel {
+                            Text("\(count.as(Int.self) ?? 0)")
+                                .font(.caption2)
+                        }
+                    }
+                }
+            } else {
+                Text("Chart requires iOS 16+")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
         }
     }
     
+    @ViewBuilder
+    private var weeklyPatternChart: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Weekly Activity Pattern")
+                .font(.caption)
+                .fontWeight(.medium)
+            
+            if #available(iOS 16.0, *) {
+                Chart(getWeeklyData(), id: \.day) { dayData in
+                    AreaMark(
+                        x: .value("Day", dayData.day),
+                        y: .value("Events", dayData.count)
+                    )
+                    .foregroundStyle(
+                        .linearGradient(
+                            colors: [.blue.opacity(0.8), .blue.opacity(0.2)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                }
+                .frame(height: 120)
+                .chartXAxis {
+                    AxisMarks { day in
+                        AxisValueLabel {
+                            Text(dayData(for: day.as(Int.self) ?? 0))
+                                .font(.caption2)
+                        }
+                    }
+                }
+            } else {
+                Text("Chart requires iOS 16+")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    // MARK: - Helper Functions
+    
+    private func getBridgeInfo() -> DrawbridgeInfo? {
+        guard let firstEvent = events.first else { return nil }
+        
+        return DrawbridgeInfo(
+            entityID: firstEvent.entityID,
+            entityName: firstEvent.entityName,
+            entityType: firstEvent.entityType,
+            latitude: firstEvent.latitude,
+            longitude: firstEvent.longitude
+        )
+    }
+    
+    private func getMostActiveHours() -> [HourData] {
+        let hourGroups = Dictionary(grouping: events) { event in
+            Calendar.current.component(.hour, from: event.openDateTime)
+        }
+        
+        let maxCount = hourGroups.values.map(\.count).max() ?? 1
+        
+        return hourGroups.map { hour, events in
+            HourData(hour: hour, count: events.count, maxCount: maxCount)
+        }.sorted { $0.count > $1.count }
+    }
+    
+    private func getHourlyData() -> [HourData] {
+        let hourGroups = Dictionary(grouping: events) { event in
+            Calendar.current.component(.hour, from: event.openDateTime)
+        }
+        
+        let maxCount = hourGroups.values.map(\.count).max() ?? 1
+        
+        return (0...23).map { hour in
+            HourData(hour: hour, count: hourGroups[hour]?.count ?? 0, maxCount: maxCount)
+        }
+    }
+    
+    private func getWeeklyData() -> [WeeklyData] {
+        let weekdayGroups = Dictionary(grouping: events) { event in
+            Calendar.current.component(.weekday, from: event.openDateTime)
+        }
+        
+        return (1...7).map { weekday in
+            WeeklyData(day: weekday, count: weekdayGroups[weekday]?.count ?? 0)
+        }
+    }
+    
+    private func calculateDurationRanges() -> [DurationRange] {
+        let ranges = [
+            (range: "< 15 min", min: 0.0, max: 15.0),
+            (range: "15-30 min", min: 15.0, max: 30.0),
+            (range: "30-60 min", min: 30.0, max: 60.0),
+            (range: "> 60 min", min: 60.0, max: Double.infinity)
+        ]
+        
+        return ranges.map { rangeInfo in
+            let count = events.filter { event in
+                event.minutesOpen >= rangeInfo.min && event.minutesOpen < rangeInfo.max
+            }.count
+            
+            return DurationRange(range: rangeInfo.range, count: count)
+        }
+    }
+    
+    private func calculateSeverityBreakdown() -> [SeverityBreakdown] {
+        let severityGroups = Dictionary(grouping: events) { event in
+            event.impactSeverity.level
+        }
+        
+        let total = events.count
+        
+        return severityGroups.map { severity, eventList in
+            let count = eventList.count
+            let percentage = total > 0 ? Double(count) / Double(total) : 0.0
+            let color: Color
+            
+            switch severity {
+            case "Minimal": color = .green
+            case "Low": color = .blue
+            case "Moderate": color = .orange
+            case "High": color = .red
+            case "Severe": color = .purple
+            default: color = .gray
+            }
+            
+            return SeverityBreakdown(
+                severity: severity,
+                count: count,
+                percentage: percentage,
+                color: color
+            )
+        }.sorted { $0.count > $1.count }
+    }
+    
+    private var hasRushHourEvents: Bool {
+        events.contains { isRushHour($0.openDateTime) }
+    }
+    
+    private func isRushHour(_ date: Date) -> Bool {
+        let hour = Calendar.current.component(.hour, from: date)
+        return (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19)
+    }
+    
+    private func isWeekend(_ date: Date) -> Bool {
+        let weekday = Calendar.current.component(.weekday, from: date)
+        return weekday == 1 || weekday == 7
+    }
+    
+    private func formatHour(_ hour: Int) -> String {
+        if hour == 0 { return "12 AM" }
+        if hour < 12 { return "\(hour) AM" }
+        if hour == 12 { return "12 PM" }
+        return "\(hour - 12) PM"
+    }
+    
+    private func dayData(for weekday: Int) -> String {
+        let days = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        return days[safe: weekday] ?? "?"
+    }
     
     private func probabilityColor(_ probability: Double) -> Color {
         switch probability {
@@ -686,184 +875,12 @@ public struct DynamicAnalysisSection: View {
         }
     }
     
-    private func confidenceColor(_ confidence: Double) -> Color {
-        switch confidence {
-        case 0.0..<0.3: return .red
-        case 0.3..<0.7: return .orange
-        case 0.7...1.0: return .green
-        default: return .gray
-        }
-    }
-    
-    private func patternTypeText(_ analytics: BridgeAnalytics) -> String {
-        if analytics.isWeekendPattern { return "Weekend" }
-        if analytics.isSummerPattern { return "Summer" }
-        if analytics.isRushHourPattern { return "Rush Hour" }
-        return "Standard"
-    }
-    
-    private func patternTypeIcon(_ analytics: BridgeAnalytics) -> String {
-        if analytics.isWeekendPattern { return "calendar.day.weekend" }
-        if analytics.isSummerPattern { return "sun.max" }
-        if analytics.isRushHourPattern { return "car.2" }
-        return "clock"
-    }
-
-    // MARK: - Data Processing
-    
-    private func calculateAnalytics() {
-        isAnalyzing = true
-        
-        Task {
-            let calculatedAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: allEvents)
-            
-            // Calculate current prediction if needed for predictions view
-            var prediction: BridgePrediction?
-            if !events.isEmpty {
-                let bridgeInfo = DrawbridgeInfo(
-                    entityID: events.first?.entityID ?? 0,
-                    entityName: bridgeName,
-                    entityType: events.first?.entityType ?? "Bridge",
-                    latitude: events.first?.latitude ?? 0.0,
-                    longitude: events.first?.longitude ?? 0.0
-                )
-                
-                prediction = BridgeAnalytics.getCurrentPrediction(
-                    for: bridgeInfo,
-                    from: calculatedAnalytics
-                )
-            }
-            
-            await MainActor.run {
-                self.analytics = calculatedAnalytics
-                self.calculatedPrediction = prediction
-                self.isAnalyzing = false
-            }
-        }
-    }
-    
     // MARK: - Computed Properties
     
-    private var currentPrediction: BridgePrediction? {
-        calculatedPrediction
-    }
-    
-    private var currentBridgeAnalytics: BridgeAnalytics? {
-        let calendar = Calendar.current
-        let now = Date()
-        let components = calendar.dateComponents([.month, .weekday, .hour], from: now)
-        
-        return analytics.first { analytics in
-            analytics.entityName == bridgeName &&
-            analytics.month == components.month &&
-            analytics.dayOfWeek == components.weekday &&
-            analytics.hour == components.hour
-        }
-    }
-    
-    private var currentCascadeAlerts: [CascadeAlert] {
-        guard let bridgeInfo = DrawbridgeEvent.getUniqueBridges(allEvents).first(where: { $0.entityName == bridgeName }) else {
-            return []
-        }
-        
-        let bridgeInfoObj = DrawbridgeInfo(
-            entityID: bridgeInfo.entityID,
-            entityName: bridgeInfo.entityName,
-            entityType: bridgeInfo.entityType,
-            latitude: bridgeInfo.latitude,
-            longitude: bridgeInfo.longitude
-        )
-        
-        let recentEvents = allEvents.filter { event in
-            Date().timeIntervalSince(event.openDateTime) < 1800 // Last 30 minutes
-        }
-        
-        return CascadeInsights.getCascadeAlerts(
-            recentEvents: recentEvents,
-            cascadeEvents: cascadeEvents,
-            bridgeInfo: [bridgeInfoObj]
-        ).filter { $0.targetBridge == bridgeName }
-    }
-    
-    private var recentCascadeEvents: [CascadeEvent] {
-        let sevenDaysAgo = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
-        
-        return cascadeEvents.filter { cascade in
-            (cascade.triggerBridgeName == bridgeName || cascade.targetBridgeName == bridgeName) &&
-            cascade.triggerTime >= sevenDaysAgo
-        }.sorted { $0.triggerTime > $1.triggerTime }
-    }
-    
-    private var weeklyPattern: [WeeklyPatternData] {
-        let calendar = Calendar.current
-        let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        
-        return dayNames.enumerated().map { index, dayName in
-            let dayCascades = cascadeEvents.filter { 
-                ($0.triggerBridgeName == bridgeName || $0.targetBridgeName == bridgeName) &&
-                $0.dayOfWeek == index + 1
-            }
-            
-            let frequency = Double(dayCascades.count) / Double(max(cascadeEvents.count, 1))
-            
-            return WeeklyPatternData(day: dayName, frequency: frequency)
-        }
-    }
-    
-    private var durationEffects: [DurationEffectData] {
-        return [
-            DurationEffectData(type: "High Influence", effect: "+15% longer", color: .red),
-            DurationEffectData(type: "High Susceptibility", effect: "-10% shorter", color: .green),
-            DurationEffectData(type: "Cascade Target", effect: "Variable", color: .blue),
-            DurationEffectData(type: "Independent", effect: "Baseline", color: .gray)
-        ]
-    }
-    
-    private var weeklyPredictionPattern: [WeeklyPredictionData] {
-        let calendar = Calendar.current
-        let dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        
-        return dayNames.enumerated().compactMap { index, dayName in
-            let dayAnalytics = analytics.filter { $0.dayOfWeek == index + 1 }
-            guard !dayAnalytics.isEmpty else { return nil }
-            
-            let avgProbability = dayAnalytics.map(\.probabilityOfOpening).reduce(0, +) / Double(dayAnalytics.count)
-            
-            return WeeklyPredictionData(day: dayName, probability: avgProbability)
-        }
-    }
-    
-    // MARK: - Helper Functions
-    
-    private func cascadeStrengthColor(_ strength: Double) -> Color {
-        switch strength {
-        case 0.0..<0.3: return .gray
-        case 0.3..<0.6: return .blue
-        case 0.6..<0.8: return .orange
-        case 0.8...1.0: return .red
-        default: return .gray
-        }
-    }
-    
-    private func getAlternativeRoute(for bridgeName: String) -> String {
-        switch bridgeName.lowercased() {
-        case let name where name.contains("fremont"):
-            return "Aurora (99) or I-5"
-        case let name where name.contains("ballard"):
-            return "15th Ave or Market St"
-        case let name where name.contains("university"):
-            return "I-5 or 45th St"
-        case let name where name.contains("montlake"):
-            return "I-90 or 520"
-        default:
-            return "nearby arterials"
-        }
-    }
-
     private var sectionTitle: String {
         switch analysisType {
         case .patterns: return "Pattern Analysis"
-        case .cascade: return "Cascade Analysis"
+        case .cascade: return "Connection Analysis"
         case .predictions: return "Predictive Analysis"
         case .impact: return "Traffic Impact Analysis"
         }
@@ -874,9 +891,9 @@ public struct DynamicAnalysisSection: View {
         case (.patterns, .activity): return "Activity patterns over time"
         case (.patterns, .weekly): return "Weekly opening patterns"
         case (.patterns, .duration): return "Duration patterns analysis"
-        case (.cascade, .activity): return "Real-time cascade detection"
-        case (.cascade, .weekly): return "Weekly cascade patterns"
-        case (.cascade, .duration): return "Duration cascade effects"
+        case (.cascade, .activity): return "Analyzing bridge connections"
+        case (.cascade, .weekly): return "Weekly bridge connection patterns"
+        case (.cascade, .duration): return "Connection duration effects"
         case (.predictions, .activity): return "Future activity predictions"
         case (.predictions, .weekly): return "Weekly prediction patterns"
         case (.predictions, .duration): return "Predicted durations"
@@ -889,48 +906,42 @@ public struct DynamicAnalysisSection: View {
 
 // MARK: - Supporting Data Models
 
-struct WeeklyPatternData {
-    let day: String
-    let frequency: Double
+struct HourData {
+    let hour: Int
+    let count: Int
+    let maxCount: Int
 }
 
-struct DurationEffectData {
-    let type: String
-    let effect: String
+struct WeeklyData: Identifiable {
+    let id = UUID()
+    let day: Int
+    let count: Int
+}
+
+struct DurationRange {
+    let range: String
+    let count: Int
+}
+
+struct SeverityBreakdown {
+    let severity: String
+    let count: Int
+    let percentage: Double
     let color: Color
 }
 
-struct WeeklyPredictionData {
-    let day: String
-    let probability: Double
-}
+// MARK: - Array Extension for Safe Access
 
-// MARK: - Extensions for String representation
-extension AnalysisType {
-    var description: String {
-        switch self {
-        case .patterns: return "Patterns"
-        case .cascade: return "Cascade"
-        case .predictions: return "Predictions"
-        case .impact: return "Impact"
-        }
-    }
-}
-
-extension ViewType {
-    var description: String {
-        switch self {
-        case .activity: return "Activity"
-        case .weekly: return "Weekly"
-        case .duration: return "Duration"
-        }
+extension Array {
+    subscript(safe index: Index) -> Element? {
+        return indices.contains(index) ? self[index] : nil
     }
 }
 
 #Preview {
     DynamicAnalysisSection(
         events: [],
-        analysisType: .cascade,
+        analysisType: .impact,
         viewType: .activity,
         bridgeName: "Test Bridge"
     )
