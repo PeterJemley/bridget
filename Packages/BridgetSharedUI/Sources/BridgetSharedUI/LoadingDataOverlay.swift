@@ -17,27 +17,23 @@ public struct LoadingDataOverlay: View {
             
             VStack(spacing: 20) {
                 ProgressView()
-                    .scaleEffect(1.5)
-                    .progressViewStyle(CircularProgressViewStyle(tint: .blue))
+                    .scaleEffect(1.2)
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
                 
-                VStack(spacing: 8) {
-                    Text("Loading Bridge Data")
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                    
-                    Text("Accessing Seattle Open Data API")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Getting the latest bridge information...")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                }
+                Text("Accessing Seattle Open Data API")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                
+                Text("Loading bridge activity data...")
+                    .font(.body)
+                    .foregroundColor(.white.opacity(0.8))
+                    .multilineTextAlignment(.center)
             }
-            .padding(30)
-            .background(Color(.systemBackground))
+            .padding(32)
+            .background(Color.black.opacity(0.8))
             .cornerRadius(16)
-            .shadow(radius: 20)
+            .padding(16)
         }
     }
 }

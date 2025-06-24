@@ -79,15 +79,15 @@ public struct StatisticsView: View {
             .navigationTitle("Statistics")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
-                print("⚙️ [STATS] StatisticsView Appeared – events.count = \(events.count)")
+                print(" [STATS] StatisticsView Appeared – events.count = \(events.count)")
                 if analytics.isEmpty && !events.isEmpty && !isCalculating {
                     calculateAnalytics()
                 }
             }
         }
         .onAppear {
-            print("⚙️ [STATS] StatisticsView Appeared – events.count = \(events.count)")
-            updateNeuralEngineStatus() // ADDED: Update status on appear
+            print(" [STATS] StatisticsView Appeared – events.count = \(events.count)")
+            updateNeuralEngineStatus()
             if analytics.isEmpty && !events.isEmpty && !isCalculating {
                 calculateAnalytics()
             }
@@ -130,7 +130,7 @@ public struct StatisticsView: View {
     // MARK: - Safe Helper Functions
 
     private func generateCurrentPredictions() -> [BridgePrediction] {
-        print("📊 [STATS] Generating current predictions from \(analytics.count) analytics records")
+        print(" [STATS] Generating current predictions from \(analytics.count) analytics records")
         
         var predictions: [BridgePrediction] = []
 
@@ -150,15 +150,15 @@ public struct StatisticsView: View {
             }
         }
 
-        print("📊 [STATS] Generated \(predictions.count) predictions successfully")
+        print(" [STATS] Generated \(predictions.count) predictions successfully")
         return predictions.sorted { $0.probability > $1.probability }
     }
 
     private func calculateAnalytics() {
-        print("📊 [STATS] Starting SAFE analytics calculation with \(events.count) events...")
+        print(" [STATS] Starting SAFE analytics calculation with \(events.count) events...")
         
         guard !events.isEmpty else {
-            print("📊 [STATS] No events available for analytics")
+            print(" [STATS] No events available for analytics")
             return
         }
         
@@ -167,7 +167,7 @@ public struct StatisticsView: View {
         // SAFE APPROACH: Create value-type DTOs from SwiftData objects on main thread
         let eventDTOs = events.map { event in
             EventDTO(
-                id: event.id,
+                id: "\(event.id)", // FIX: Convert PersistentIdentifier to String representation
                 entityType: event.entityType,
                 entityName: event.entityName,
                 entityID: event.entityID,
@@ -179,14 +179,14 @@ public struct StatisticsView: View {
             )
         }
         
-        print("📊 [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
+        print(" [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
 
         Task.detached(priority: .userInitiated) { [eventDTOs] in
-            print("📊 [STATS] Running analytics on background thread with DTOs...")
+            print(" [STATS] Running analytics on background thread with DTOs...")
             
             // OPTIMIZATION: Limit events to prevent hanging (use most recent 1000 events)
             let limitedEventDTOs = Array(eventDTOs.sorted { $0.openDateTime > $1.openDateTime }.prefix(1000))
-            print("📊 [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
+            print(" [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
             
             do {
                 // Convert DTOs back to DrawbridgeEvent objects for analytics calculation
@@ -205,14 +205,14 @@ public struct StatisticsView: View {
                 
                 let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
                 
-                print("📊 [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
+                print(" [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
 
                 await MainActor.run {
-                    print("📊 [STATS] Updating UI on main thread...")
+                    print(" [STATS] Updating UI on main thread...")
                     isCalculating = false
                 }
             } catch {
-                print("❌ [STATS] Analytics calculation failed: \(error)")
+                print(" [STATS] Analytics calculation failed: \(error)")
                 await MainActor.run {
                     isCalculating = false
                 }
@@ -265,9 +265,10 @@ struct PredictionCard: View {
                     .font(.caption)
                     .foregroundColor(.secondary)
 
-                Text(prediction.confidenceText)
-                    .font(.caption)
+                Text(prediction.reasoning)
+                    .font(.caption2)
                     .foregroundColor(.secondary)
+                    .lineLimit(2)
             }
 
             Text(prediction.reasoning)

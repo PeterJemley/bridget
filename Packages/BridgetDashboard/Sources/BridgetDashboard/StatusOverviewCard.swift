@@ -27,9 +27,9 @@ public struct StatusOverviewCard: View {
             }
             
             LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
+                GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12)
+            ], spacing: 16) {
                 StatusCard(
                     title: "Bridges Monitored",
                     value: "\(uniqueBridgeCount)",
@@ -55,12 +55,11 @@ public struct StatusOverviewCard: View {
                 )
             }
         }
-        .padding()
+        .padding(16)
         .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .cornerRadius(16)
     }
     
-    // MARK: - Data Binding Computed Properties
     private var uniqueBridgeCount: Int {
         Set(events.map(\.entityName)).count
     }

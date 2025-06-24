@@ -1,10 +1,3 @@
-//
-//  HistoryView.swift
-//  BridgetHistory
-//
-//  Created by Peter Jemley on 6/19/25.
-//
-
 import SwiftUI
 import Charts
 import BridgetCore
@@ -25,7 +18,7 @@ public struct HistoryView: View {
     public var body: some View {
         NavigationView {
             ScrollView {
-                VStack(spacing: 20) {
+                VStack(spacing: 28) { 
                     // Time Range Selection
                     timeRangeSection
                     
@@ -51,7 +44,8 @@ public struct HistoryView: View {
                         patternInsightsSection
                     }
                 }
-                .padding()
+                .padding(.horizontal, 16) 
+                .padding(.vertical, 12) // INCREASED: From 8 to 12 for better edge spacing
             }
             .navigationTitle("Historical Analysis")
             .navigationBarTitleDisplayMode(.large)
@@ -115,7 +109,7 @@ public struct HistoryView: View {
                 .font(.headline)
                 .fontWeight(.semibold)
             
-            ScrollView(.horizontal, showsIndicators: false) {
+           ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(AnalysisType.allCases, id: \.self) { type in
                         FilterButton(
@@ -133,10 +127,12 @@ public struct HistoryView: View {
     // MARK: - Main Chart Section
     
     private var mainChartSection: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(alignment: .leading, spacing: 24) { // INCREASED: From 20 to 24 for better separation
             Text(selectedAnalysisType.chartTitle)
                 .font(.headline)
                 .fontWeight(.semibold)
+                .foregroundColor(.primary)
+                .padding(.bottom, 12) // INCREASED: From 8 to 12 for more separation from chart
             
             Group {
                 switch selectedAnalysisType {
@@ -152,94 +148,306 @@ public struct HistoryView: View {
                     comparisonChart
                 }
             }
-            .frame(height: 300)
-            .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-            .shadow(color: .black.opacity(0.1), radius: 2, x: 0, y: 1)
+
+            .padding(.top, 16)
+            .padding(.horizontal, 24)
+            .padding(.bottom, 24) 
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color(.systemBackground))
+                    .shadow(color: .black.opacity(0.06), radius: 6, x: 0, y: 3)
+            )
+            .overlay(
+                RoundedRectangle(cornerRadius: 16)
+                    .stroke(Color(.systemGray5), lineWidth: 0.5)
+            )
         }
+        .padding(.vertical, 16) // INCREASED: From 12 to 16 for more section separation
     }
     
     // MARK: - Chart Implementations
     
     private var frequencyChart: some View {
-        Chart(frequencyData) { item in
+        Chart(frequencyData.prefix(12)) { item in 
             BarMark(
                 x: .value("Period", item.period),
                 y: .value("Count", item.count)
             )
-            .foregroundStyle(Color.blue.gradient)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color.blue, Color.blue.opacity(0.6)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
         }
-        .chartXAxis(.visible)
-        .chartYAxis(.visible)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 3)) { value in 
+                AxisValueLabel()
+                    .font(.caption2)
+                    .foregroundStyle(Color.primary)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    .foregroundStyle(Color.gray.opacity(0.3))
+                AxisValueLabel()
+                    .font(.caption2)
+                    .foregroundStyle(Color.primary)
+            }
+        }
     }
     
     private var durationChart: some View {
-        Chart(durationData) { item in
+        Chart(durationData.prefix(8)) { item in 
             AreaMark(
-                x: .value("Time", item.time),
+                x: .value("Time", item.time, unit: .day),
                 y: .value("Duration", item.avgDuration)
             )
-            .foregroundStyle(Color.green.gradient)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color.green.opacity(0.8), Color.green.opacity(0.2)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
             .interpolationMethod(.catmullRom)
         }
-        .chartXAxis(.visible)
-        .chartYAxis(.visible)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 3)) { value in 
+                AxisValueLabel(format: .dateTime.month(.abbreviated).day())
+                    .font(.caption2)
+                    .foregroundStyle(Color.primary)
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    .foregroundStyle(Color.gray.opacity(0.3))
+                AxisValueLabel()
+                    .font(.caption2)
+                    .foregroundStyle(Color.primary)
+            }
+        }
     }
     
     private var timelineChart: some View {
-        Chart(timelineData) { item in
-            PointMark(
-                x: .value("Time", item.timestamp),
-                y: .value("Bridge", item.bridgeName)
-            )
-            .foregroundStyle(Color.red)
-            .symbolSize(CGSize(width: 8, height: 8))
+        VStack(alignment: .leading, spacing: 32) { // INCREASED: From 28 to 32 for maximum separation
+            // Clear summary metrics at top - with proper positioning
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 8)
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Busiest Week")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(busiestWeekText)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.red)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .center, spacing: 6) {
+                        Text("Weekly Average")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text("\(Int(weeklyAverage)) events")
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 6) {
+                        Text("Trend")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                        Text(trendDirection)
+                            .font(.title3)
+                            .fontWeight(.semibold)
+                            .foregroundColor(trendColor)
+                    }
+                }
+                .padding(.vertical, 20) // INCREASED: From 18 to 20
+                .padding(.horizontal, 20)
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+            }
+            
+            // WEEKLY CHART - with significant top margin to prevent overlap
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 16)
+                
+                Chart(weeklyTimelineData.prefix(5)) { item in
+                    BarMark(
+                        x: .value("Week", item.weekLabel),
+                        y: .value("Events", item.eventCount)
+                    )
+                    .foregroundStyle(
+                        LinearGradient(
+                            colors: item.eventCount > weeklyAverage 
+                                ? [Color.red, Color.red.opacity(0.6)]
+                                : [Color.green, Color.green.opacity(0.6)],
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .cornerRadius(4)
+                }
+                .frame(height: 100) // REDUCED: From 110 to 100 to fit within larger container
+                .chartXAxis {
+                    AxisMarks(values: .automatic(desiredCount: 3)) { value in
+                        AxisValueLabel()
+                            .font(.caption2)
+                            .foregroundStyle(Color.primary)
+                    }
+                }
+                .chartYAxis {
+                    AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                        AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                            .foregroundStyle(Color.gray.opacity(0.3))
+                        AxisValueLabel()
+                            .font(.caption2)
+                            .foregroundStyle(Color.primary)
+                    }
+                }
+            }
+            
+            // ACTIONABLE INSIGHTS CARDS - with proper spacing from chart
+            VStack(spacing: 0) {
+                Spacer()
+                    .frame(height: 16)
+                
+                LazyVGrid(columns: [
+                    GridItem(.flexible(), spacing: 12),
+                    GridItem(.flexible(), spacing: 12)
+                ], spacing: 16) {
+                    InsightCard(
+                        title: "Peak Day",
+                        value: busiestDayOfWeek,
+                        subtitle: "\(peakDayEventCount) avg events",
+                        color: .orange
+                    )
+                    
+                    InsightCard(
+                        title: "Avg Duration",
+                        value: "\(Int(averageDuration))min",
+                        subtitle: "per opening",
+                        color: .purple
+                    )
+                    
+                    InsightCard(
+                        title: "Top Bridge",
+                        value: String(mostActiveBridge.prefix(8)),
+                        subtitle: "\(Int(topBridgePercentage))% of events",
+                        color: .cyan
+                    )
+                    
+                    InsightCard(
+                        title: "Recent Trend",
+                        value: String(trendDirection.prefix(6)),
+                        subtitle: "vs last month",
+                        color: trendColor
+                    )
+                }
+            }
         }
-        .chartXAxis(.visible)
-        .chartYAxis(.visible)
     }
     
     private var patternsChart: some View {
-        Chart(hourlyPatternData) { item in
+        Chart(hourlyPatternData.filter { $0.frequency > 0 }) { item in 
             LineMark(
                 x: .value("Hour", item.hour),
                 y: .value("Frequency", item.frequency)
             )
             .foregroundStyle(Color.purple)
-            .lineStyle(StrokeStyle(lineWidth: 3))
+            .lineStyle(StrokeStyle(lineWidth: 3, lineCap: .round))
+            
+            PointMark(
+                x: .value("Hour", item.hour),
+                y: .value("Frequency", item.frequency)
+            )
+            .foregroundStyle(Color.purple)
+            .symbolSize(60)
         }
-        .chartXAxis(.visible)
-        .chartYAxis(.visible)
+        .chartXAxis {
+            AxisMarks(values: .stride(by: 6)) { value in 
+                AxisValueLabel {
+                    if let hour = value.as(Int.self) {
+                        Text(hour == 0 ? "12A" : hour == 6 ? "6A" : hour == 12 ? "12P" : hour == 18 ? "6P" : "")
+                            .font(.caption2)
+                            .foregroundStyle(Color.primary)
+                    }
+                }
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    .foregroundStyle(Color.gray.opacity(0.3))
+                AxisValueLabel()
+                    .font(.caption2)
+                    .foregroundStyle(Color.primary)
+            }
+        }
     }
     
     private var comparisonChart: some View {
-        Chart(comparisonData) { item in
+        Chart(comparisonData.prefix(4)) { item in
             BarMark(
-                x: .value("Bridge", item.bridgeName),
-                y: .value("Total Events", item.totalEvents)
+                x: .value("Total Events", item.totalEvents),
+                y: .value("Bridge", item.bridgeName)
             )
-            .foregroundStyle(Color.orange.gradient)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [Color.orange, Color.orange.opacity(0.6)],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+            )
+            .cornerRadius(4)
         }
-        .chartXAxis(.visible)
-        .chartYAxis(.visible)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { _ in
+                AxisGridLine()
+                AxisValueLabel()
+                    .font(.caption2)
+            }
+        }
+        .chartYAxis {
+            AxisMarks() { _ in
+                AxisValueLabel()
+                    .font(.caption2)
+            }
+        }
+        .frame(height: CGFloat(min(comparisonData.count, 4)) * 44 + 40)
+        .padding(.vertical, 12)
     }
     
-    // MARK: - Summary Stats Section
+    // MARK: - Summary Statistics Section
     
     private var summaryStatsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Summary Statistics")
                 .font(.headline)
                 .fontWeight(.semibold)
+                .padding(.bottom, 8) // INCREASED: From 4 to 8 for consistency
             
-            LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 16), count: 2), spacing: 16) {
                 StatCard(title: "Total Events", value: "\(filteredEvents.count)", icon: "chart.bar", color: .blue)
                 StatCard(title: "Avg Duration", value: String(format: "%.1f min", averageDuration), icon: "clock", color: .green)
                 StatCard(title: "Most Active Bridge", value: mostActiveBridge, icon: "road.lanes", color: .purple)
                 StatCard(title: "Peak Hour", value: peakHour, icon: "sun.max", color: .orange)
             }
         }
+        .padding(.vertical, 12) // INCREASED: From 8 to 12 for better section separation
     }
     
     // MARK: - Timeline Section
@@ -249,13 +457,15 @@ public struct HistoryView: View {
             Text("Recent Events Timeline")
                 .font(.headline)
                 .fontWeight(.semibold)
+                .padding(.bottom, 8) // INCREASED: From 4 to 8 for consistency
             
-            LazyVStack(spacing: 8) {
+            LazyVStack(spacing: 12) {
                 ForEach(recentEvents.prefix(20), id: \.openDateTime) { event in
                     TimelineEventRow(event: event)
                 }
             }
         }
+        .padding(.vertical, 12) // INCREASED: From 8 to 12 for better section separation
     }
     
     // MARK: - Pattern Insights Section
@@ -265,13 +475,15 @@ public struct HistoryView: View {
             Text("Pattern Insights")
                 .font(.headline)
                 .fontWeight(.semibold)
+                .padding(.bottom, 8) // INCREASED: From 4 to 8 for consistency
             
-            VStack(spacing: 12) {
+            VStack(spacing: 16) {
                 ForEach(patternInsights, id: \.title) { insight in
                     PatternInsightCard(insight: insight)
                 }
             }
         }
+        .padding(.vertical, 12) // INCREASED: From 8 to 12 for better section separation
     }
     
     // MARK: - Bridge Picker Sheet
@@ -359,41 +571,37 @@ extension HistoryView {
         filteredEvents.sorted { $0.openDateTime > $1.openDateTime }
     }
     
-    // MARK: - Chart Data
-    
     private var frequencyData: [FrequencyDataPoint] {
         let calendar = Calendar.current
         let groupedData = Dictionary(grouping: filteredEvents) { event in
-            calendar.startOfDay(for: event.openDateTime)
+            let formatter = DateFormatter()
+            formatter.dateFormat = "M/d"
+            let weekStart = calendar.dateInterval(of: .weekOfYear, for: event.openDateTime)?.start ?? event.openDateTime
+            return formatter.string(from: weekStart)
         }
         
-        return groupedData.map { date, events in
-            FrequencyDataPoint(
-                period: date.formatted(.dateTime.month().day()),
-                count: events.count
-            )
-        }.sorted { $0.period < $1.period }
+        return groupedData.map { period, events in
+            FrequencyDataPoint(period: period, count: events.count)
+        }.sorted { 
+            let formatter = DateFormatter()
+            formatter.dateFormat = "M/d"
+            let date1 = formatter.date(from: $0.period) ?? Date.distantPast
+            let date2 = formatter.date(from: $1.period) ?? Date.distantPast
+            return date1 < date2
+        }
     }
     
     private var durationData: [DurationDataPoint] {
         let calendar = Calendar.current
         let groupedData = Dictionary(grouping: filteredEvents) { event in
-            calendar.startOfDay(for: event.openDateTime)
+            calendar.dateInterval(of: .weekOfYear, for: event.openDateTime)?.start ?? event.openDateTime
         }
         
-        return groupedData.map { date, events in
+        return groupedData.compactMap { date, events in
+            guard !events.isEmpty else { return nil }
             let avgDuration = events.map(\.minutesOpen).reduce(0, +) / Double(events.count)
             return DurationDataPoint(time: date, avgDuration: avgDuration)
         }.sorted { $0.time < $1.time }
-    }
-    
-    private var timelineData: [TimelineDataPoint] {
-        filteredEvents.prefix(50).map { event in
-            TimelineDataPoint(
-                timestamp: event.openDateTime,
-                bridgeName: event.entityName
-            )
-        }
     }
     
     private var hourlyPatternData: [HourlyPatternDataPoint] {
@@ -403,10 +611,7 @@ extension HistoryView {
         }
         
         return (0..<24).map { hour in
-            HourlyPatternDataPoint(
-                hour: hour,
-                frequency: hourlyGroups[hour]?.count ?? 0
-            )
+            HourlyPatternDataPoint(hour: hour, frequency: hourlyGroups[hour]?.count ?? 0)
         }
     }
     
@@ -420,7 +625,6 @@ extension HistoryView {
     private var patternInsights: [PatternInsight] {
         var insights: [PatternInsight] = []
         
-        // Peak day insight
         let calendar = Calendar.current
         let dayGroups = Dictionary(grouping: filteredEvents) { event in
             calendar.component(.weekday, from: event.openDateTime)
@@ -435,23 +639,147 @@ extension HistoryView {
             ))
         }
         
-        // Duration trend insight
-        let recentDuration = filteredEvents.suffix(50).map(\.minutesOpen).reduce(0, +) / 50
-        let overallDuration = averageDuration
+        return insights
+    }
+    
+    private var busiestWeekText: String {
+        guard let busiestWeek = weeklyTimelineData.max(by: { $0.eventCount < $1.eventCount }) else {
+            return "N/A"
+        }
+        return busiestWeek.weekLabel
+    }
+    
+    private var weeklyAverage: Double {
+        guard !weeklyTimelineData.isEmpty else { return 0 }
+        let totalEvents = weeklyTimelineData.map(\.eventCount).reduce(0, +)
+        return totalEvents / Double(weeklyTimelineData.count)
+    }
+    
+    private var trendDirection: String {
+        guard weeklyTimelineData.count >= 4 else { return "N/A" }
         
-        if recentDuration > overallDuration * 1.2 {
-            insights.append(PatternInsight(
-                title: "Increasing Duration Trend",
-                description: "Recent openings are 20% longer than average",
-                impact: .medium
-            ))
+        let recent = weeklyTimelineData.suffix(2).map(\.eventCount).reduce(0, +) / 2
+        let previous = weeklyTimelineData.dropLast(2).suffix(2).map(\.eventCount).reduce(0, +) / 2
+        
+        if recent > previous * 1.1 {
+            return " Rising"
+        } else if recent < previous * 0.9 {
+            return " Falling"
+        } else {
+            return " Stable"
+        }
+    }
+    
+    private var trendColor: Color {
+        if trendDirection.contains("Rising") {
+            return .red
+        } else if trendDirection.contains("Falling") {
+            return .green
+        } else {
+            return .blue
+        }
+    }
+    
+    private var busiestDayOfWeek: String {
+        let calendar = Calendar.current
+        let dayGroups = Dictionary(grouping: filteredEvents) { event in
+            calendar.component(.weekday, from: event.openDateTime)
         }
         
-        return insights
+        guard let busiestDay = dayGroups.max(by: { $0.value.count < $1.value.count }) else {
+            return "N/A"
+        }
+        
+        return calendar.shortWeekdaySymbols[busiestDay.key - 1]
+    }
+    
+    private var peakDayEventCount: Int {
+        let calendar = Calendar.current
+        let dayGroups = Dictionary(grouping: filteredEvents) { event in
+            calendar.component(.weekday, from: event.openDateTime)
+        }
+        
+        return dayGroups.max(by: { $0.value.count < $1.value.count })?.value.count ?? 0
+    }
+    
+    private var topBridgePercentage: Double {
+        let bridgeCounts = Dictionary(grouping: filteredEvents, by: \.entityName).mapValues(\.count)
+        let topCount = bridgeCounts.values.max() ?? 0
+        let totalCount = filteredEvents.count
+        
+        guard totalCount > 0 else { return 0 }
+        return Double(topCount) / Double(totalCount) * 100
+    }
+    
+    private var weeklyTimelineData: [WeeklyTimelineDataPoint] {
+        let calendar = Calendar.current
+        let weekGroups = Dictionary(grouping: filteredEvents) { event in
+            calendar.dateInterval(of: .weekOfYear, for: event.openDateTime)?.start ?? event.openDateTime
+        }
+        
+        return weekGroups.map { startDate, events in
+            let formatter = DateFormatter()
+            formatter.dateFormat = "M/d"
+            
+            return WeeklyTimelineDataPoint(
+                weekStart: startDate,
+                weekLabel: formatter.string(from: startDate),
+                eventCount: Double(events.count)
+            )
+        }.sorted { $0.weekStart < $1.weekStart }
     }
 }
 
-// MARK: - Supporting Types
+// MARK: - Supporting Types and Views
+
+struct WeeklyTimelineDataPoint: Identifiable {
+    let id = UUID()
+    let weekStart: Date
+    let weekLabel: String
+    let eventCount: Double
+}
+
+struct FrequencyDataPoint: Identifiable {
+    let id = UUID()
+    let period: String
+    let count: Int
+}
+
+struct DurationDataPoint: Identifiable {
+    let id = UUID()
+    let time: Date
+    let avgDuration: Double
+}
+
+struct HourlyPatternDataPoint: Identifiable {
+    let id = UUID()
+    let hour: Int
+    let frequency: Int
+}
+
+struct ComparisonDataPoint: Identifiable {
+    let id = UUID()
+    let bridgeName: String
+    let totalEvents: Int
+}
+
+struct PatternInsight {
+    let title: String
+    let description: String
+    let impact: InsightImpact
+}
+
+enum InsightImpact {
+    case low, medium, high
+    
+    var color: Color {
+        switch self {
+        case .low: return .green
+        case .medium: return .orange
+        case .high: return .red
+        }
+    }
+}
 
 public enum TimeRange: CaseIterable {
     case week, month, quarter, year
@@ -501,64 +829,12 @@ public enum AnalysisType: CaseIterable {
         switch self {
         case .frequency: return "Opening Frequency Over Time"
         case .duration: return "Average Duration Trends"
-        case .timeline: return "Bridge Opening Timeline"
+        case .timeline: return "Weekly Activity Summary"
         case .patterns: return "Daily Opening Patterns"
         case .comparison: return "Bridge Activity Comparison"
         }
     }
 }
-
-// MARK: - Data Models
-
-struct FrequencyDataPoint: Identifiable {
-    let id = UUID()
-    let period: String
-    let count: Int
-}
-
-struct DurationDataPoint: Identifiable {
-    let id = UUID()
-    let time: Date
-    let avgDuration: Double
-}
-
-struct TimelineDataPoint: Identifiable {
-    let id = UUID()
-    let timestamp: Date
-    let bridgeName: String
-}
-
-struct HourlyPatternDataPoint: Identifiable {
-    let id = UUID()
-    let hour: Int
-    let frequency: Int
-}
-
-struct ComparisonDataPoint: Identifiable {
-    let id = UUID()
-    let bridgeName: String
-    let totalEvents: Int
-}
-
-struct PatternInsight {
-    let title: String
-    let description: String
-    let impact: InsightImpact
-}
-
-enum InsightImpact {
-    case low, medium, high
-    
-    var color: Color {
-        switch self {
-        case .low: return .green
-        case .medium: return .orange
-        case .high: return .red
-        }
-    }
-}
-
-// MARK: - Supporting Views
 
 struct TimelineEventRow: View {
     let event: DrawbridgeEvent
@@ -588,10 +864,10 @@ struct TimelineEventRow: View {
                     .foregroundColor(.secondary)
             }
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 12)
+        .padding(.vertical, 12) 
+        .padding(.horizontal, 16) 
         .background(Color(.systemGray6))
-        .cornerRadius(8)
+        .cornerRadius(10) 
     }
 }
 
@@ -616,10 +892,77 @@ struct PatternInsightCard: View {
                 .font(.body)
                 .foregroundColor(.secondary)
         }
-        .padding()
+        .padding(16) 
         .background(Color(.systemBackground))
         .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 1, x: 0, y: 1)
+        .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2) 
+    }
+}
+
+struct StatCard: View {
+    let title: String
+    let value: String
+    let icon: String
+    let color: Color
+    
+    var body: some View {
+        VStack(spacing: 12) { 
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(color)
+            
+            Text(value)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(.primary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8) 
+            
+            Text(title)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+                .lineLimit(2) 
+        }
+        .frame(maxWidth: .infinity)
+        .padding(20) 
+        .background(Color(.systemBackground))
+        .cornerRadius(16) 
+        .shadow(color: .black.opacity(0.05), radius: 3, x: 0, y: 2) 
+    }
+}
+
+struct InsightCard: View {
+    let title: String
+    let value: String
+    let subtitle: String
+    let color: Color
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) { 
+            Text(title)
+                .font(.caption)
+                .fontWeight(.medium)
+                .foregroundColor(.secondary)
+            
+            Text(value)
+                .font(.title3)
+                .fontWeight(.bold)
+                .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            
+            Text(subtitle)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .lineLimit(1)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16) 
+        .background(Color(.systemBackground))
+        .cornerRadius(12) 
+        .shadow(color: .black.opacity(0.04), radius: 2, x: 0, y: 1) 
     }
 }
 

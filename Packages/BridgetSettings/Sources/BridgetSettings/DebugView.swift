@@ -18,7 +18,7 @@ public struct DebugView: View {
     @State private var isLoading = false
     @State private var errorMessage: String?
     @State private var lastRefresh: Date?
-    @State private var apiCallCount = 0
+    @State private var sessionApiCalls = 0
     @State private var totalApiCalls = 0
     
     public init() {}
@@ -46,15 +46,14 @@ public struct DebugView: View {
                         }
                     }
                     
-                    // FIXED: Show proper API call tracking instead of "0"
+                    // FIXED: Show session API calls (resets on app launch)
                     HStack {
-                        Text("API Calls (Session)")
+                        Text("API Calls Made")
                         Spacer()
-                        Text("\(apiCallCount)")
+                        Text("\(sessionApiCalls)")
                             .foregroundColor(.secondary)
                     }
 
-                    // ADDED: Total API calls across app lifecycle
                     HStack {
                         Text("Total API Calls")
                         Spacer()
@@ -62,7 +61,6 @@ public struct DebugView: View {
                             .foregroundColor(.secondary)
                     }
 
-                    // ADDED: Data source indicator
                     HStack {
                         Text("Data Source")
                         Spacer()
@@ -145,7 +143,10 @@ public struct DebugView: View {
                 }
             }
             .onAppear {
-                loadApiCallCount()
+                loadApiCallCounts()
+            }
+            .onChange(of: events.count) { oldValue, newValue in
+                loadApiCallCounts()
             }
         }
     }
@@ -197,20 +198,18 @@ public struct DebugView: View {
                     
                     try? modelContext.save()
                     
-                    // In the success case:
+                    // FIXED: Use shared API tracking system
                     lastRefresh = Date()
-                    incrementApiCallCount() // FIXED: Properly track API calls
+                    incrementApiCallCount()
+                    loadApiCallCounts() // Refresh displayed counts
                     isLoading = false
-
                 }
             } catch {
                 await MainActor.run {
                     errorMessage = error.localizedDescription
-                    // In the failure case:
-                    errorMessage = error.localizedDescription
                     isLoading = false
                     incrementApiCallCount() // Track failed calls too
-
+                    loadApiCallCounts() // Refresh displayed counts
                 }
             }
         }
@@ -226,17 +225,28 @@ public struct DebugView: View {
         
         try? modelContext.save()
         lastRefresh = nil
-        apiCallCount = 0
+        sessionApiCalls = 0
         errorMessage = nil
+
+        UserDefaults.standard.set(0, forKey: "BridgetSessionAPICallCount")
+        loadApiCallCounts()
     }
-    private func loadApiCallCount() {
+    
+    // FIXED: Use shared UserDefaults keys matching ContentViewModular
+    private func loadApiCallCounts() {
+        sessionApiCalls = UserDefaults.standard.integer(forKey: "BridgetSessionAPICallCount")
         totalApiCalls = UserDefaults.standard.integer(forKey: "BridgetAPICallCount")
+        print("🌐 [DEBUG] Loaded API call counts: Session = \(sessionApiCalls), Total = \(totalApiCalls)")
     }
 
     private func incrementApiCallCount() {
-        apiCallCount += 1
-        totalApiCalls += 1
-        UserDefaults.standard.set(totalApiCalls, forKey: "BridgetAPICallCount")
+        let newSessionCount = UserDefaults.standard.integer(forKey: "BridgetSessionAPICallCount") + 1
+        let newTotalCount = UserDefaults.standard.integer(forKey: "BridgetAPICallCount") + 1
+        
+        UserDefaults.standard.set(newSessionCount, forKey: "BridgetSessionAPICallCount")
+        UserDefaults.standard.set(newTotalCount, forKey: "BridgetAPICallCount")
+        
+        print("🌐 [DEBUG] API call count incremented: Session = \(newSessionCount), Total = \(newTotalCount)")
     }
 }
 

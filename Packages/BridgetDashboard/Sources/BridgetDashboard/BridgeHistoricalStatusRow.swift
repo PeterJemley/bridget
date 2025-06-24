@@ -12,84 +12,72 @@ public struct BridgeHistoricalStatusRow: View {
     public let event: DrawbridgeEvent
     @State private var prediction: BridgePrediction?
     @State private var isCalculatingPrediction = false
-    
+
     public init(event: DrawbridgeEvent) {
         self.event = event
     }
-    
+
     public var body: some View {
-        HStack {
-            Text(event.entityName)
-                .font(.subheadline)
-                .fontWeight(.medium)
-            
-            Spacer()
-            
-            // FIXED: Show smart impact level instead of repetitive "Moderate"
-            HStack(spacing: 4) {
-                Image(systemName: event.impactSeverity.systemImage)
-                    .font(.caption2)
-                    .foregroundColor(event.impactSeverity.color)
-                
+        VStack(alignment: .leading, spacing: 12) {
+            // First row: Bridge name and status
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(event.entityName)
+                        .font(.headline)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+
+                    Text(statusText)
+                        .font(.body)
+                        .fontWeight(.medium)
+                        .foregroundColor(statusColor)
+                }
+
+                Spacer()
+
                 Text(event.impactSeverity.level)
                     .font(.caption)
                     .fontWeight(.medium)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 2)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
                     .background(event.impactSeverity.color.opacity(0.15))
                     .foregroundColor(event.impactSeverity.color)
-                    .cornerRadius(4)
+                    .cornerRadius(6)
             }
-        }
 
-        HStack {
-            Text(statusText)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundColor(statusColor)
-            
-            Spacer()
-            
-            Text(event.relativeTimeText)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
+            // Second row: Time and duration info
+            HStack {
+                Text(event.relativeTimeText)
+                    .font(.body)
+                    .foregroundColor(.secondary)
 
-        // IMPROVED: Duration and prediction info
-        HStack {
-            Text("Duration: \(String(format: "%.0f", event.minutesOpen)) min")
-                .font(.caption2)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-            
-            // Prediction Display
-            if isCalculatingPrediction {
-                HStack(spacing: 4) {
-                    ProgressView()
-                        .scaleEffect(0.5)
-                    Text("Calculating...")
-                        .font(.caption2)
+                Spacer()
+
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Duration: \(String(format: "%.0f", event.minutesOpen)) min")
+                        .font(.body)
                         .foregroundColor(.secondary)
+
+                    Text(event.formattedOpenTime)
+                        .font(.caption2)
+                        .foregroundColor(.secondary.opacity(0.7))
                 }
-            } else if let prediction = prediction {
-                Text("Next: \(prediction.probabilityText)")
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundColor(predictionColor)
             }
         }
-        .padding(.vertical, 8)
+        .padding(.vertical, 12)
+        .padding(.horizontal, 16)
+        .background(Color(.systemGray6).opacity(0.5))
+        .cornerRadius(8)
         .onAppear {
             calculatePrediction()
         }
     }
-    
+
     // MARK: - Prediction Calculation
-    
+
     private func calculatePrediction() {
         isCalculatingPrediction = true
-        
+
         Task.detached(priority: .userInitiated) {
             let bridgeInfo = DrawbridgeInfo(
                 entityID: event.entityID,
@@ -98,26 +86,26 @@ public struct BridgeHistoricalStatusRow: View {
                 latitude: event.latitude,
                 longitude: event.longitude
             )
-            
+
             // Use simplified prediction for consistency
             let calculatedPrediction = await calculateSimplifiedPrediction(for: bridgeInfo)
-            
+
             await MainActor.run {
                 self.prediction = calculatedPrediction
                 self.isCalculatingPrediction = false
             }
         }
     }
-    
+
     private func calculateSimplifiedPrediction(for bridge: DrawbridgeInfo) async -> BridgePrediction {
         let calendar = Calendar.current
         let now = Date()
         let currentHour = calendar.component(.hour, from: now)
         let currentWeekday = calendar.component(.weekday, from: now)
-        
+
         // Simplified prediction based on current time patterns
         var baseProbability = 0.15 // Default low probability
-        
+
         // Adjust based on time of day (common bridge opening patterns)
         switch currentHour {
         case 6...9: baseProbability = 0.4 // Morning rush hour
@@ -126,19 +114,19 @@ public struct BridgeHistoricalStatusRow: View {
         case 20...22: baseProbability = 0.25 // Evening activity
         default: baseProbability = 0.1 // Off-peak hours
         }
-        
+
         // Weekend adjustment
         let isWeekend = currentWeekday == 1 || currentWeekday == 7
         if isWeekend {
             baseProbability *= 1.3 // Higher probability on weekends
         }
-        
+
         // Summer adjustment (June-September)
         let isSummer = calendar.component(.month, from: now) >= 6 && calendar.component(.month, from: now) <= 9
         if isSummer {
             baseProbability *= 1.2 // Higher probability in summer
         }
-        
+
         // Bridge-specific adjustments (based on typical Seattle bridge patterns)
         switch bridge.entityName.lowercased() {
         case let name where name.contains("fremont"):
@@ -150,19 +138,19 @@ public struct BridgeHistoricalStatusRow: View {
         default:
             baseProbability *= 1.0 // Default
         }
-        
+
         // Cap the probability
         baseProbability = max(0.05, min(0.95, baseProbability))
-        
+
         let dayName = calendar.weekdaySymbols[currentWeekday - 1]
         let hourText = currentHour == 0 ? "12 AM" : 
                       currentHour < 12 ? "\(currentHour) AM" :
                       currentHour == 12 ? "12 PM" : "\(currentHour - 12) PM"
-        
+
         var reasoning = "Prediction for \(dayName) at \(hourText)"
         if isWeekend { reasoning += " (weekend pattern)" }
         if isSummer { reasoning += " (summer season)" }
-        
+
         return BridgePrediction(
             bridge: bridge,
             probability: baseProbability,
@@ -172,21 +160,21 @@ public struct BridgeHistoricalStatusRow: View {
             reasoning: reasoning
         )
     }
-    
+
     // MARK: - Computed Properties
-    
+
     private var statusText: String {
         // Show historical status
         return event.isCurrentlyOpen ? "WAS OPEN" : "CLOSED"
     }
-    
+
     private var statusColor: Color {
         return event.isCurrentlyOpen ? .red : .green
     }
-    
+
     private var predictionColor: Color {
         guard let prediction = prediction else { return .blue }
-        
+
         switch prediction.probability {
         case 0.0..<0.3: return .green
         case 0.3..<0.6: return .orange  
@@ -208,7 +196,7 @@ public struct BridgeHistoricalStatusRow: View {
             latitude: 47.6519,
             longitude: -122.3531
         ))
-        
+
         BridgeHistoricalStatusRow(event: DrawbridgeEvent(
             entityType: "Bridge", 
             entityName: "Ballard Bridge",

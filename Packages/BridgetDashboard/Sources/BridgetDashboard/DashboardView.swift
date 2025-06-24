@@ -1,10 +1,3 @@
-//
-//  DashboardView.swift
-//  BridgetDashboard
-//
-//  Created by Peter Jemley on 6/19/25.
-//
-
 import SwiftUI
 import BridgetCore
 import BridgetSharedUI
@@ -22,67 +15,68 @@ public struct DashboardView: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
-                    // Header Section
-                    VStack(spacing: 8) {
+                    VStack(spacing: 12) {
                         HStack(spacing: 8) {
                             Image(systemName: "laurel.leading")
-                                .font(.largeTitle)
+                                .font(.title2)
                                 .foregroundColor(.green)
                             
                             Text("Bridget")
-                                .font(.largeTitle)
+                                .font(.title2)
                                 .fontWeight(.bold)
                             
                             Image(systemName: "laurel.trailing")
-                                .font(.largeTitle)
+                                .font(.title2)
                                 .foregroundColor(.green)
                         }
                         
-                        (Text("Ditch the spanxiety and bridge the gap between ") +
-                         Text("you").italic() +
-                         Text(" and ") +
-                         Text("on time").italic())
-                            .font(.subheadline)
+                        Text("Bridge the gap between you and on time")
+                            .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.horizontal)
                     
-                    // Data source information
                     if !events.isEmpty {
-                        HStack {
-                            Image(systemName: "info.circle")
-                                .foregroundColor(.blue)
-                            Text("Data provided by Seattle Open Data API")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
+                        Button(action: {
+                            openSeattleDataAPI()
+                        }) {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .foregroundColor(.blue)
+                                Text("Seattle Open Data API")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.blue)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 12)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(20)
                         }
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color(.systemGray6))
-                        .cornerRadius(8)
+                        .buttonStyle(PlainButtonStyle())
                     }
                     
-                    // Status Overview Card
                     StatusOverviewCard(events: events, bridgeInfo: bridgeInfo)
                     
-                    // Last Known Status Section
                     LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
-                    // Recent Activity Section
                     RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)
-                    
-                    // Data Source Info
-                    dataSourceInfo
                 }
-                .padding()
+                .padding(16)
             }
             .navigationBarBackButtonHidden(true)
             .navigationBarHidden(true)
         }
     }
     
-    // MARK: - Computed Properties
+    private func openSeattleDataAPI() {
+        if let url = URL(string: "https://data.seattle.gov/Transportation/SDOT-Drawbridge-Status/gm8h-9449/about_data") {
+            UIApplication.shared.open(url)
+        }
+    }
     
     private var lastKnownStatusEvents: [DrawbridgeEvent] {
         let uniqueBridges = Set(events.map { $0.entityID })
@@ -97,19 +91,6 @@ public struct DashboardView: View {
     private var recentEvents: [DrawbridgeEvent] {
         let sortedEvents = events.sorted { $0.openDateTime > $1.openDateTime }
         return Array(sortedEvents.prefix(10))
-    }
-    
-    private var dataSourceInfo: some View {
-        VStack(spacing: 8) {
-            Text("Data provided by Seattle Open Data API")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            Text("Updated automatically on app launch")
-                .font(.caption2)
-                .foregroundColor(.secondary.opacity(0.7))
-        }
-        .padding(.vertical, 8)
     }
 }
 

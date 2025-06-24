@@ -19,29 +19,41 @@ public struct StatusCard: View {
     }
     
     public var body: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             Text(value)
                 .font(.title2)
                 .fontWeight(.bold)
                 .foregroundColor(color)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
             
             Text(title)
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
         }
-        .frame(minHeight: 60)
-        .padding()
+        .frame(maxWidth: .infinity)
+        .padding(16)
         .background(Color(.systemBackground))
-        .cornerRadius(8)
+        .cornerRadius(12)
+        .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
 }
 
 #Preview {
-    StatusCard(
-        title: "Test Card",
-        value: "42",
-        color: .blue
-    )
+    HStack {
+        StatusCard(
+            title: "Bridges Monitored",
+            value: "7",
+            color: .blue
+        )
+        
+        StatusCard(
+            title: "Total Events",
+            value: "4,187",
+            color: .gray
+        )
+    }
     .padding()
 }

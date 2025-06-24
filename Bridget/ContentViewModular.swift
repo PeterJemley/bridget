@@ -21,7 +21,7 @@ import BridgetSettings
 
 struct ContentViewModular: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var events: [DrawbridgeEvent]
+    @Query private var allEvents: [DrawbridgeEvent]
     @Query private var bridgeInfo: [DrawbridgeInfo]
     
     // Loading state for automatic data fetching
@@ -29,6 +29,11 @@ struct ContentViewModular: View {
     @State private var initialDataLoaded = false
     @State private var dataFetchError: String?
     @State private var bridgeInfoSyncInProgress = false
+    @State private var lastRefreshDate: Date?
+    
+    private var events: [DrawbridgeEvent] {
+        return allEvents 
+    }
     
     var body: some View {
         ZStack {
@@ -78,14 +83,14 @@ struct ContentViewModular: View {
             await loadInitialDataIfNeeded()
         }
         .onAppear {
-            print("🏠 [MAIN] ContentView appeared - Events: \(events.count), Bridge Info: \(bridgeInfo.count)")
+            print("🏠 [MAIN] ContentView appeared - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count)")
             
             // IMPROVED: Always check for bridge info sync on appear
             Task {
                 await ensureBridgeInfoSynchronized()
             }
         }
-        .onChange(of: events.count) { oldCount, newCount in
+        .onChange(of: allEvents.count) { oldCount, newCount in
             // FIXED: Trigger bridge info sync when events change
             print("🏠 [MAIN] Events count changed: \(oldCount) → \(newCount)")
             
@@ -100,6 +105,18 @@ struct ContentViewModular: View {
             print("🏠 [MAIN] Manual refresh triggered")
             await forceDataRefresh()
         }
+    }
+    
+    // MARK: - API Call Tracking
+    
+    private func incrementApiCallCount() {
+        let currentSessionCount = UserDefaults.standard.integer(forKey: "BridgetSessionAPICallCount") + 1
+        let totalCount = UserDefaults.standard.integer(forKey: "BridgetAPICallCount") + 1
+        
+        UserDefaults.standard.set(currentSessionCount, forKey: "BridgetSessionAPICallCount")
+        UserDefaults.standard.set(totalCount, forKey: "BridgetAPICallCount")
+        
+        print("🌐 [API TRACKING] API call count updated: Session = \(currentSessionCount), Total = \(totalCount)")
     }
     
     // IMPROVED: Dedicated bridge info synchronization function
@@ -148,7 +165,7 @@ struct ContentViewModular: View {
     
     // Initial data loading function
     private func loadInitialDataIfNeeded() async {
-        print("🏠 [MAIN] Data check - Events: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
+        print("🏠 [MAIN] Data check - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
         
         guard events.isEmpty else { 
             print("🏠 [MAIN] Skipping data load - already have \(events.count) events")
@@ -158,7 +175,11 @@ struct ContentViewModular: View {
             return 
         }
         
-        print("🏠 [MAIN] Starting data load (events.isEmpty: \(events.isEmpty))...")
+        await loadNewData()
+    }
+    
+    private func loadNewData() async {
+        print("🏠 [MAIN] Starting data load...")
         
         await MainActor.run {
             isLoadingInitialData = true
@@ -174,8 +195,11 @@ struct ContentViewModular: View {
             
             print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEvents.count) EVENTS")
             
-            // FIXED: Remove nested MainActor.run - just do the work directly
-            print("🏠 [MAIN] Storing \(fetchedEvents.count) events in SwiftData...")
+            // FIXED: Track the API call that just completed successfully
+            await MainActor.run {
+                incrementApiCallCount()
+                lastRefreshDate = Date()
+            }
             
             // Store events FIRST
             for event in fetchedEvents {
@@ -216,7 +240,10 @@ struct ContentViewModular: View {
             
         } catch {
             print("❌ [MAIN ERROR] Data load failed: \(error)")
+            
+            // FIXED: Track failed API calls too
             await MainActor.run {
+                incrementApiCallCount()
                 dataFetchError = error.localizedDescription
                 isLoadingInitialData = false
                 initialDataLoaded = false
@@ -274,7 +301,7 @@ struct ContentViewModular: View {
         print("🏗️ [BRIDGE INFO] ✅ Bridge info creation complete - Created: \(createdCount) new records")
     }
     
-    // IMPROVED: Force refresh with proper synchronization
+    // IMPROVED: Force refresh with proper synchronization and API tracking
     public func forceDataRefresh() async {
         print("🏠 [MAIN] 🔄 Force refresh initiated")
         
@@ -283,7 +310,7 @@ struct ContentViewModular: View {
             bridgeInfoSyncInProgress = false
         }
         
-        await loadInitialDataIfNeeded()
+        await loadNewData()
     }
 }
 

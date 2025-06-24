@@ -10,6 +10,14 @@ import BridgetCore
 
 public struct SettingsView: View {
     @AppStorage("showGeekFeatures") private var showGeekFeatures = false
+    @AppStorage("autoRefreshEnabled") private var autoRefreshEnabled = true
+    @AppStorage("refreshIntervalMinutes") private var refreshIntervalMinutes = 60
+    @AppStorage("notificationsEnabled") private var notificationsEnabled = false
+    @AppStorage("preferredTimeFormat") private var preferredTimeFormat = "12h"
+    @AppStorage("dataRetentionDays") private var dataRetentionDays = 30
+    @AppStorage("analyticsEnabled") private var analyticsEnabled = true
+    @AppStorage("compactMode") private var compactMode = false
+    
     @State private var showDebugView = false
     @State private var neuralEngineInfo: (generation: String, cores: Int, tops: Double, complexity: String)?
     
@@ -91,6 +99,13 @@ public struct SettingsView: View {
                         Text("Data Source")
                         Spacer()
                         Text("Seattle Open Data")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Build")
+                        Spacer()
+                        Text("Release")
                             .foregroundColor(.secondary)
                     }
                 }

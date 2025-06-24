@@ -7,6 +7,7 @@
 
 import SwiftUI
 import BridgetCore
+import BridgetBridgeDetail
 
 public struct RecentActivitySection: View {
     public let events: [DrawbridgeEvent]
@@ -32,7 +33,7 @@ public struct RecentActivitySection: View {
                     .padding()
             } else {
                 ForEach(events) { event in
-                    NavigationLink(destination: BridgeDetailPlaceholderView(event: event)) {
+                    NavigationLink(destination: BridgeDetailView(bridgeEvent: event)) {
                         BridgeHistoricalStatusRow(event: event)
                     }
                     .buttonStyle(PlainButtonStyle())
