@@ -188,11 +188,21 @@ public struct DebugView: View {
             }
             
             do {
-                let fetchedEvents = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 100)
+                let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 100)
                 
                 await MainActor.run {
-                    // Store events
-                    for event in fetchedEvents {
+                    // Convert DTOs to model objects and store
+                    for dto in fetchedEventDTOs {
+                        let event = DrawbridgeEvent(
+                            entityType: dto.entityType,
+                            entityName: dto.entityName,
+                            entityID: dto.entityID,
+                            openDateTime: dto.openDateTime,
+                            closeDateTime: dto.closeDateTime,
+                            minutesOpen: dto.minutesOpen,
+                            latitude: dto.latitude,
+                            longitude: dto.longitude
+                        )
                         modelContext.insert(event)
                     }
                     

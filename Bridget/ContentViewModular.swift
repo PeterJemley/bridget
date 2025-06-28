@@ -191,9 +191,9 @@ struct ContentViewModular: View {
             print("🏠 [MAIN] Calling DrawbridgeAPI.fetchDrawbridgeData...")
             
             // Using modular DrawbridgeAPI from BridgetNetworking - get all available data
-            let fetchedEvents = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10000)
+            let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10000)
             
-            print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEvents.count) EVENTS")
+            print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEventDTOs.count) EVENTS")
             
             // FIXED: Track the API call that just completed successfully
             await MainActor.run {
@@ -202,7 +202,17 @@ struct ContentViewModular: View {
             }
             
             // Store events FIRST
-            for event in fetchedEvents {
+            for dto in fetchedEventDTOs {
+                let event = DrawbridgeEvent(
+                    entityType: dto.entityType,
+                    entityName: dto.entityName,
+                    entityID: dto.entityID,
+                    openDateTime: dto.openDateTime,
+                    closeDateTime: dto.closeDateTime,
+                    minutesOpen: dto.minutesOpen,
+                    latitude: dto.latitude,
+                    longitude: dto.longitude
+                )
                 modelContext.insert(event)
             }
             
@@ -221,7 +231,7 @@ struct ContentViewModular: View {
             }
             
             // Log per-bridge event counts
-            let bridgeGroups = Dictionary(grouping: fetchedEvents, by: \.entityName)
+            let bridgeGroups = Dictionary(grouping: events, by: \.entityName)
             print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
             for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
                 print("🏠 [MAIN]    • \(bridgeName): \(bridgeEvents.count) events")
@@ -233,7 +243,7 @@ struct ContentViewModular: View {
             }
             
             print("🏠 [MAIN] ✅ DATA LOAD COMPLETE")
-            print("🏠 [MAIN] 🎯 FINAL STATS: \(fetchedEvents.count) total events across \(bridgeGroups.count) bridges")
+            print("🏠 [MAIN] 🎯 FINAL STATS: \(events.count) total events across \(bridgeGroups.count) bridges")
             
             // IMPROVED: Bridge info creation happens after events are saved
             await ensureBridgeInfoSynchronized()

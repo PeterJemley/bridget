@@ -133,8 +133,61 @@ public final class CascadeEvent {
 public struct CascadeDetectionEngine {
     
     /// Efficient cascade detection using spatial indexing, graph algorithms, and batching
+    /// Thread-safe version that accepts EventDTOs for concurrency
+    public static func detectCascadeEffects(from eventDTOs: [EventDTO]) -> [CascadeEvent] {
+        print(" [CASCADE] Starting efficient cascade detection for \(eventDTOs.count) events (DTO version)...")
+        let startTime = Date()
+        
+        // Convert DTOs to model objects for processing (safe since we're not crossing concurrency boundaries here)
+        let events = eventDTOs.map { dto in
+            DrawbridgeEvent(
+                entityType: dto.entityType,
+                entityName: dto.entityName,
+                entityID: dto.entityID,
+                openDateTime: dto.openDateTime,
+                closeDateTime: dto.closeDateTime,
+                minutesOpen: dto.minutesOpen,
+                latitude: dto.latitude,
+                longitude: dto.longitude
+            )
+        }
+        
+        // Build spatial index and bridge network graph
+        let bridgeNetwork = BridgeNetworkGraph(events: events)
+        let spatialIndex = SpatialBridgeIndex(events: events)
+        let timeIndex = TemporalEventIndex(events: events)
+        
+        // Process events in temporal batches for better cache locality
+        let batchSize = min(500, events.count / 4)
+        let sortedEvents = events.sorted { $0.openDateTime < $1.openDateTime }
+        var allCascades: [CascadeEvent] = []
+        
+        for batchStart in stride(from: 0, to: sortedEvents.count, by: batchSize) {
+            let batchEnd = min(batchStart + batchSize, sortedEvents.count)
+            let batch = Array(sortedEvents[batchStart..<batchEnd])
+            
+            let batchCascades = detectCascadesInBatch(
+                batch: batch,
+                network: bridgeNetwork,
+                spatialIndex: spatialIndex,
+                timeIndex: timeIndex
+            )
+            allCascades.append(contentsOf: batchCascades)
+        }
+        
+        // Post-process to remove duplicates and apply quality filters
+        let filteredCascades = filterAndRankCascades(allCascades)
+        
+        let totalTime = Date().timeIntervalSince(startTime)
+        print(" [CASCADE] Efficient cascade detection complete: \(filteredCascades.count) cascades in \(String(format: "%.2f", totalTime))s")
+        
+        return filteredCascades
+    }
+    
+    /// Legacy method for backward compatibility - accepts DrawbridgeEvent models
+    /// Use detectCascadeEffects(from: [EventDTO]) for thread-safe concurrency
     public static func detectCascadeEffects(from events: [DrawbridgeEvent]) -> [CascadeEvent] {
-        print(" [CASCADE] Starting efficient cascade detection for \(events.count) events...")
+        print(" [CASCADE] Starting efficient cascade detection for \(events.count) events (legacy version)...")
         let startTime = Date()
         
         // Build spatial index and bridge network graph
@@ -529,8 +582,92 @@ public struct BridgeNetworkGraph {
 
 public struct BridgeAnalyticsCalculator {
     
+    /// Thread-safe version that accepts EventDTOs for concurrency
+    public static func calculateAnalytics(from eventDTOs: [EventDTO]) -> [BridgeAnalytics] {
+        print("📊 Starting optimized analytics calculation for \(eventDTOs.count) events (DTO version)...")
+        let startTime = Date()
+        
+        // Convert DTOs to model objects for processing (safe since we're not crossing concurrency boundaries here)
+        let events = eventDTOs.map { dto in
+            DrawbridgeEvent(
+                entityType: dto.entityType,
+                entityName: dto.entityName,
+                entityID: dto.entityID,
+                openDateTime: dto.openDateTime,
+                closeDateTime: dto.closeDateTime,
+                minutesOpen: dto.minutesOpen,
+                latitude: dto.latitude,
+                longitude: dto.longitude
+            )
+        }
+        
+        var analytics: [String: BridgeAnalytics] = [:]
+        
+        var processedEvents = 0
+        let progressInterval = 500
+        
+        for event in events {
+            let calendar = Calendar.current
+            let components = calendar.dateComponents([.year, .month, .weekday, .hour], from: event.openDateTime)
+            
+            guard let year = components.year,
+                  let month = components.month,
+                  let dayOfWeek = components.weekday,
+                  let hour = components.hour else { continue }
+            
+            let key = "\(event.entityID)-\(year)-\(month)-\(dayOfWeek)-\(hour)"
+            
+            if let existing = analytics[key] {
+                existing.openingCount += 1
+                existing.totalMinutesOpen += event.minutesOpen
+                existing.averageMinutesPerOpening = existing.totalMinutesOpen / Double(existing.openingCount)
+                existing.longestOpeningMinutes = max(existing.longestOpeningMinutes, event.minutesOpen)
+                existing.shortestOpeningMinutes = min(existing.shortestOpeningMinutes, event.minutesOpen)
+            } else {
+                let newAnalytics = BridgeAnalytics(
+                    entityID: event.entityID,
+                    entityName: event.entityName,
+                    year: year,
+                    month: month,
+                    dayOfWeek: dayOfWeek,
+                    hour: hour
+                )
+                newAnalytics.openingCount = 1
+                newAnalytics.totalMinutesOpen = event.minutesOpen
+                newAnalytics.averageMinutesPerOpening = event.minutesOpen
+                newAnalytics.longestOpeningMinutes = event.minutesOpen
+                newAnalytics.shortestOpeningMinutes = event.minutesOpen
+                analytics[key] = newAnalytics
+            }
+            
+            processedEvents += 1
+            if processedEvents % progressInterval == 0 {
+                print("📊 [PROGRESS] Processed \(processedEvents)/\(events.count) events...")
+            }
+        }
+        
+        // Calculate probabilities and expected durations
+        for (_, analytic) in analytics {
+            calculateProbabilitiesAndDurations(for: analytic, allAnalytics: Array(analytics.values))
+        }
+        
+        // Run cascade detection in background and store results
+        Task.detached(priority: .background) {
+            let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
+            saveCascadeEventsToStorage(cascadeEvents)
+        }
+        
+        let totalTime = Date().timeIntervalSince(startTime)
+        let result = Array(analytics.values)
+        print("📊 Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
+        
+        return result
+    }
+    
+    /// Legacy method for backward compatibility - accepts DrawbridgeEvent models
+    /// Use calculateAnalytics(from: [EventDTO]) for thread-safe concurrency
     public static func calculateAnalytics(from events: [DrawbridgeEvent]) -> [BridgeAnalytics] {
-        print("📊 Starting optimized analytics calculation for \(events.count) events...")
+        print("📊 Starting optimized analytics calculation for \(events.count) events (legacy version)...")
         let startTime = Date()
         
         var analytics: [String: BridgeAnalytics] = [:]
@@ -569,59 +706,31 @@ public struct BridgeAnalyticsCalculator {
                 newAnalytics.averageMinutesPerOpening = event.minutesOpen
                 newAnalytics.longestOpeningMinutes = event.minutesOpen
                 newAnalytics.shortestOpeningMinutes = event.minutesOpen
-                
                 analytics[key] = newAnalytics
             }
             
             processedEvents += 1
             if processedEvents % progressInterval == 0 {
-                let elapsed = Date().timeIntervalSince(startTime)
-                print("📊 Processed \(processedEvents)/\(events.count) events in \(String(format: "%.1f", elapsed))s")
+                print("📊 [PROGRESS] Processed \(processedEvents)/\(events.count) events...")
             }
         }
         
-        let groupingTime = Date().timeIntervalSince(startTime)
-        print("📊 Event grouping complete: \(analytics.count) analytics records in \(String(format: "%.2f", groupingTime))s")
+        // Calculate probabilities and expected durations
+        for (_, analytic) in analytics {
+            calculateProbabilitiesAndDurations(for: analytic, allAnalytics: Array(analytics.values))
+        }
         
-        let rawAnalytics = Array(analytics.values)
-        print("📊 Starting Phase 1: Seasonal decomposition...")
-        let decomposedAnalytics = SeasonalDecomposition.decompose(analytics: rawAnalytics)
-        
-        let phase1Time = Date().timeIntervalSince(startTime)
-        print("📊 Phase 1 complete in \(String(format: "%.2f", phase1Time - groupingTime))s")
-        
-        print("📊 Starting Phase 2: Cascade detection...")
-        let cascadeStartTime = Date()
-        let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: events)
-        let cascadeTime = Date().timeIntervalSince(cascadeStartTime)
-        print("📊 Phase 2 complete: \(cascadeEvents.count) cascades detected in \(String(format: "%.2f", cascadeTime))s")
-        
-        // FIXED: Save cascade events to SwiftData - THIS WAS MISSING!
-        print("📊 Saving \(cascadeEvents.count) cascade events to SwiftData...")
-        Task { @MainActor in
-            // Store cascade events in a global location for StatisticsView to pick up
+        // Run cascade detection in background and store results
+        Task.detached(priority: .background) {
+            let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: events)
             saveCascadeEventsToStorage(cascadeEvents)
         }
         
-        // SIMPLIFIED: Basic predictions without complex helper functions
-        print("📊 Calculating basic predictions...")
-        for analytics in decomposedAnalytics {
-            analytics.probabilityOfOpening = Double(analytics.openingCount) / 100.0
-            analytics.expectedDuration = analytics.averageMinutesPerOpening
-            analytics.confidence = min(Double(analytics.openingCount) / 10.0, 1.0)
-        }
-        
         let totalTime = Date().timeIntervalSince(startTime)
-        print("📊 ANALYTICS CALCULATION COMPLETE")
-        print("📊 PERFORMANCE SUMMARY:")
-        print("    • Total time: \(String(format: "%.2f", totalTime))s")
-        print("    • Event grouping: \(String(format: "%.2f", groupingTime))s")
-        print("    • Phase 1 (Seasonal): \(String(format: "%.2f", phase1Time - groupingTime))s") 
-        print("    • Phase 2 (Cascade): \(String(format: "%.2f", cascadeTime))s")
-        print("    • Analytics records: \(decomposedAnalytics.count)")
-        print("    • Cascade events: \(cascadeEvents.count)")
+        let result = Array(analytics.values)
+        print("📊 Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
         
-        return decomposedAnalytics
+        return result
     }
     
     // FIXED: Helper function to save cascade events
@@ -632,6 +741,26 @@ public struct BridgeAnalyticsCalculator {
         
         // Store cascade events in a global location for StatisticsView to pick up
         CascadeEventStorage.pendingCascadeEvents = cascadeEvents
+    }
+    
+    /// Calculate probabilities and expected durations for analytics
+    private static func calculateProbabilitiesAndDurations(for analytic: BridgeAnalytics, allAnalytics: [BridgeAnalytics]) {
+        // Calculate probability based on historical frequency
+        let totalEventsInTimeSlot = allAnalytics.filter { 
+            $0.hour == analytic.hour && $0.dayOfWeek == analytic.dayOfWeek 
+        }.map(\.openingCount).reduce(0, +)
+        
+        if totalEventsInTimeSlot > 0 {
+            analytic.probabilityOfOpening = Double(analytic.openingCount) / Double(totalEventsInTimeSlot)
+        } else {
+            analytic.probabilityOfOpening = 0.1 // Default low probability
+        }
+        
+        // Expected duration is the average
+        analytic.expectedDuration = analytic.averageMinutesPerOpening
+        
+        // Confidence based on data quality
+        analytic.confidence = min(Double(analytic.openingCount) / 10.0, 1.0)
     }
 }
 

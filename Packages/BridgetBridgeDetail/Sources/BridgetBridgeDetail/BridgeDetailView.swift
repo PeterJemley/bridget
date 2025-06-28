@@ -11,170 +11,239 @@ import Charts
 import BridgetCore
 import BridgetSharedUI
 
+// MARK: - View Model for Bridge Detail
+
+@MainActor
+class BridgeDetailViewModel: ObservableObject {
+    @Published var selectedPeriod: TimePeriod = .sevenDays
+    @Published var selectedAnalysis: AnalysisType = .patterns
+    @Published var selectedView: ViewType = .activity
+    @Published var isDataReady = false
+    @Published var isLoading = false
+    @Published var errorMessage: String?
+    
+    private let bridgeEvent: DrawbridgeEvent
+    private var dataCheckTimer: Timer?
+    
+    init(bridgeEvent: DrawbridgeEvent) {
+        self.bridgeEvent = bridgeEvent
+    }
+    
+    // MARK: - Public Interface
+    
+    func checkDataAvailability(allEvents: [DrawbridgeEvent]) {
+        let bridgeSpecificEvents = allEvents.filter { $0.entityID == bridgeEvent.entityID }
+        
+        if !bridgeSpecificEvents.isEmpty {
+            isDataReady = true
+            stopDataCheckTimer()
+        } else if allEvents.count > 0 {
+            isDataReady = true
+            stopDataCheckTimer()
+        } else {
+            startDataCheckTimer()
+        }
+    }
+    
+    func forceCascadeDetection(allEvents: [DrawbridgeEvent], cascadeEvents: [CascadeEvent], modelContext: ModelContext) async {
+        isLoading = true
+        errorMessage = nil
+        
+        do {
+            let currentEvents = Array(allEvents.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
+            let eventDTOs = currentEvents.toDTOs
+            
+            let cascadeEventsDetected = await Task.detached(priority: .userInitiated) {
+                CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
+            }.value
+            
+            // Update SwiftData on main thread
+            for existingEvent in cascadeEvents {
+                modelContext.delete(existingEvent)
+            }
+            
+            for cascadeEvent in cascadeEventsDetected {
+                modelContext.insert(cascadeEvent)
+            }
+            
+            try modelContext.save()
+            
+        } catch {
+            errorMessage = "Failed to detect cascade events: \(error.localizedDescription)"
+        }
+        
+        isLoading = false
+    }
+    
+    // MARK: - Private Methods
+    
+    private func startDataCheckTimer() {
+        stopDataCheckTimer()
+        dataCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
+            // Timer will be invalidated when data is ready
+        }
+        
+        // Failsafe: Stop checking after 10 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
+            if !self.isDataReady {
+                self.isDataReady = true
+                self.stopDataCheckTimer()
+            }
+        }
+    }
+    
+    private func stopDataCheckTimer() {
+        dataCheckTimer?.invalidate()
+        dataCheckTimer = nil
+    }
+    
+    deinit {
+        dataCheckTimer?.invalidate()
+    }
+}
+
+// MARK: - Main View
+
 public struct BridgeDetailView: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allEvents: [DrawbridgeEvent]
     @Query private var cascadeEvents: [CascadeEvent]
     
     public let bridgeEvent: DrawbridgeEvent
-    @State private var selectedPeriod: TimePeriod = .sevenDays
-    @State private var selectedAnalysis: AnalysisType = .patterns
-    @State private var selectedView: ViewType = .activity
     
-    @State private var isDataReady = false
-    @State private var dataCheckTimer: Timer?
-    
-    public var bridgeInfo: DrawbridgeEvent {
-        bridgeEvent
-    }
-    
-    public var events: [DrawbridgeEvent] {
-        bridgeSpecificEvents
-    }
+    @StateObject private var viewModel: BridgeDetailViewModel
     
     public init(bridgeEvent: DrawbridgeEvent) {
         self.bridgeEvent = bridgeEvent
+        self._viewModel = StateObject(wrappedValue: BridgeDetailViewModel(bridgeEvent: bridgeEvent))
     }
     
     public var body: some View {
         NavigationView {
-            ScrollView {
-                VStack(spacing: 16) {
-                    BridgeHeaderSection(
-                        bridgeName: bridgeInfo.entityName,
-                        lastKnownEvent: lastKnownEvent,
-                        totalEvents: bridgeSpecificEvents.count
-                    )
-                    
-                    FunctionalTimeFilterSection(
-                        selectedPeriod: $selectedPeriod,
-                        bridgeEvents: filteredEvents
-                    )
-                    
-                    BridgeStatsSection(
-                        events: filteredEvents,
-                        timePeriod: selectedPeriod,
-                        analysisType: selectedAnalysis
-                    )
-                    
-                    AnalysisFilterSection(selectedAnalysis: $selectedAnalysis)
-                    ViewFilterSection(selectedView: $selectedView)
-                    
-                    DynamicAnalysisSection(
-                        events: filteredEvents,
-                        analysisType: selectedAnalysis,
-                        viewType: selectedView,
-                        bridgeName: bridgeInfo.entityName
-                    )
+            Group {
+                if viewModel.isDataReady {
+                    bridgeDetailContent
+                } else {
+                    loadingView
                 }
-                .padding()
             }
             .navigationTitle(bridgeInfo.entityName)
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
                 print("🌉 [BRIDGE DETAIL] Appeared for \(bridgeInfo.entityName)")
-                print("🌉 [BRIDGE DETAIL] Events: \(events.count), Filtered: \(filteredEvents.count)")
-                
-                print("🏗️ [BRIDGE DETAIL] View appeared for \(bridgeEvent.entityName)")
-                print("🏗️ [BRIDGE DETAIL] All events: \(allEvents.count)")
-                print("🏗️ [BRIDGE DETAIL] Bridge events: \(bridgeSpecificEvents.count)")
-                checkDataAvailability()
+                viewModel.checkDataAvailability(allEvents: allEvents)
             }
-            .onChange(of: allEvents.count) { oldValue, newValue in
-                print(" [BRIDGE DETAIL] Events count changed: \(oldValue) → \(newValue)")
-                checkDataAvailability()
-            }
-            .onDisappear {
-                dataCheckTimer?.invalidate()
+            .onChange(of: allEvents.count) { _, _ in
+                viewModel.checkDataAvailability(allEvents: allEvents)
             }
         }
     }
     
-    // MARK: - Cascade Detection
-    private func forceCascadeDetectionForBridge() async {
-        print(" [BRIDGE DETAIL]  FORCING CASCADE DETECTION...")
-        
-        let currentEvents = Array(allEvents.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
-        
-        await Task.detached(priority: .userInitiated) {
-            let eventDTOs = currentEvents.map { event in
-                DrawbridgeEvent(
-                    entityType: event.entityType,
-                    entityName: event.entityName,
-                    entityID: event.entityID,
-                    openDateTime: event.openDateTime,
-                    closeDateTime: event.closeDateTime,
-                    minutesOpen: event.minutesOpen,
-                    latitude: event.latitude,
-                    longitude: event.longitude
+    // MARK: - Loading View
+    
+    @ViewBuilder
+    private var loadingView: some View {
+        VStack(spacing: 16) {
+            ProgressView()
+                .scaleEffect(1.2)
+            
+            Text("Loading bridge data...")
+                .font(.headline)
+                .foregroundColor(.secondary)
+            
+            Text("Fetching events for \(bridgeInfo.entityName)")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+    }
+    
+    // MARK: - Main Content
+    
+    @ViewBuilder
+    private var bridgeDetailContent: some View {
+        ScrollView {
+            VStack(spacing: 16) {
+                BridgeHeaderSection(
+                    bridgeName: bridgeInfo.entityName,
+                    lastKnownEvent: lastKnownEvent,
+                    totalEvents: bridgeSpecificEvents.count
                 )
-            }
-            
-            let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
-            print(" [BRIDGE DETAIL] Detected \(cascadeEvents.count) cascade events!")
-            
-            await MainActor.run {
-                for existingEvent in self.cascadeEvents {
-                    self.modelContext.delete(existingEvent)
-                }
                 
-                for cascadeEvent in cascadeEvents {
-                    self.modelContext.insert(cascadeEvent)
-                }
+                FunctionalTimeFilterSection(
+                    selectedPeriod: $viewModel.selectedPeriod,
+                    bridgeEvents: filteredEvents
+                )
                 
-                do {
-                    try self.modelContext.save()
-                    print(" [BRIDGE DETAIL]  CASCADE EVENTS SAVED!")
-                } catch {
-                    print(" [BRIDGE DETAIL] Failed to save: \(error)")
+                BridgeStatsSection(
+                    events: filteredEvents,
+                    timePeriod: viewModel.selectedPeriod,
+                    analysisType: viewModel.selectedAnalysis
+                )
+                
+                AnalysisFilterSection(selectedAnalysis: $viewModel.selectedAnalysis)
+                ViewFilterSection(selectedView: $viewModel.selectedView)
+                
+                DynamicAnalysisSection(
+                    events: filteredEvents,
+                    analysisType: viewModel.selectedAnalysis,
+                    viewType: viewModel.selectedView,
+                    bridgeName: bridgeInfo.entityName
+                )
+                
+                if let errorMessage = viewModel.errorMessage {
+                    errorView(errorMessage)
                 }
             }
-        }.value
-    }
-    
-    // MARK: - Data Availability Checking
-    private func checkDataAvailability() {
-        print(" [BRIDGE DETAIL] Checking data availability...")
-        print(" [BRIDGE DETAIL] Total events: \(allEvents.count)")
-        print(" [BRIDGE DETAIL] Bridge \(bridgeEvent.entityID) events: \(bridgeSpecificEvents.count)")
-        
-        // Check if we have data for this specific bridge
-        if !bridgeSpecificEvents.isEmpty {
-            print(" [BRIDGE DETAIL]  Data ready for \(bridgeEvent.entityName)")
-            isDataReady = true
-            dataCheckTimer?.invalidate()
-        } else if allEvents.count > 0 {
-            // We have events but not for this bridge - immediate ready
-            print(" [BRIDGE DETAIL]  No events for bridge \(bridgeEvent.entityID) but other data exists")
-            isDataReady = true
-            dataCheckTimer?.invalidate()
-        } else {
-            // No data yet - start polling timer
-            print(" [BRIDGE DETAIL]  No data yet, starting timer...")
-            startDataCheckTimer()
+            .padding()
         }
     }
     
-    private func startDataCheckTimer() {
-        dataCheckTimer?.invalidate()
-        dataCheckTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: true) { _ in
-            print(" [BRIDGE DETAIL] Timer check - Events: \(allEvents.count)")
-            if allEvents.count > 0 {
-                checkDataAvailability()
+    // MARK: - Error View
+    
+    @ViewBuilder
+    private func errorView(_ message: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+                .font(.title2)
+            
+            Text("Error")
+                .font(.caption)
+                .fontWeight(.medium)
+            
+            Text(message)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Retry") {
+                Task {
+                    await viewModel.forceCascadeDetection(
+                        allEvents: allEvents,
+                        cascadeEvents: cascadeEvents,
+                        modelContext: modelContext
+                    )
+                }
             }
+            .font(.caption)
+            .foregroundColor(.blue)
         }
-        
-        // Failsafe: Stop checking after 10 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 10) {
-            if !isDataReady {
-                print(" [BRIDGE DETAIL]  Timeout reached, showing view anyway")
-                isDataReady = true
-                dataCheckTimer?.invalidate()
-            }
-        }
+        .padding()
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
     }
     
-    // MARK: - Phase 1 Data Filtering Logic
+    // MARK: - Computed Properties
+    
+    private var bridgeInfo: DrawbridgeEvent {
+        bridgeEvent
+    }
+    
+    private var events: [DrawbridgeEvent] {
+        bridgeSpecificEvents
+    }
+    
     private var bridgeSpecificEvents: [DrawbridgeEvent] {
         allEvents.filter { $0.entityID == bridgeEvent.entityID }
             .sorted { $0.openDateTime > $1.openDateTime }
@@ -185,17 +254,17 @@ public struct BridgeDetailView: View {
         let now = Date()
         
         let cutoffDate: Date
-        switch selectedPeriod {
+        switch viewModel.selectedPeriod {
         case .twentyFourHours:
             // For 24H, use a more inclusive filter to catch edge cases
             cutoffDate = calendar.date(byAdding: .hour, value: -25, to: now) ?? now
         default:
-            cutoffDate = calendar.date(byAdding: .day, value: -selectedPeriod.days, to: now) ?? now
+            cutoffDate = calendar.date(byAdding: .day, value: -viewModel.selectedPeriod.days, to: now) ?? now
         }
         
         let filtered = bridgeSpecificEvents.filter { $0.openDateTime >= cutoffDate }
         
-        print(" [FILTER] Period: \(selectedPeriod), Cutoff: \(cutoffDate)")
+        print(" [FILTER] Period: \(viewModel.selectedPeriod), Cutoff: \(cutoffDate)")
         print(" [FILTER] Total bridge events: \(bridgeSpecificEvents.count)")
         print(" [FILTER] Filtered events: \(filtered.count)")
         

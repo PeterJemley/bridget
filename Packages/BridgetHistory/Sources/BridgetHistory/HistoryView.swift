@@ -205,137 +205,264 @@ public struct HistoryView: View {
     
     // MARK: - ENHANCED: HIG-Compliant Frequency Chart
     
+    // Helper struct for chart display data
+    private struct FrequencyChartDisplayData {
+        let displayData: [EnhancedFrequencyDataPoint]
+        let aggregatedCount: Int
+        let showAggregation: Bool
+        let tooManyBars: Bool
+    }
+
+    private func getFrequencyChartDisplayData() -> FrequencyChartDisplayData {
+        let maxBars = 7
+        if enhancedFrequencyData.count > maxBars {
+            let displayData = Array(enhancedFrequencyData.prefix(maxBars - 1))
+            let aggregatedCount = enhancedFrequencyData.dropFirst(maxBars - 1).map(\ .count).reduce(0, +)
+            return FrequencyChartDisplayData(
+                displayData: displayData,
+                aggregatedCount: aggregatedCount,
+                showAggregation: true,
+                tooManyBars: enhancedFrequencyData.count > 20
+            )
+        } else {
+            return FrequencyChartDisplayData(
+                displayData: enhancedFrequencyData,
+                aggregatedCount: 0,
+                showAggregation: false,
+                tooManyBars: enhancedFrequencyData.count > 20
+            )
+        }
+    }
+
     private var enhancedFrequencyChart: some View {
-        VStack(spacing: 16) {
-            // Chart data summary
+        let chartData = getFrequencyChartDisplayData()
+        
+        return VStack(spacing: 20) {
+            if chartData.tooManyBars {
+                Text("Too many periods to display clearly. Please select a shorter time range.")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+            } else {
+                frequencyChartHeader
+                frequencyBarChart(chartData: chartData)
+                frequencyInsights
+            }
+        }
+        .padding(.vertical, 8)
+        .background(Color(.systemBackground))
+        .cornerRadius(16)
+        .shadow(color: Color.black.opacity(0.04), radius: 2, x: 0, y: 1)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(Text("Opening Frequency Over Time Chart"))
+        .accessibilityHint(Text("Bar chart showing the number of bridge openings per period. The highest bar indicates the peak period."))
+    }
+    
+    // MARK: - Chart Header
+    private var frequencyChartHeader: some View {
+        HStack {
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Time Period")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .dynamicTypeSize(.xSmall ... .accessibility3)
+                Text(selectedTimeRange.displayName)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.accentColor)
+                    .dynamicTypeSize(.xSmall ... .accessibility3)
+            }
+            Spacer()
+            VStack(alignment: .trailing, spacing: 2) {
+                Text("Peak Period")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .dynamicTypeSize(.xSmall ... .accessibility3)
+                Text(peakFrequencyPeriod)
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.red)
+                    .dynamicTypeSize(.xSmall ... .accessibility3)
+            }
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
+    }
+    
+    // MARK: - Bar Chart
+    private func frequencyBarChart(chartData: FrequencyChartDisplayData) -> some View {
+        VStack(spacing: 8) {
+            barChartView(chartData: chartData)
+            aggregationMessageView(chartData: chartData)
+        }
+    }
+    
+    // Helper struct for indexed data
+    private struct IndexedFrequencyDataPoint: Identifiable {
+        let id: Int
+        let data: EnhancedFrequencyDataPoint
+    }
+
+    // MARK: - Bar Chart Only
+    private func barChartView(chartData: FrequencyChartDisplayData) -> some View {
+        let indexedData = chartData.displayData.enumerated().map { IndexedFrequencyDataPoint(id: $0.offset, data: $0.element) }
+        return Chart {
+            ForEach(indexedData) { item in
+                singleBarMark(item: item, chartData: chartData)
+            }
+            if chartData.showAggregation {
+                aggregationBarMark(chartData: chartData)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: 180)
+        .padding(.horizontal, 12)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: min(7, chartData.displayData.count + (chartData.showAggregation ? 1 : 0)))) { value in
+                AxisValueLabel {
+                    if let index = value.as(Int.self) {
+                        if index < chartData.displayData.count {
+                            Text(chartData.displayData[index].displayLabel)
+                                .font(.caption2)
+                                .foregroundStyle(Color.primary)
+                                .dynamicTypeSize(.xSmall ... .accessibility3)
+                        } else if chartData.showAggregation && index == chartData.displayData.count {
+                            Text("Other")
+                                .font(.caption2)
+                                .foregroundStyle(Color.secondary)
+                                .dynamicTypeSize(.xSmall ... .accessibility3)
+                        }
+                    }
+                }
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    .foregroundStyle(Color.gray.opacity(0.2))
+            }
+        }
+        .chartYAxis {
+            AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                    .foregroundStyle(Color.gray.opacity(0.3))
+                AxisValueLabel {
+                    if let count = value.as(Int.self) {
+                        Text("\(count)")
+                            .font(.caption2)
+                            .foregroundStyle(Color.primary)
+                            .dynamicTypeSize(.xSmall ... .accessibility3)
+                    }
+                }
+            }
+        }
+        .chartPlotStyle { plotArea in
+            plotArea.background(Color(.systemBackground))
+        }
+    }
+
+    // MARK: - Single BarMark Helper
+    private func singleBarMark(item: IndexedFrequencyDataPoint, chartData: FrequencyChartDisplayData) -> some ChartContent {
+        BarMark(
+            x: .value("Period", item.id),
+            y: .value("Count", item.data.count)
+        )
+        .foregroundStyle(
+            item.data.count == chartData.displayData.max(by: { $0.count < $1.count })?.count
+                ? Color.red
+                : Color.accentColor
+        )
+        .cornerRadius(6)
+        .accessibilityLabel(Text("\(item.data.displayLabel)"))
+        .accessibilityValue(Text("\(item.data.count) events"))
+    }
+
+    // MARK: - Aggregation BarMark Helper
+    private func aggregationBarMark(chartData: FrequencyChartDisplayData) -> some ChartContent {
+        BarMark(
+            x: .value("Period", chartData.displayData.count),
+            y: .value("Count", chartData.aggregatedCount)
+        )
+        .foregroundStyle(Color.gray)
+        .cornerRadius(6)
+        .accessibilityLabel(Text("Other"))
+        .accessibilityValue(Text("\(chartData.aggregatedCount) events aggregated"))
+    }
+    
+    // MARK: - Aggregation Message
+    private func aggregationMessageView(chartData: FrequencyChartDisplayData) -> some View {
+        Group {
+            if chartData.showAggregation {
+                Text("Some periods have been aggregated into 'Other' for clarity.")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 4)
+            }
+        }
+    }
+    
+    // MARK: - Insights Section
+    private var frequencyInsights: some View {
+        VStack(spacing: 10) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Time Period")
+                Text("Frequency Insights")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .dynamicTypeSize(.xSmall ... .accessibility3)
+                Spacer()
+            }
+            HStack(alignment: .center) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Average")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    Text(selectedTimeRange.displayName)
+                        .dynamicTypeSize(.xSmall ... .accessibility3)
+                    Text("\(Int(averageFrequency)) events")
                         .font(.caption)
                         .fontWeight(.medium)
-                        .foregroundColor(.blue)
+                        .foregroundColor(.accentColor)
+                        .dynamicTypeSize(.xSmall ... .accessibility3)
                 }
-                
                 Spacer()
-                
-                VStack(alignment: .trailing, spacing: 4) {
-                    Text("Peak Period")
+                VStack(alignment: .center, spacing: 2) {
+                    Text("Peak")
                         .font(.caption2)
                         .foregroundColor(.secondary)
-                    Text(peakFrequencyPeriod)
+                        .dynamicTypeSize(.xSmall ... .accessibility3)
+                    Text("\(peakFrequencyCount) events")
                         .font(.caption)
                         .fontWeight(.medium)
                         .foregroundColor(.red)
+                        .dynamicTypeSize(.xSmall ... .accessibility3)
                 }
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
-            
-            // Enhanced chart with proper spacing
-            Chart(Array(enhancedFrequencyData.enumerated()), id: \.offset) { index, item in 
-                BarMark(
-                    x: .value("Period", index),
-                    y: .value("Count", item.count)
-                )
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: item.count == enhancedFrequencyData.max(by: { $0.count < $1.count })?.count 
-                            ? [Color.red, Color.red.opacity(0.7)]
-                            : [Color.blue, Color.blue.opacity(0.7)],
-                        startPoint: .top,
-                        endPoint: .bottom
-                    )
-                )
-                .cornerRadius(4)
-            }
-            .frame(height: 180) // INCREASED: From default to 180 for better readability
-            .chartXAxis {
-                AxisMarks(values: .automatic(desiredCount: min(5, enhancedFrequencyData.count))) { value in 
-                    AxisValueLabel {
-                        if let index = value.as(Int.self),
-                           index < enhancedFrequencyData.count {
-                            Text(enhancedFrequencyData[index].displayLabel)
-                                .font(.caption2)
-                                .foregroundStyle(Color.primary)
-                        }
-                    }
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        .foregroundStyle(Color.gray.opacity(0.2))
-                }
-            }
-            .chartYAxis {
-                AxisMarks(values: .automatic(desiredCount: 5)) { value in
-                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                        .foregroundStyle(Color.gray.opacity(0.3))
-                    AxisValueLabel {
-                        if let count = value.as(Int.self) {
-                            Text("\(count)")
-                                .font(.caption2)
-                                .foregroundStyle(Color.primary)
-                        }
-                    }
-                }
-            }
-            .chartPlotStyle { plotArea in
-                plotArea
-                    .background(Color(.systemBackground))
-            }
-            
-            // Frequency insights
-            VStack(spacing: 8) {
-                HStack {
-                    Text("Frequency Insights")
-                        .font(.caption)
-                        .fontWeight(.medium)
-                    Spacer()
-                }
-                
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("Average")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text("\(Int(averageFrequency)) events")
+                Spacer()
+                VStack(alignment: .trailing, spacing: 2) {
+                    Text("Trend")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .dynamicTypeSize(.xSmall ... .accessibility3)
+                    HStack(spacing: 4) {
+                        Image(systemName: frequencyTrend.contains("Rising") ? "arrow.up" : frequencyTrend.contains("Falling") ? "arrow.down" : "arrow.right")
+                            .foregroundColor(frequencyTrendColor)
                             .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.blue)
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .center, spacing: 4) {
-                        Text("Peak")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text("\(peakFrequencyCount) events")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.red)
-                    }
-                    
-                    Spacer()
-                    
-                    VStack(alignment: .trailing, spacing: 4) {
-                        Text("Trend")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        Text(frequencyTrend)
+                        Text(frequencyTrend.replacingOccurrences(of: "↗ ", with: "").replacingOccurrences(of: "↘ ", with: "").replacingOccurrences(of: "→ ", with: ""))
                             .font(.caption)
                             .fontWeight(.medium)
                             .foregroundColor(frequencyTrendColor)
+                            .dynamicTypeSize(.xSmall ... .accessibility3)
                     }
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(Text("Trend"))
+                    .accessibilityValue(Text(frequencyTrend))
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(.systemGray6))
-            .cornerRadius(10)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .background(Color(.systemGray6))
+        .cornerRadius(12)
     }
     
     private var durationChart: some View {

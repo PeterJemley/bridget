@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 import BridgetCore
 import BridgetSharedUI
-
 import Foundation
 
 @MainActor
@@ -24,22 +23,38 @@ public struct StatisticsView: View {
     @State private var showingARIMADetails = false
     @State private var neuralEngineStatus = "Ready"
 
+    // MARK: - Cached Statistics for Performance
+    private var triggerCounts: [Int: Int] {
+        Dictionary(grouping: cascadeEvents, by: \.triggerBridgeID).mapValues { $0.count }
+    }
+    private var maxTriggerCount: Int { 
+        triggerCounts.values.max() ?? 1 
+    }
+    
+    private var cachedDelayStats: (mean: Double, median: Double, std: Double) {
+        getCascadeDelayStats()
+    }
+    
+    private var cachedDataDrivenThresholds: (weak: Double, moderate: Double, strong: Double) {
+        getDataDrivenThresholds()
+    }
+    
+    private var cachedBridgeRates: [(bridge: DrawbridgeInfo, rate: Double)] {
+        getBridgeEventRates()
+    }
+
     public init() {}
     
     private func updateNeuralEngineStatus() {
-        // DEBUG: Test Neural Engine detection
         print(" [NEURAL ENGINE] Starting detection...")
         
-        // ENHANCED: Proper Neural Engine detection with specific capabilities
         let neuralGeneration = NeuralEngineManager.detectNeuralEngineGeneration()
         let coreCount = neuralGeneration.coreCount
         let topsCapability = neuralGeneration.topsCapability
         let complexity = neuralGeneration.recommendedModelComplexity.rawValue
         
-        // FIXED: HIG-compliant status with specific device information
         neuralEngineStatus = "\(neuralGeneration.rawValue), \(coreCount) cores, \(String(format: "%.1f", topsCapability)) TOPS, \(complexity)"
         
-        // DEBUG: Enhanced logging without special characters that might break
         print("[NEURAL ENGINE] Detection Results:")
         print("[NEURAL ENGINE] Generation: \(neuralGeneration.rawValue)")
         print("[NEURAL ENGINE] Cores: \(coreCount)")
@@ -47,9 +62,7 @@ public struct StatisticsView: View {
         print("[NEURAL ENGINE] Complexity: \(complexity)")
         print("[NEURAL ENGINE] Final Status: \(neuralEngineStatus)")
         
-        // FORCE: Update UI immediately
         DispatchQueue.main.async {
-            // Force view refresh
             print("[NEURAL ENGINE] Forcing view update with status: \(self.neuralEngineStatus)")
         }
     }
@@ -82,7 +95,7 @@ public struct StatisticsView: View {
                                 .lineLimit(2)
                         }
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 8) // INCREASED: From 6 to 8 for better spacing with longer text
+                        .padding(.vertical, 8)
                         .background(Color(.systemGray6))
                         .cornerRadius(8)
                         
@@ -134,7 +147,6 @@ public struct StatisticsView: View {
     @ViewBuilder
     private var cascadeNetworkVisualization: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // Header with better explanation
             HStack {
                 Label("Bridge Connection Analysis", systemImage: "arrow.triangle.branch")
                     .font(.headline)
@@ -161,7 +173,6 @@ public struct StatisticsView: View {
                 }
             }
             
-            // Better user explanation
             if cascadeEvents.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
@@ -209,7 +220,6 @@ public struct StatisticsView: View {
                 .background(Color.blue.opacity(0.1))
                 .cornerRadius(12)
             } else {
-                // ENHANCED: Much clearer explanation with practical examples
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Image(systemName: "lightbulb.fill")
@@ -273,14 +283,12 @@ public struct StatisticsView: View {
                 .cornerRadius(12)
             }
             
-            // Simplified Network Diagram or Placeholder
             if cascadeEvents.isEmpty {
                 cascadeAnalysisPlaceholder
             } else {
                 networkDiagramView
                     .frame(height: 280)
                 
-                // Network Statistics
                 networkStatisticsSection
             }
         }
@@ -292,7 +300,6 @@ public struct StatisticsView: View {
     @ViewBuilder
     private var cascadeAnalysisPlaceholder: some View {
         VStack(spacing: 16) {
-            // Show sample bridges in Seattle
             HStack(spacing: 20) {
                 ForEach(getSampleBridges(), id: \.self) { bridgeName in
                     VStack(spacing: 4) {
@@ -318,7 +325,6 @@ public struct StatisticsView: View {
                 .foregroundColor(.secondary)
                 .multilineTextAlignment(.center)
             
-            // Debug info to help understand why no cascades
             VStack(spacing: 4) {
                 Text("Analysis Status:")
                     .font(.caption2)
@@ -393,7 +399,6 @@ public struct StatisticsView: View {
     // MARK: - Network Helper Functions
     
     private func getNetworkBridges() -> [DrawbridgeInfo] {
-        // Return top 6 bridges by cascade activity for better visualization
         let bridgesCascadeActivity = bridgeInfo.map { bridge in
             let triggerCount = cascadeEvents.filter { $0.triggerBridgeID == bridge.entityID }.count
             let targetCount = cascadeEvents.filter { $0.targetBridgeID == bridge.entityID }.count
@@ -406,34 +411,8 @@ public struct StatisticsView: View {
             .map(\.bridge)
     }
     
-    private func getCascadeStrength(from sourceID: Int, to targetID: Int) -> Double {
-        let relevantCascades = cascadeEvents.filter { 
-            $0.triggerBridgeID == sourceID && $0.targetBridgeID == targetID 
-        }
-        
-        guard !relevantCascades.isEmpty else { return 0.0 }
-        
-        return relevantCascades.map(\.cascadeStrength).reduce(0, +) / Double(relevantCascades.count)
-    }
-    
     private func getBridgeInfluence(for bridgeID: Int) -> Double {
-        let triggeredCascades = cascadeEvents.filter { $0.triggerBridgeID == bridgeID }
-        let maxCascades = max(1, cascadeEvents.map { cascade in
-            cascadeEvents.filter { $0.triggerBridgeID == cascade.triggerBridgeID }.count
-        }.max() ?? 1)
-        
-        return Double(triggeredCascades.count) / Double(maxCascades)
-    }
-    
-    private func cascadeStrengthColor(_ strength: Double) -> Color {
-        // ENHANCED: More meaningful color progression that matches legend
-        switch strength {
-        case 0.0..<0.3: return .gray.opacity(0.6)        // Weak connections
-        case 0.3..<0.5: return .blue.opacity(0.8)        // Moderate connections  
-        case 0.5..<0.7: return .orange.opacity(0.9)      // Strong connections
-        case 0.7...1.0: return .red.opacity(0.95)        // Very strong connections
-        default: return .gray.opacity(0.4)
-        }
+        Double(triggerCounts[bridgeID] ?? 0) / Double(maxTriggerCount)
     }
     
     private func bridgeInfluenceColor(_ influence: Double) -> Color {
@@ -472,10 +451,7 @@ public struct StatisticsView: View {
     }
     
     private func getAverageCascadeDelay() -> String {
-        guard !cascadeEvents.isEmpty else { return "0 min" }
-        
-        let avgDelay = cascadeEvents.map(\.delayMinutes).reduce(0, +) / Double(cascadeEvents.count)
-        return String(format: "%.0f min", avgDelay)
+        return String(format: "%.0f min", cachedDelayStats.mean)
     }
 
     // MARK: - Helper Functions for Better UX
@@ -488,24 +464,10 @@ public struct StatisticsView: View {
     private func forceCascadeDetection() async {
         print(" [STATS]  FORCING IMMEDIATE CASCADE DETECTION...")
         
-        // Capture events on main thread
         let currentEvents = Array(events.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
+        let eventDTOs = currentEvents.toDTOs
         
         await Task.detached(priority: .userInitiated) {
-            // Convert to non-SwiftData objects for thread safety
-            let eventDTOs = currentEvents.map { event in
-                DrawbridgeEvent(
-                    entityType: event.entityType,
-                    entityName: event.entityName,
-                    entityID: event.entityID,
-                    openDateTime: event.openDateTime,
-                    closeDateTime: event.closeDateTime,
-                    minutesOpen: event.minutesOpen,
-                    latitude: event.latitude,
-                    longitude: event.longitude
-                )
-            }
-            
             print(" [STATS] Running cascade detection on \(eventDTOs.count) events...")
             let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
             print(" [STATS] Detected \(cascadeEvents.count) cascade events!")
@@ -513,12 +475,10 @@ public struct StatisticsView: View {
             await MainActor.run {
                 print(" [STATS]  SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                 
-                // Clear existing cascade events
                 for existingEvent in self.cascadeEvents {
                     self.modelContext.delete(existingEvent)
                 }
                 
-                // Save new cascade events
                 for cascadeEvent in cascadeEvents {
                     self.modelContext.insert(cascadeEvent)
                 }
@@ -535,21 +495,11 @@ public struct StatisticsView: View {
     
     private func getDataTimeSpan() -> String {
         guard let earliest = events.map(\.openDateTime).min(),
-              let latest = events.map(\.openDateTime).max() else {
-            return "Unknown"
-        }
-        
-        let daysBetween = Calendar.current.dateComponents([.day], from: earliest, to: latest).day ?? 0
-        
-        if daysBetween < 30 {
-            return "\(daysBetween) days"
-        } else if daysBetween < 365 {
-            let months = daysBetween / 30
-            return "\(months) months"
-        } else {
-            let years = daysBetween / 365
-            return "\(years) year\(years == 1 ? "" : "s")"
-        }
+              let latest = events.map(\.openDateTime).max() else { return "Unknown" }
+        let formatter = DateComponentsFormatter()
+        formatter.allowedUnits = [.year, .month, .day]
+        formatter.unitsStyle = .full
+        return formatter.string(from: earliest, to: latest) ?? "Unknown"
     }
 
     private func generateCurrentPredictions() -> [BridgePrediction] {
@@ -557,11 +507,7 @@ public struct StatisticsView: View {
         
         var predictions: [BridgePrediction] = []
 
-        let topBridges = bridgeInfo.sorted { bridge1, bridge2 in
-            let events1 = events.filter { $0.entityID == bridge1.entityID }.count
-            let events2 = events.filter { $0.entityID == bridge2.entityID }.count
-            return events1 > events2
-        }.prefix(5)
+        let topBridges = getTopBridgesByRate()
 
         for bridge in topBridges {
             if let prediction = BridgeAnalytics.getCurrentPrediction(
@@ -586,19 +532,7 @@ public struct StatisticsView: View {
         
         isCalculating = true
 
-        let eventDTOs = events.map { event in
-            EventDTO(
-                id: "\(event.id)", 
-                entityType: event.entityType,
-                entityName: event.entityName,
-                entityID: event.entityID,
-                openDateTime: event.openDateTime,
-                closeDateTime: event.closeDateTime,
-                minutesOpen: event.minutesOpen,
-                latitude: event.latitude,
-                longitude: event.longitude
-            )
-        }
+        let eventDTOs = events.toDTOs
         
         print(" [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
 
@@ -609,20 +543,7 @@ public struct StatisticsView: View {
             print(" [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
             
             do {
-                let limitedEvents = limitedEventDTOs.map { dto in
-                    DrawbridgeEvent(
-                        entityType: dto.entityType,
-                        entityName: dto.entityName,
-                        entityID: dto.entityID,
-                        openDateTime: dto.openDateTime,
-                        closeDateTime: dto.closeDateTime,
-                        minutesOpen: dto.minutesOpen,
-                        latitude: dto.latitude,
-                        longitude: dto.longitude
-                    )
-                }
-                
-                let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
+                let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEventDTOs)
                 
                 print(" [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
 
@@ -672,13 +593,11 @@ public struct StatisticsView: View {
             let radius = min(geometry.size.width, geometry.size.height) * 0.35
             
             ZStack {
-                // Background circle
                 Circle()
                     .stroke(Color(.systemGray5), lineWidth: 1)
                     .frame(width: radius * 2, height: radius * 2)
                     .position(x: centerX, y: centerY)
                 
-                // Cascade connections
                 cascadeConnectionsView(
                     bridges: networkBridges,
                     centerX: centerX,
@@ -686,7 +605,6 @@ public struct StatisticsView: View {
                     radius: radius
                 )
                 
-                // Bridge nodes
                 bridgeNodesView(
                     bridges: networkBridges,
                     centerX: centerX,
@@ -704,11 +622,14 @@ public struct StatisticsView: View {
         centerY: Double,
         radius: Double
     ) -> some View {
+        let thresholds = cachedDataDrivenThresholds
+        let minStrengthThreshold = thresholds.weak * 0.5
+        
         ForEach(Array(bridges.enumerated()), id: \.element.entityID) { sourceIndex, sourceBridge in
             ForEach(Array(bridges.enumerated()), id: \.element.entityID) { targetIndex, targetBridge in
                 if sourceIndex != targetIndex {
                     let cascadeStrength = getCascadeStrength(from: sourceBridge.entityID, to: targetBridge.entityID)
-                    if cascadeStrength > 0.2 {
+                    if cascadeStrength > minStrengthThreshold {
                         cascadeConnectionPath(
                             sourceIndex: sourceIndex,
                             targetIndex: targetIndex,
@@ -742,14 +663,12 @@ public struct StatisticsView: View {
         let targetX = centerX + cos(targetAngle) * radius
         let targetY = centerY + sin(targetAngle) * radius
         
-        // ENHANCED: Meaningful line width calculation
         let lineWidth = calculateMeaningfulLineWidth(strength: strength)
         let connectionColor = cascadeStrengthColor(strength)
         
         Path { path in
             path.move(to: CGPoint(x: sourceX, y: sourceY))
             
-            // Create curved path through center
             let controlX = centerX + cos((sourceAngle + targetAngle) / 2) * (radius * 0.3)
             let controlY = centerY + sin((sourceAngle + targetAngle) / 2) * (radius * 0.3)
             
@@ -765,21 +684,8 @@ public struct StatisticsView: View {
                 lineCap: .round
             )
         )
-        // ENHANCED: Better opacity for visual hierarchy
         .opacity(0.85)
         .shadow(color: connectionColor.opacity(0.3), radius: lineWidth * 0.5, x: 0, y: 1)
-    }
-    
-    // MARK: - NEW: Meaningful Line Width Calculation
-    private func calculateMeaningfulLineWidth(strength: Double) -> Double {
-        // Convert cascade strength to visually meaningful line widths
-        switch strength {
-        case 0.0..<0.3: return 1.5   // Weak connections: thin lines
-        case 0.3..<0.5: return 2.5   // Moderate connections: medium lines
-        case 0.5..<0.7: return 4.0   // Strong connections: thick lines  
-        case 0.7...1.0: return 6.0   // Very strong connections: very thick lines
-        default: return 1.0          // Fallback: minimal line
-        }
     }
 
     @ViewBuilder
@@ -823,7 +729,6 @@ public struct StatisticsView: View {
                 Spacer()
             }
             
-            // ENHANCED: User-friendly explanations instead of technical terms
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible()),
@@ -849,18 +754,189 @@ public struct StatisticsView: View {
                 
                 UserFriendlyStatCard(
                     title: "Chain Reaction Time",
-                    subtitle: "Average delay",
+                    subtitle: getCascadeDelayDetails(),
                     value: getAverageCascadeDelay(),
                     icon: "clock",
                     color: .blue,
-                    explanation: "How long between the first bridge opening and the chain reaction"
+                    explanation: "Average delay with standard deviation showing variability"
                 )
+            }
+            
+            if !cascadeEvents.isEmpty {
+                VStack(spacing: 8) {
+                    HStack {
+                        Text("Statistical Insights")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                        Spacer()
+                    }
+                    
+                    let thresholds = cachedDataDrivenThresholds
+                    let delayStats = cachedDelayStats
+                    
+                    LazyVGrid(columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible())
+                    ], spacing: 8) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Connection Strength Thresholds")
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                            
+                            Text("Weak: \(String(format: "%.2f", thresholds.weak))")
+                                .font(.caption2)
+                                .foregroundColor(.gray)
+                            Text("Moderate: \(String(format: "%.2f", thresholds.moderate))")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                            Text("Strong: \(String(format: "%.2f", thresholds.strong))")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        }
+                        .padding(8)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(6)
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Delay Statistics")
+                                .font(.caption2)
+                                .fontWeight(.medium)
+                            
+                            Text("Mean: \(String(format: "%.0f min", delayStats.mean))")
+                                .font(.caption2)
+                                .foregroundColor(.blue)
+                            Text("Median: \(String(format: "%.0f min", delayStats.median))")
+                                .font(.caption2)
+                                .foregroundColor(.green)
+                            Text("Std Dev: \(String(format: "%.1f min", delayStats.std))")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        }
+                        .padding(8)
+                        .background(Color(.systemBackground))
+                        .cornerRadius(6)
+                    }
+                }
             }
         }
     }
 
-    // MARK: - NEW: User-Friendly Statistics Card
+    // MARK: - Enhanced Statistical Calculations
     
+    /// Computes comprehensive statistics for cascade strength between two bridges
+    /// Returns: (mean, median, standard deviation, count) for robust analysis
+    /// This addresses the original concern about outlier sensitivity by providing median alongside mean
+    private func getCascadeStrengthStats(from sourceID: Int, to targetID: Int) -> (mean: Double, median: Double, std: Double, count: Int) {
+        let relevantCascades = cascadeEvents.filter { 
+            $0.triggerBridgeID == sourceID && $0.targetBridgeID == targetID 
+        }
+        
+        guard !relevantCascades.isEmpty else { return (0, 0, 0, 0) }
+        
+        let strengths = relevantCascades.map(\.cascadeStrength).sorted()
+        let mean = strengths.reduce(0, +) / Double(strengths.count)
+        let median = strengths[strengths.count / 2]
+        let variance = strengths.map { pow($0 - mean, 2) }.reduce(0, +) / Double(strengths.count)
+        let std = sqrt(variance)
+        
+        return (mean, median, std, strengths.count)
+    }
+    
+    /// Returns the mean cascade strength (maintains backward compatibility)
+    private func getCascadeStrength(from sourceID: Int, to targetID: Int) -> Double {
+        return getCascadeStrengthStats(from: sourceID, to: targetID).mean
+    }
+    
+    // MARK: - Data-Driven Thresholds
+    
+    /// Computes data-driven thresholds using 25th, 50th, and 75th percentiles
+    /// This replaces arbitrary hard-coded thresholds (0.3, 0.5, 0.7) with natural data breakpoints
+    /// Fallback defaults ensure the system works even with minimal data
+    private func getDataDrivenThresholds() -> (weak: Double, moderate: Double, strong: Double) {
+        let allStrengths = cascadeEvents.map(\.cascadeStrength).sorted()
+        guard !allStrengths.isEmpty else { return (0.2, 0.4, 0.6) } // Fallback defaults
+        
+        func quantile(_ q: Double) -> Double {
+            let idx = Int(Double(allStrengths.count - 1) * q)
+            return allStrengths[idx]
+        }
+        
+        // Use 25th, 50th, and 75th percentiles as natural breakpoints
+        return (quantile(0.25), quantile(0.5), quantile(0.75))
+    }
+    
+    /// Returns color based on data-driven thresholds instead of arbitrary cutoffs
+    private func cascadeStrengthColor(_ strength: Double) -> Color {
+        let thresholds = cachedDataDrivenThresholds
+        
+        switch strength {
+        case 0.0..<thresholds.weak: return .gray.opacity(0.6)        // Weak connections
+        case thresholds.weak..<thresholds.moderate: return .blue.opacity(0.8)        // Moderate connections  
+        case thresholds.moderate..<thresholds.strong: return .orange.opacity(0.9)      // Strong connections
+        case thresholds.strong...1.0: return .red.opacity(0.95)        // Very strong connections
+        default: return .gray.opacity(0.4)
+        }
+    }
+    
+    /// Calculates line width using data-driven thresholds for visual consistency
+    private func calculateMeaningfulLineWidth(strength: Double) -> Double {
+        let thresholds = cachedDataDrivenThresholds
+        
+        // Convert cascade strength to visually meaningful line widths using data-driven thresholds
+        switch strength {
+        case 0.0..<thresholds.weak: return 1.5   // Weak connections: thin lines
+        case thresholds.weak..<thresholds.moderate: return 2.5   // Moderate connections: medium lines
+        case thresholds.moderate..<thresholds.strong: return 4.0   // Strong connections: thick lines  
+        case thresholds.strong...1.0: return 6.0   // Very strong connections: very thick lines
+        default: return 1.0          // Fallback: minimal line
+        }
+    }
+    
+    // MARK: - Enhanced Delay Statistics
+    
+    /// Returns mean delay with standard deviation to show variability
+    /// Addresses the original concern about loss of variability information
+    private func getCascadeDelayDetails() -> String {
+        return String(format: "%.0f min (σ=%.1f)", cachedDelayStats.mean, cachedDelayStats.std)
+    }
+    
+    // MARK: - Enhanced Bridge Selection by Rate
+    
+    /// Selects top bridges by event rate (events per day) instead of raw count
+    /// This addresses the concern about temporal spacing of events
+    private func getTopBridgesByRate() -> [DrawbridgeInfo] {
+        return cachedBridgeRates
+            .sorted { $0.rate > $1.rate }
+            .prefix(5)
+            .map(\.bridge)
+    }
+    
+    // MARK: - Supporting Functions
+    
+    private func getCascadeDelayStats() -> (mean: Double, median: Double, std: Double) {
+        let delays = cascadeEvents.map(\.delayMinutes).sorted()
+        guard !delays.isEmpty else { return (0, 0, 0) }
+        let mean = delays.reduce(0, +) / Double(delays.count)
+        let median = delays[delays.count/2]
+        let std = sqrt(delays.map { pow($0 - mean, 2) }.reduce(0, +) / Double(delays.count))
+        return (mean, median, std)
+    }
+
+    private func getBridgeEventRates() -> [(bridge: DrawbridgeInfo, rate: Double)] {
+        guard let earliest = events.map(\.openDateTime).min(),
+              let latest = events.map(\.openDateTime).max() else {
+            return bridgeInfo.map { ($0, 0.0) }
+        }
+        
+        let spanDays = max(1, Calendar.current.dateComponents([.day], from: earliest, to: latest).day ?? 1)
+        return bridgeInfo.map { bridge in
+            let count = events.filter { $0.entityID == bridge.entityID }.count
+            return (bridge, Double(count) / Double(spanDays))
+        }
+    }
+
+    // MARK: - Supporting Views
+
     struct UserFriendlyStatCard: View {
         let title: String
         let subtitle: String
@@ -899,8 +975,6 @@ public struct StatisticsView: View {
             .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
     }
-
-    // MARK: - Supporting Views
 
     struct NetworkStatCard: View {
         let title: String
@@ -982,8 +1056,7 @@ public struct StatisticsView: View {
 
     // MARK: - Value Type DTOs for Thread Safety
 
-    private struct EventDTO {
-        let id: String
+    private struct EventDTO: Sendable {
         let entityType: String
         let entityName: String
         let entityID: Int
@@ -992,5 +1065,16 @@ public struct StatisticsView: View {
         let minutesOpen: Double
         let latitude: Double
         let longitude: Double
+
+        init(from event: DrawbridgeEvent) {
+            self.entityType = event.entityType
+            self.entityName = event.entityName
+            self.entityID = event.entityID
+            self.openDateTime = event.openDateTime
+            self.closeDateTime = event.closeDateTime
+            self.minutesOpen = event.minutesOpen
+            self.latitude = event.latitude
+            self.longitude = event.longitude
+        }
     }
-}
+} 

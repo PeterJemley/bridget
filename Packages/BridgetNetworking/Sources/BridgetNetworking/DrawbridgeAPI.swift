@@ -12,11 +12,12 @@ public struct DrawbridgeAPI {
     private static let baseURL = "https://data.seattle.gov/resource/gm8h-9449.json"
     
     /// Fetch drawbridge data from Seattle Open Data API with pagination
-    public static func fetchDrawbridgeData(limit: Int = 50000) async throws -> [DrawbridgeEvent] {
+    /// Thread-safe version that returns EventDTOs for concurrency
+    public static func fetchDrawbridgeData(limit: Int = 50000) async throws -> [EventDTO] {
         print("🌐 [API] Starting drawbridge data fetch - Target: ALL DATA (~4,113 rows)")
         print("🌐 [API] Using correct endpoint: \(baseURL)")
         
-        var allEvents: [DrawbridgeEvent] = []
+        var allEventDTOs: [EventDTO] = []
         var offset = 0
         let batchSize = 1000 // Seattle API limit per request
         let startTime = Date()
@@ -24,19 +25,19 @@ public struct DrawbridgeAPI {
         while true {
             print("🌐 [API] Fetching batch \(offset/batchSize + 1) - Offset: \(offset), Limit: \(batchSize)")
             
-            let batchEvents = try await fetchBatch(offset: offset, limit: batchSize)
+            let batchEventDTOs = try await fetchBatch(offset: offset, limit: batchSize)
             
-            if batchEvents.isEmpty {
+            if batchEventDTOs.isEmpty {
                 print("🌐 [API] No more data - stopping pagination")
                 break
             }
             
-            allEvents.append(contentsOf: batchEvents)
-            print("🌐 [API] Batch \(offset/batchSize + 1) complete: +\(batchEvents.count) events (Total: \(allEvents.count))")
+            allEventDTOs.append(contentsOf: batchEventDTOs)
+            print("🌐 [API] Batch \(offset/batchSize + 1) complete: +\(batchEventDTOs.count) events (Total: \(allEventDTOs.count))")
             
             // If we got less than batchSize, we've reached the end
-            if batchEvents.count < batchSize {
-                print("🌐 [API] Last batch detected (\(batchEvents.count) < \(batchSize)) - stopping")
+            if batchEventDTOs.count < batchSize {
+                print("🌐 [API] Last batch detected (\(batchEventDTOs.count) < \(batchSize)) - stopping")
                 break
             }
             
@@ -50,51 +51,65 @@ public struct DrawbridgeAPI {
         }
         
         let fetchTime = Date().timeIntervalSince(startTime)
-        print("🌐 [API] Pagination complete!")
-        print("🌐 [API] FINAL RESULTS:")
-        print("🌐 [API]    • Total events fetched: \(allEvents.count)")
-        print("🌐 [API]    • Expected from UI: ~4,113 events")
-        print("🌐 [API]    • Data completeness: \(allEvents.count >= 4000 ? "✅ EXCELLENT" : allEvents.count >= 3000 ? "✅ GOOD" : "⚠️ INCOMPLETE") (\(String(format: "%.1f", Double(allEvents.count) / 4113.0 * 100))%)")
-        print("🌐 [API]    • Total time: \(String(format: "%.2f", fetchTime))s")
-        print("🌐 [API]    • Batches fetched: \(offset/batchSize + 1)")
+        print("🌐 [API] Fetch complete: \(allEventDTOs.count) events in \(String(format: "%.2f", fetchTime))s")
         
-        // Log data analysis
-        logDataAnalysis(events: allEvents)
-        
-        return allEvents
+        logDataAnalysis(eventDTOs: allEventDTOs)
+        return allEventDTOs
+    }
+    
+    /// Legacy method for backward compatibility - returns DrawbridgeEvent models
+    /// Use fetchDrawbridgeData(limit:) for thread-safe concurrency
+    public static func fetchDrawbridgeDataLegacy(limit: Int = 50000) async throws -> [DrawbridgeEvent] {
+        let eventDTOs = try await fetchDrawbridgeData(limit: limit)
+        return eventDTOs.map { dto in
+            DrawbridgeEvent(
+                entityType: dto.entityType,
+                entityName: dto.entityName,
+                entityID: dto.entityID,
+                openDateTime: dto.openDateTime,
+                closeDateTime: dto.closeDateTime,
+                minutesOpen: dto.minutesOpen,
+                latitude: dto.latitude,
+                longitude: dto.longitude
+            )
+        }
     }
     
     /// Fetch a single batch with offset
-    private static func fetchBatch(offset: Int, limit: Int) async throws -> [DrawbridgeEvent] {
+    private static func fetchBatch(offset: Int, limit: Int) async throws -> [EventDTO] {
         guard let url = URL(string: "\(baseURL)?$limit=\(limit)&$offset=\(offset)") else {
             print("🌐 [API ERROR] Invalid URL: \(baseURL)?$limit=\(limit)&$offset=\(offset)")
             throw URLError(.badURL)
         }
         
+        print("🌐 [API] Fetching: \(url)")
+        
         let (data, response) = try await URLSession.shared.data(from: url)
         
-        // Log HTTP response for first batch
-        if offset == 0, let httpResponse = response as? HTTPURLResponse {
-            print("🌐 [API] HTTP Status: \(httpResponse.statusCode)")
-            if httpResponse.statusCode != 200 {
-                print("🌐 [API ERROR] HTTP \(httpResponse.statusCode) - \(String(data: data, encoding: .utf8) ?? "No response body")")
-                throw URLError(.badServerResponse)
-            }
+        guard let httpResponse = response as? HTTPURLResponse else {
+            print("🌐 [API ERROR] Invalid response type")
+            throw URLError(.badServerResponse)
         }
         
-        // Parse JSON
+        print("🌐 [API] Response: \(httpResponse.statusCode) - \(httpResponse.url?.absoluteString ?? "unknown")")
+        
+        guard httpResponse.statusCode == 200 else {
+            print("🌐 [API ERROR] HTTP \(httpResponse.statusCode)")
+            throw URLError(.badServerResponse)
+        }
+        
         let decoder = JSONDecoder()
         decoder.dateDecodingStrategy = .iso8601
         
         do {
             let rawEvents = try decoder.decode([DrawbridgeEventResponse].self, from: data)
             
-            // Convert to DrawbridgeEvent objects
-            let events = rawEvents.compactMap { response in
-                convertToDrawbridgeEvent(from: response)
+            // Convert to EventDTO objects
+            let eventDTOs = rawEvents.compactMap { response in
+                convertToEventDTO(from: response)
             }
             
-            return events
+            return eventDTOs
             
         } catch {
             print("🌐 [API ERROR] JSON parsing failed for batch at offset \(offset): \(error)")
@@ -106,12 +121,12 @@ public struct DrawbridgeAPI {
     }
     
     /// Log detailed data analysis
-    private static func logDataAnalysis(events: [DrawbridgeEvent]) {
+    private static func logDataAnalysis(eventDTOs: [EventDTO]) {
         print("\n🌐 [DATA ANALYSIS] ================")
-        print("🌐 [DATA ANALYSIS] Total Events: \(events.count)")
+        print("🌐 [DATA ANALYSIS] Total Events: \(eventDTOs.count)")
         
-        if let earliest = events.map(\.openDateTime).min(),
-           let latest = events.map(\.openDateTime).max() {
+        if let earliest = eventDTOs.map(\.openDateTime).min(),
+           let latest = eventDTOs.map(\.openDateTime).max() {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
@@ -122,31 +137,26 @@ public struct DrawbridgeAPI {
         }
         
         // Bridge breakdown
-        let bridgeGroups = Dictionary(grouping: events, by: \.entityName)
+        let bridgeGroups = Dictionary(grouping: eventDTOs, by: \.entityName)
         print("🌐 [DATA ANALYSIS] Bridges (\(bridgeGroups.count)):")
-        for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
-            let percentage = String(format: "%.1f", Double(bridgeEvents.count) / Double(events.count) * 100)
-            print("🌐 [DATA ANALYSIS]   • \(bridgeName): \(bridgeEvents.count) events (\(percentage)%)")
+        for (bridgeName, events) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
+            print("🌐 [DATA ANALYSIS]    • \(bridgeName): \(events.count) events")
         }
         
-        // Verify 1st Ave South count
-        if let firstAveEvents = bridgeGroups["1st Ave South"] {
-            print("🌐 [DATA ANALYSIS] 1st Ave South Verification:")
-            print("🌐 [DATA ANALYSIS]    • Our data: \(firstAveEvents.count) events")
-            print("🌐 [DATA ANALYSIS]    • Expected: ~210 events")
-            print("🌐 [DATA ANALYSIS]    • Status: \(firstAveEvents.count >= 200 ? "CORRECT" : "MISSING DATA")")
+        // Time analysis
+        let hourDistribution = Dictionary(grouping: eventDTOs) { event in
+            Calendar.current.component(.hour, from: event.openDateTime)
         }
-        
-        // Status breakdown
-        let openEvents = events.filter { $0.closeDateTime == nil }
-        let closedEvents = events.filter { $0.closeDateTime != nil }
-        print("🌐 [DATA ANALYSIS] Status: \(openEvents.count) open, \(closedEvents.count) closed")
+        let mostActiveHour = hourDistribution.max(by: { $0.value.count < $1.value.count })
+        if let (hour, events) = mostActiveHour {
+            print("🌐 [DATA ANALYSIS] Most active hour: \(hour):00 (\(events.count) events)")
+        }
         
         print("🌐 [DATA ANALYSIS] ================\n")
     }
     
-    /// Convert API response to DrawbridgeEvent
-    private static func convertToDrawbridgeEvent(from response: DrawbridgeEventResponse) -> DrawbridgeEvent? {
+    /// Convert API response to EventDTO
+    private static func convertToEventDTO(from response: DrawbridgeEventResponse) -> EventDTO? {
         // Validate and convert required fields
         guard let entityIDString = response.entityid,
               let entityID = Int(entityIDString),
@@ -189,13 +199,13 @@ public struct DrawbridgeAPI {
         } else if let date = dateFormatter2.date(from: openDateTimeString) {
             openDateTime = date
         } else {
-            print("🌐 [API WARNING] Could not parse opendatetime with any format: \(openDateTimeString)")
+            print("🌐 [API WARNING] Could not parse date: \(openDateTimeString)")
             return nil
         }
         
-        // Parse close date if present using the same logic
-        var closeDateTime: Date?
-        if let closeDateTimeString = response.closedatetime {
+        // Parse close date (optional)
+        let closeDateTime: Date?
+        if let closeDateTimeString = response.closedatetime, !closeDateTimeString.isEmpty {
             if let date = dateFormatter1.date(from: closeDateTimeString) {
                 closeDateTime = date
             } else if let date = isoFormatter1.date(from: closeDateTimeString) {
@@ -204,29 +214,31 @@ public struct DrawbridgeAPI {
                 closeDateTime = date
             } else if let date = dateFormatter2.date(from: closeDateTimeString) {
                 closeDateTime = date
+            } else {
+                closeDateTime = nil
             }
-        }
-        
-        // Calculate minutes open - try API field first, then calculate
-        var minutesOpen: Double = 0.0
-        
-        if let minutesOpenString = response.minutesopen,
-           let apiMinutes = Double(minutesOpenString) {
-            minutesOpen = apiMinutes
-        } else if let closeDateTime = closeDateTime {
-            minutesOpen = closeDateTime.timeIntervalSince(openDateTime) / 60.0
         } else {
-            // For currently open bridges, calculate time since opening
-            minutesOpen = Date().timeIntervalSince(openDateTime) / 60.0
+            closeDateTime = nil
         }
         
-        return DrawbridgeEvent(
+        // Parse minutes open
+        let minutesOpen: Double
+        if let minutesOpenString = response.minutesopen,
+           let minutes = Double(minutesOpenString) {
+            minutesOpen = minutes
+        } else if let closeDate = closeDateTime {
+            minutesOpen = closeDate.timeIntervalSince(openDateTime) / 60.0
+        } else {
+            minutesOpen = 0.0
+        }
+        
+        return EventDTO(
             entityType: entityType,
             entityName: entityName,
             entityID: entityID,
             openDateTime: openDateTime,
             closeDateTime: closeDateTime,
-            minutesOpen: max(0, minutesOpen),
+            minutesOpen: minutesOpen,
             latitude: latitude,
             longitude: longitude
         )

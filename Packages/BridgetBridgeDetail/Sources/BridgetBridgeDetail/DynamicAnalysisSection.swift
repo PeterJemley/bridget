@@ -11,6 +11,245 @@ import Charts
 import BridgetCore
 import BridgetSharedUI
 
+// MARK: - View Model for Dynamic Analysis
+
+@MainActor
+final class DynamicAnalysisViewModel: ObservableObject {
+    @Published var isAnalyzing = false
+    @Published var analysisError: String?
+    @Published var cachedAnalysisData: AnalysisData?
+    
+    private let events: [DrawbridgeEvent]
+    private let analysisType: AnalysisType
+    private let viewType: ViewType
+    private let bridgeName: String
+    
+    init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
+        self.events = events
+        self.analysisType = analysisType
+        self.viewType = viewType
+        self.bridgeName = bridgeName
+    }
+    
+    // MARK: - Analysis Data Structure
+    
+    struct AnalysisData {
+        let hourlyData: [HourlyData]
+        let weeklyData: [WeeklyData]
+        let durationRanges: [DurationRange]
+        let severityBreakdown: [SeverityBreakdown]
+        let cascadeConnections: [CascadeConnection]
+        let predictions: [BridgePrediction]
+        let impactMetrics: ImpactMetrics
+        
+        struct HourlyData {
+            let hour: Int
+            let count: Int
+            let maxCount: Int
+        }
+        
+        struct WeeklyData {
+            let day: Int
+            let count: Int
+        }
+        
+        struct DurationRange {
+            let range: String
+            let count: Int
+            let percentage: Double
+        }
+        
+        struct CascadeConnection {
+            let sourceBridge: String
+            let targetBridge: String
+            let strength: Double
+            let delayMinutes: Double
+        }
+        
+        struct ImpactMetrics {
+            let totalEvents: Int
+            let highImpactCount: Int
+            let averageDelay: Double
+            let peakHour: String
+        }
+    }
+    
+    // MARK: - Public Interface
+    
+    func performAnalysis() async {
+        guard !events.isEmpty else {
+            analysisError = "No events available for analysis"
+            return
+        }
+        
+        isAnalyzing = true
+        analysisError = nil
+        
+        do {
+            let analysisData = try await computeAnalysisData()
+            cachedAnalysisData = analysisData
+        } catch {
+            analysisError = "Analysis failed: \(error.localizedDescription)"
+        }
+        
+        isAnalyzing = false
+    }
+    
+    // MARK: - Private Analysis Methods
+    
+    private func computeAnalysisData() async throws -> AnalysisData {
+        return try await Task.detached(priority: .userInitiated) {
+            // Perform heavy computation on background thread
+            let hourlyData = await self.calculateHourlyData()
+            let weeklyData = await self.calculateWeeklyData()
+            let durationRanges = await self.calculateDurationRanges()
+            let severityBreakdown = await self.calculateSeverityBreakdown()
+            let cascadeConnections = await self.calculateCascadeConnections()
+            let predictions = await self.calculatePredictions()
+            let impactMetrics = await self.calculateImpactMetrics()
+            
+            return AnalysisData(
+                hourlyData: hourlyData,
+                weeklyData: weeklyData,
+                durationRanges: durationRanges,
+                severityBreakdown: severityBreakdown,
+                cascadeConnections: cascadeConnections,
+                predictions: predictions,
+                impactMetrics: impactMetrics
+            )
+        }.value
+    }
+    
+    private func calculateHourlyData() -> [AnalysisData.HourlyData] {
+        let hourDistribution = Dictionary(grouping: events) { event in
+            Calendar.current.component(.hour, from: event.openDateTime)
+        }
+        
+        let maxCount = hourDistribution.values.map(\.count).max() ?? 1
+        
+        return (0..<24).map { hour in
+            let count = hourDistribution[hour]?.count ?? 0
+            return AnalysisData.HourlyData(hour: hour, count: count, maxCount: maxCount)
+        }
+    }
+    
+    private func calculateWeeklyData() -> [AnalysisData.WeeklyData] {
+        let dayDistribution = Dictionary(grouping: events) { event in
+            Calendar.current.component(.weekday, from: event.openDateTime)
+        }
+        
+        return (1...7).map { day in
+            let count = dayDistribution[day]?.count ?? 0
+            return AnalysisData.WeeklyData(day: day, count: count)
+        }
+    }
+    
+    private func calculateDurationRanges() -> [AnalysisData.DurationRange] {
+        let durations = events.map(\.minutesOpen).sorted()
+        let total = Double(events.count)
+        
+        let ranges = [
+            (0.0, 15.0, "0-15 min"),
+            (15.0, 30.0, "15-30 min"),
+            (30.0, 60.0, "30-60 min"),
+            (60.0, 120.0, "1-2 hours"),
+            (120.0, Double.infinity, "2+ hours")
+        ]
+        
+        return ranges.map { min, max, label in
+            let count = durations.filter { $0 >= min && $0 < max }.count
+            let percentage = total > 0 ? Double(count) / total : 0.0
+            return AnalysisData.DurationRange(range: label, count: count, percentage: percentage)
+        }
+    }
+    
+    private func calculateSeverityBreakdown() -> [SeverityBreakdown] {
+        let severityGroups = Dictionary(grouping: events) { event in
+            self.calculateEventSeverity(event)
+        }
+        
+        let total = Double(events.count)
+        
+        return ["High", "Moderate", "Low", "Minimal"].map { severity in
+            let count = severityGroups[severity]?.count ?? 0
+            let percentage = total > 0 ? Double(count) / total : 0.0
+            let color = self.severityColor(severity)
+            return SeverityBreakdown(severity: severity, count: count, percentage: percentage, color: color)
+        }
+    }
+    
+    private func calculateCascadeConnections() -> [AnalysisData.CascadeConnection] {
+        // Placeholder for cascade analysis
+        return []
+    }
+    
+    private func calculatePredictions() -> [BridgePrediction] {
+        // Placeholder for prediction analysis
+        return []
+    }
+    
+    private func calculateImpactMetrics() -> AnalysisData.ImpactMetrics {
+        let totalEvents = events.count
+        let highImpactCount = events.filter { calculateEventSeverity($0) == "High" }.count
+        let averageDelay = events.map(\.minutesOpen).reduce(0, +) / Double(totalEvents)
+        let peakHour = getPeakHour()
+        
+        return AnalysisData.ImpactMetrics(
+            totalEvents: totalEvents,
+            highImpactCount: highImpactCount,
+            averageDelay: averageDelay,
+            peakHour: peakHour
+        )
+    }
+    
+    // MARK: - Helper Methods
+    
+    private func calculateEventSeverity(_ event: DrawbridgeEvent) -> String {
+        let duration = event.minutesOpen
+        let hour = Calendar.current.component(.hour, from: event.openDateTime)
+        
+        // High severity: long duration during peak hours
+        if duration > 60 && (hour >= 7 && hour <= 9 || hour >= 16 && hour <= 18) {
+            return "High"
+        }
+        // Moderate severity: medium duration or peak hours
+        else if duration > 30 || (hour >= 7 && hour <= 9 || hour >= 16 && hour <= 18) {
+            return "Moderate"
+        }
+        // Low severity: short duration during off-peak
+        else if duration > 15 {
+            return "Low"
+        }
+        // Minimal severity: very short duration
+        else {
+            return "Minimal"
+        }
+    }
+    
+    private func severityColor(_ severity: String) -> Color {
+        switch severity {
+        case "High": return .red
+        case "Moderate": return .orange
+        case "Low": return .yellow
+        case "Minimal": return .green
+        default: return .gray
+        }
+    }
+    
+    private func getPeakHour() -> String {
+        let hourDistribution = Dictionary(grouping: events) { event in
+            Calendar.current.component(.hour, from: event.openDateTime)
+        }
+        
+        if let peakHour = hourDistribution.max(by: { $0.value.count < $1.value.count }) {
+            return "\(peakHour.key):00"
+        }
+        return "Unknown"
+    }
+}
+
+// MARK: - Main View
+
 public struct DynamicAnalysisSection: View {
     public let events: [DrawbridgeEvent]
     public let analysisType: AnalysisType
@@ -20,13 +259,20 @@ public struct DynamicAnalysisSection: View {
     @Environment(\.modelContext) private var modelContext
     @Query private var allEvents: [DrawbridgeEvent]
     @Query private var cascadeEvents: [CascadeEvent]
-    @State private var isAnalyzing = false
+    
+    @StateObject private var viewModel: DynamicAnalysisViewModel
     
     public init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
         self.events = events
         self.analysisType = analysisType
         self.viewType = viewType
         self.bridgeName = bridgeName
+        self._viewModel = StateObject(wrappedValue: DynamicAnalysisViewModel(
+            events: events,
+            analysisType: analysisType,
+            viewType: viewType,
+            bridgeName: bridgeName
+        ))
     }
     
     public var body: some View {
@@ -43,43 +289,130 @@ public struct DynamicAnalysisSection: View {
             
             // Dynamic content based on analysis and view type combination
             Group {
-                switch (analysisType, viewType) {
-                case (.patterns, .activity):
-                    patternsActivityView
-                case (.patterns, .weekly):
-                    patternsWeeklyView
-                case (.patterns, .duration):
-                    patternsDurationView
-                case (.cascade, .activity):
-                    cascadeActivityView
-                case (.cascade, .weekly):
-                    cascadeWeeklyView
-                case (.cascade, .duration):
-                    cascadeDurationView
-                case (.predictions, .activity):
-                    predictionsActivityView
-                case (.predictions, .weekly):
-                    predictionsWeeklyView
-                case (.predictions, .duration):
-                    predictionsDurationView
-                case (.impact, .activity):
-                    impactActivityView
-                case (.impact, .weekly):
-                    impactWeeklyView
-                case (.impact, .duration):
-                    impactDurationView
+                if viewModel.isAnalyzing {
+                    analysisLoadingView
+                } else if let error = viewModel.analysisError {
+                    analysisErrorView(error)
+                } else if let analysisData = viewModel.cachedAnalysisData {
+                    analysisContentView(analysisData)
+                } else {
+                    analysisPlaceholderView
                 }
             }
             .padding()
             .background(Color(.systemGray6))
             .cornerRadius(12)
         }
+        .onAppear {
+            Task {
+                await viewModel.performAnalysis()
+            }
+        }
+        .onChange(of: events) { _, _ in
+            Task {
+                await viewModel.performAnalysis()
+            }
+        }
+    }
+    
+    // MARK: - Loading View
+    
+    @ViewBuilder
+    private var analysisLoadingView: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .scaleEffect(1.2)
+            
+            Text("Analyzing \(events.count) events...")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+    }
+    
+    // MARK: - Error View
+    
+    @ViewBuilder
+    private func analysisErrorView(_ error: String) -> some View {
+        VStack(spacing: 8) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.orange)
+                .font(.title2)
+            
+            Text("Analysis Error")
+                .font(.caption)
+                .fontWeight(.medium)
+            
+            Text(error)
+                .font(.caption2)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            Button("Retry") {
+                Task {
+                    await viewModel.performAnalysis()
+                }
+            }
+            .font(.caption)
+            .foregroundColor(.blue)
+        }
+        .padding()
+    }
+    
+    // MARK: - Placeholder View
+    
+    @ViewBuilder
+    private var analysisPlaceholderView: some View {
+        VStack(spacing: 8) {
+            Image(systemName: "chart.bar.fill")
+                .foregroundColor(.secondary)
+                .font(.title2)
+            
+            Text("No analysis data available")
+                .font(.caption)
+                .foregroundColor(.secondary)
+        }
+        .frame(maxWidth: .infinity)
+        .padding()
+    }
+    
+    // MARK: - Analysis Content View
+    
+    @ViewBuilder
+    private func analysisContentView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
+        switch (analysisType, viewType) {
+        case (.patterns, .activity):
+            patternsActivityView(data)
+        case (.patterns, .weekly):
+            patternsWeeklyView(data)
+        case (.patterns, .duration):
+            patternsDurationView(data)
+        case (.cascade, .activity):
+            cascadeActivityView(data)
+        case (.cascade, .weekly):
+            cascadeWeeklyView(data)
+        case (.cascade, .duration):
+            cascadeDurationView(data)
+        case (.predictions, .activity):
+            predictionsActivityView(data)
+        case (.predictions, .weekly):
+            predictionsWeeklyView(data)
+        case (.predictions, .duration):
+            predictionsDurationView(data)
+        case (.impact, .activity):
+            impactActivityView(data)
+        case (.impact, .weekly):
+            impactWeeklyView(data)
+        case (.impact, .duration):
+            impactDurationView(data)
+        }
     }
     
     // MARK: - Patterns Analysis Views
     
     @ViewBuilder
-    private var patternsActivityView: some View {
+    private func patternsActivityView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Activity Patterns")
                 .font(.subheadline)
@@ -87,7 +420,7 @@ public struct DynamicAnalysisSection: View {
             
             if events.count >= 5 {
                 // Hourly activity chart
-                hourlyActivityChart
+                hourlyActivityChart(data.hourlyData)
                 
                 // Most active hours
                 VStack(alignment: .leading, spacing: 8) {
@@ -95,7 +428,7 @@ public struct DynamicAnalysisSection: View {
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    ForEach(getMostActiveHours().prefix(3), id: \.hour) { hourData in
+                    ForEach(data.hourlyData.sorted(by: { $0.count > $1.count }).prefix(3), id: \.hour) { hourData in
                         HStack {
                             Text(formatHour(hourData.hour))
                                 .font(.caption)
@@ -138,45 +471,39 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var patternsWeeklyView: some View {
+    private func patternsWeeklyView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Weekly Patterns")
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
-            if events.count >= 7 {
-                // Weekly pattern chart using SwiftUI Charts
-                weeklyPatternChart
+            if events.count >= 5 {
+                // Weekly pattern chart
+                weeklyPatternChart(data.weeklyData)
                 
-                // Weekly insights
+                // Day breakdown
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Weekly Insights")
+                    Text("Day Breakdown")
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    let weekdayEvents = events.filter { !isWeekend($0.openDateTime) }.count
-                    let weekendEvents = events.filter { isWeekend($0.openDateTime) }.count
-                    
-                    Text("Weekdays: \(weekdayEvents) events")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("Weekends: \(weekendEvents) events")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    if weekendEvents > weekdayEvents {
-                        Text("📈 More active on weekends")
-                            .font(.caption2)
-                            .foregroundColor(.blue)
-                    } else {
-                        Text("🏢 More active on weekdays")
-                            .font(.caption2)
-                            .foregroundColor(.orange)
+                    ForEach(data.weeklyData.sorted(by: { $0.count > $1.count }), id: \.day) { dayData in
+                        HStack {
+                            Text(dayName(for: dayData.day))
+                                .font(.caption)
+                                .frame(width: 80, alignment: .leading)
+                            
+                            ProgressView(value: Double(dayData.count), total: Double(data.weeklyData.map(\.count).max() ?? 1))
+                                .progressViewStyle(LinearProgressViewStyle(tint: .green))
+                            
+                            Text("\(dayData.count)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                        }
                     }
                 }
             } else {
-                Text("Need at least 7 events for weekly pattern analysis")
+                Text("Need at least 5 events for weekly pattern analysis")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .italic()
@@ -185,7 +512,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var patternsDurationView: some View {
+    private func patternsDurationView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Duration Patterns")
                 .font(.subheadline)
@@ -198,9 +525,7 @@ public struct DynamicAnalysisSection: View {
                         .font(.caption)
                         .fontWeight(.medium)
                     
-                    let durationRanges = calculateDurationRanges()
-                    
-                    ForEach(durationRanges, id: \.range) { rangeData in
+                    ForEach(data.durationRanges, id: \.range) { rangeData in
                         HStack {
                             Text(rangeData.range)
                                 .font(.caption)
@@ -233,7 +558,7 @@ public struct DynamicAnalysisSection: View {
     // MARK: - Cascade Analysis Views
     
     @ViewBuilder
-    private var cascadeActivityView: some View {
+    private func cascadeActivityView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Bridge Connection Activity")
                 .font(.headline)
@@ -274,7 +599,7 @@ public struct DynamicAnalysisSection: View {
                 .padding()
                 .background(Color.green.opacity(0.1))
                 .cornerRadius(8)
-            } else {
+            
                 Text("Analyzing how this bridge's openings connect to other Seattle bridges...")
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -283,7 +608,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var cascadeWeeklyView: some View {
+    private func cascadeWeeklyView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Weekly Bridge Connections")
                 .font(.subheadline)
@@ -296,7 +621,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var cascadeDurationView: some View {
+    private func cascadeDurationView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Connection Duration Effects")
                 .font(.subheadline)
@@ -311,7 +636,7 @@ public struct DynamicAnalysisSection: View {
     // MARK: - Predictions Analysis Views
     
     @ViewBuilder
-    private var predictionsActivityView: some View {
+    private func predictionsActivityView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Current Predictions")
                 .font(.subheadline)
@@ -358,7 +683,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var predictionsWeeklyView: some View {
+    private func predictionsWeeklyView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Weekly Prediction Patterns")
                 .font(.subheadline)
@@ -371,7 +696,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var predictionsDurationView: some View {
+    private func predictionsDurationView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Duration Predictions")
                 .font(.subheadline)
@@ -386,112 +711,70 @@ public struct DynamicAnalysisSection: View {
     // MARK: - Impact Analysis Views
     
     @ViewBuilder
-    private var impactActivityView: some View {
+    private func impactActivityView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("Traffic Impact Analysis")
+            Text("Traffic Impact Timeline")
                 .font(.subheadline)
                 .fontWeight(.semibold)
             
-            if events.isEmpty {
-                // Show helpful message when no events in time period
-                VStack(spacing: 12) {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("No Bridge Openings")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.green)
-                    }
-                    
-                    Text("Great news! No bridge openings recorded in this time period. Traffic flow was uninterrupted.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.leading)
-                    
-                    // Suggest different time periods
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("💡 Try viewing a longer time period:")
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                            .foregroundColor(.blue)
-                        
-                        Text("• 7D or 30D for historical patterns")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                        
-                        Text("• Check recent activity on Dashboard")
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-            } else if events.count >= 3 {
-                // Traffic impact severity breakdown
-                impactSeverityBreakdown
+            if events.count >= 5 {
+                // Impact severity breakdown
+                impactSeverityBreakdown(data.severityBreakdown)
                 
-                // Impact severity detail section
-                impactSeverityDetailSection
-                
-                // Rush hour impact analysis
-                if hasRushHourEvents {
-                    rushHourImpactAnalysis
-                }
-            } else {
-                // Show analysis for 1-2 events
-                VStack(spacing: 12) {
+                // Impact metrics
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Impact Metrics")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    
                     HStack {
-                        Image(systemName: "info.circle")
-                            .foregroundColor(.blue)
-                        Text("Limited Data Analysis")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
-                    
-                    Text("Found \(events.count) bridge opening\(events.count == 1 ? "" : "s") in this period.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    // Show basic info about the events
-                    if let firstEvent = events.first {
-                        let impact = firstEvent.impactSeverity
-                        
-                        HStack {
-                            Circle()
-                                .fill(impact.color)
-                                .frame(width: 12, height: 12)
-                            
-                            Text("\(impact.level) Impact")
-                                .font(.caption)
-                                .fontWeight(.medium)
-                            
-                            Spacer()
-                            
-                            Text("\(String(format: "%.0f", firstEvent.minutesOpen)) min")
-                                .font(.caption)
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Total Events")
+                                .font(.caption2)
                                 .foregroundColor(.secondary)
+                            Text("\(data.impactMetrics.totalEvents)")
+                                .font(.caption)
+                                .fontWeight(.bold)
                         }
-                        .padding()
-                        .background(Color(.systemBackground))
-                        .cornerRadius(8)
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("High Impact")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text("\(data.impactMetrics.highImpactCount)")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                                .foregroundColor(.red)
+                        }
+                        
+                        Spacer()
+                        
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Avg Delay")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            Text("\(String(format: "%.0f", data.impactMetrics.averageDelay)) min")
+                                .font(.caption)
+                                .fontWeight(.bold)
+                        }
                     }
-                    
-                    Text("Need 3+ events for comprehensive impact analysis")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                        .italic()
                 }
                 .padding()
-                .background(Color.blue.opacity(0.1))
+                .background(Color(.systemBackground))
                 .cornerRadius(8)
+            } else {
+                Text("Need at least 5 events for impact analysis")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .italic()
             }
         }
     }
     
     @ViewBuilder
-    private var impactWeeklyView: some View {
+    private func impactWeeklyView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Weekly Traffic Impact")
                 .font(.subheadline)
@@ -504,7 +787,7 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var impactDurationView: some View {
+    private func impactDurationView(_ data: DynamicAnalysisViewModel.AnalysisData) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Duration Impact Analysis")
                 .font(.subheadline)
@@ -519,16 +802,14 @@ public struct DynamicAnalysisSection: View {
     // MARK: - Impact Analysis Components
     
     @ViewBuilder
-    private var impactSeverityBreakdown: some View {
+    private func impactSeverityBreakdown(_ breakdown: [SeverityBreakdown]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Impact Severity Overview")
                 .font(.caption)
                 .fontWeight(.medium)
             
-            let severityBreakdown = calculateSeverityBreakdown()
-            
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
-                ForEach(severityBreakdown, id: \.severity) { breakdown in
+                ForEach(breakdown, id: \.severity) { breakdown in
                     VStack(spacing: 4) {
                         HStack {
                             Circle()
@@ -559,158 +840,17 @@ public struct DynamicAnalysisSection: View {
         }
     }
     
-    @ViewBuilder
-    private var impactSeverityDetailSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "chart.pie")
-                    .foregroundColor(.blue)
-                Text("Impact Severity Breakdown")
-                    .font(.caption)
-                    .fontWeight(.medium)
-            }
-            
-            let severityBreakdown = calculateSeverityBreakdown()
-            
-            if severityBreakdown.allSatisfy({ $0.severity == "Minimal" || $0.severity == "Low" }) {
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "checkmark.circle.fill")
-                            .foregroundColor(.green)
-                        Text("No High-Impact Events")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                            .foregroundColor(.green)
-                    }
-                    
-                    Text("All bridge openings in this period had minimal to moderate traffic impact. Great for commuters!")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .padding()
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-            } else {
-                LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                    ForEach(severityBreakdown, id: \.severity) { breakdown in
-                        VStack(spacing: 6) {
-                            HStack {
-                                Circle()
-                                    .fill(breakdown.color)
-                                    .frame(width: 12, height: 12)
-                                
-                                Text(breakdown.severity)
-                                    .font(.caption)
-                                    .fontWeight(.medium)
-                                
-                                Spacer()
-                            }
-                            
-                            HStack {
-                                Text("\(breakdown.count)")
-                                    .font(.title3)
-                                    .fontWeight(.bold)
-                                    .foregroundColor(breakdown.color)
-                                
-                                Spacer()
-                                
-                                Text("\(Int(breakdown.percentage * 100))%")
-                                    .font(.caption)
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            ProgressView(value: breakdown.percentage, total: 1.0)
-                                .progressViewStyle(LinearProgressViewStyle(tint: breakdown.color))
-                                .frame(height: 4)
-                        }
-                        .padding()
-                        .background(Color(.systemBackground))
-                        .cornerRadius(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(breakdown.color.opacity(0.3), lineWidth: 1)
-                        )
-                    }
-                }
-                
-                // Severity explanation
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Impact Severity Criteria:")
-                        .font(.caption2)
-                        .fontWeight(.medium)
-                        .foregroundColor(.secondary)
-                    
-                    Text("• Minimal/Low: < 15 min, off-peak hours")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("• Moderate: 15-30 min or during rush hour")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                    
-                    Text("• High/Severe: 30+ min, especially during rush hour")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
-                }
-                .padding(.top, 8)
-            }
-        }
-        .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(8)
-    }
-    
-    @ViewBuilder
-    private var rushHourImpactAnalysis: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "car.2.fill")
-                    .foregroundColor(.red)
-                Text("Rush Hour Impact")
-                    .font(.caption)
-                    .fontWeight(.medium)
-            }
-            
-            let rushHourEvents = events.filter { isRushHour($0.openDateTime) }
-            let avgRushHourDuration = rushHourEvents.isEmpty ? 0 : 
-                rushHourEvents.map(\.minutesOpen).reduce(0, +) / Double(rushHourEvents.count)
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text("\(rushHourEvents.count) events during rush hours")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                Text("Average rush hour duration: \(String(format: "%.1f", avgRushHourDuration)) min")
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                
-                if avgRushHourDuration > 20 {
-                    Text("⚠️ Significant rush hour delays expected")
-                        .font(.caption2)
-                        .foregroundColor(.red)
-                } else {
-                    Text("✅ Manageable rush hour impact")
-                        .font(.caption2)
-                        .foregroundColor(.green)
-                }
-            }
-        }
-        .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
-    }
-    
     // MARK: - Chart Components
     
     @ViewBuilder
-    private var hourlyActivityChart: some View {
+    private func hourlyActivityChart(_ hourlyData: [DynamicAnalysisViewModel.AnalysisData.HourlyData]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Hourly Activity Pattern")
                 .font(.caption)
                 .fontWeight(.medium)
             
             if #available(iOS 16.0, *) {
-                Chart(getHourlyData(), id: \.hour) { hourData in
+                Chart(hourlyData, id: \.hour) { hourData in
                     BarMark(
                         x: .value("Hour", hourData.hour),
                         y: .value("Events", hourData.count)
@@ -743,14 +883,14 @@ public struct DynamicAnalysisSection: View {
     }
     
     @ViewBuilder
-    private var weeklyPatternChart: some View {
+    private func weeklyPatternChart(_ weeklyData: [DynamicAnalysisViewModel.AnalysisData.WeeklyData]) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Weekly Activity Pattern")
                 .font(.caption)
                 .fontWeight(.medium)
             
             if #available(iOS 16.0, *) {
-                Chart(getWeeklyData(), id: \.day) { dayData in
+                Chart(weeklyData, id: \.day) { dayData in
                     AreaMark(
                         x: .value("Day", dayData.day),
                         y: .value("Events", dayData.count)
@@ -767,7 +907,7 @@ public struct DynamicAnalysisSection: View {
                 .chartXAxis {
                     AxisMarks { day in
                         AxisValueLabel {
-                            Text(dayData(for: day.as(Int.self) ?? 0))
+                            Text(dayName(for: day.as(Int.self) ?? 0))
                                 .font(.caption2)
                         }
                     }
@@ -794,111 +934,16 @@ public struct DynamicAnalysisSection: View {
         )
     }
     
-    private func getMostActiveHours() -> [HourData] {
-        let hourGroups = Dictionary(grouping: events) { event in
-            Calendar.current.component(.hour, from: event.openDateTime)
-        }
-        
-        let maxCount = hourGroups.values.map(\.count).max() ?? 1
-        
-        return hourGroups.map { hour, events in
-            HourData(hour: hour, count: events.count, maxCount: maxCount)
-        }.sorted { $0.count > $1.count }
-    }
-    
-    private func getHourlyData() -> [HourData] {
-        let hourGroups = Dictionary(grouping: events) { event in
-            Calendar.current.component(.hour, from: event.openDateTime)
-        }
-        
-        let maxCount = hourGroups.values.map(\.count).max() ?? 1
-        
-        return (0...23).map { hour in
-            HourData(hour: hour, count: hourGroups[hour]?.count ?? 0, maxCount: maxCount)
-        }
-    }
-    
-    private func getWeeklyData() -> [WeeklyData] {
-        let weekdayGroups = Dictionary(grouping: events) { event in
-            Calendar.current.component(.weekday, from: event.openDateTime)
-        }
-        
-        return (1...7).map { weekday in
-            WeeklyData(day: weekday, count: weekdayGroups[weekday]?.count ?? 0)
-        }
-    }
-    
-    private func calculateDurationRanges() -> [DurationRange] {
-        let ranges = [
-            (range: "< 15 min", min: 0.0, max: 15.0),
-            (range: "15-30 min", min: 15.0, max: 30.0),
-            (range: "30-60 min", min: 30.0, max: 60.0),
-            (range: "> 60 min", min: 60.0, max: Double.infinity)
-        ]
-        
-        return ranges.map { rangeInfo in
-            let count = events.filter { event in
-                event.minutesOpen >= rangeInfo.min && event.minutesOpen < rangeInfo.max
-            }.count
-            
-            return DurationRange(range: rangeInfo.range, count: count)
-        }
-    }
-    
-    private func calculateSeverityBreakdown() -> [SeverityBreakdown] {
-        let severityGroups = Dictionary(grouping: events) { event in
-            event.impactSeverity.level
-        }
-        
-        let total = events.count
-        
-        return severityGroups.map { severity, eventList in
-            let count = eventList.count
-            let percentage = total > 0 ? Double(count) / Double(total) : 0.0
-            let color: Color
-            
-            switch severity {
-            case "Minimal": color = .green
-            case "Low": color = .blue
-            case "Moderate": color = .orange
-            case "High": color = .red
-            case "Severe": color = .purple
-            default: color = .gray
-            }
-            
-            return SeverityBreakdown(
-                severity: severity,
-                count: count,
-                percentage: percentage,
-                color: color
-            )
-        }.sorted { $0.count > $1.count }
-    }
-    
-    private var hasRushHourEvents: Bool {
-        events.contains { isRushHour($0.openDateTime) }
-    }
-    
-    private func isRushHour(_ date: Date) -> Bool {
-        let hour = Calendar.current.component(.hour, from: date)
-        return (hour >= 7 && hour <= 9) || (hour >= 17 && hour <= 19)
-    }
-    
-    private func isWeekend(_ date: Date) -> Bool {
-        let weekday = Calendar.current.component(.weekday, from: date)
-        return weekday == 1 || weekday == 7
-    }
-    
     private func formatHour(_ hour: Int) -> String {
-        if hour == 0 { return "12 AM" }
-        if hour < 12 { return "\(hour) AM" }
-        if hour == 12 { return "12 PM" }
-        return "\(hour - 12) PM"
+        let formatter = DateFormatter()
+        formatter.dateFormat = "h a"
+        let date = Calendar.current.date(bySettingHour: hour, minute: 0, second: 0, of: Date()) ?? Date()
+        return formatter.string(from: date)
     }
     
-    private func dayData(for weekday: Int) -> String {
-        let days = ["", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
-        return days[safe: weekday] ?? "?"
+    private func dayName(for day: Int) -> String {
+        let formatter = DateFormatter()
+        return formatter.weekdaySymbols[day - 1]
     }
     
     private func probabilityColor(_ probability: Double) -> Color {
@@ -940,66 +985,39 @@ public struct DynamicAnalysisSection: View {
     
     // MARK: - Cascade detection function for bridge detail views
     private func forceCascadeDetectionForDetail() async {
-        print(" [CASCADE DETAIL]  FORCING CASCADE DETECTION FOR BRIDGE DETAIL...")
+        print(" [BRIDGE DETAIL]  FORCING CASCADE DETECTION...")
         
         let currentEvents = Array(allEvents.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
+        let eventDTOs = currentEvents.toDTOs
         
         await Task.detached(priority: .userInitiated) {
-            let eventDTOs = currentEvents.map { event in
-                DrawbridgeEvent(
-                    entityType: event.entityType,
-                    entityName: event.entityName,
-                    entityID: event.entityID,
-                    openDateTime: event.openDateTime,
-                    closeDateTime: event.closeDateTime,
-                    minutesOpen: event.minutesOpen,
-                    latitude: event.latitude,
-                    longitude: event.longitude
-                )
-            }
-            
-            let cascadeEventsDetected = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
-            print(" [CASCADE DETAIL] Detected \(cascadeEventsDetected.count) cascade events!")
+            print(" [BRIDGE DETAIL] Running cascade detection on \(eventDTOs.count) events...")
+            let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
+            print(" [BRIDGE DETAIL] Detected \(cascadeEvents.count) cascade events!")
             
             await MainActor.run {
+                print(" [BRIDGE DETAIL]  SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                
                 for existingEvent in self.cascadeEvents {
                     self.modelContext.delete(existingEvent)
                 }
                 
-                for cascadeEvent in cascadeEventsDetected {
+                for cascadeEvent in cascadeEvents {
                     self.modelContext.insert(cascadeEvent)
                 }
                 
                 do {
                     try self.modelContext.save()
-                    print(" [CASCADE DETAIL]  CASCADE EVENTS SAVED TO SWIFTDATA!")
+                    print(" [BRIDGE DETAIL]  CASCADE EVENTS SAVED! UI should update now.")
                 } catch {
-                    print(" [CASCADE DETAIL] Failed to save: \(error)")
+                    print(" [BRIDGE DETAIL] Failed to save cascade events: \(error)")
                 }
             }
         }.value
     }
-
 }
 
-// MARK: - Supporting Data Models
-
-struct HourData {
-    let hour: Int
-    let count: Int
-    let maxCount: Int
-}
-
-struct WeeklyData: Identifiable {
-    let id = UUID()
-    let day: Int
-    let count: Int
-}
-
-struct DurationRange {
-    let range: String
-    let count: Int
-}
+// MARK: - Supporting Types
 
 struct SeverityBreakdown {
     let severity: String
