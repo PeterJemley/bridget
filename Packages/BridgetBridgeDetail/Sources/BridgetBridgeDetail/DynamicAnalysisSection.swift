@@ -19,6 +19,7 @@ public struct DynamicAnalysisSection: View {
     
     @Environment(\.modelContext) private var modelContext
     @Query private var allEvents: [DrawbridgeEvent]
+    @Query private var cascadeEvents: [CascadeEvent]
     @State private var isAnalyzing = false
     
     public init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
@@ -237,13 +238,47 @@ public struct DynamicAnalysisSection: View {
             Text("Bridge Connection Activity")
                 .font(.headline)
             
-            Text("Analyzing how this bridge's openings connect to other Seattle bridges...")
-                .font(.caption)
-                .foregroundColor(.secondary)
-            
-            // Connection analysis content would go here
-            Text("Connection Analysis Coming Soon")
-                .foregroundColor(.secondary)
+            if cascadeEvents.isEmpty && !allEvents.isEmpty {
+                VStack(spacing: 12) {
+                    HStack {
+                        ProgressView()
+                            .scaleEffect(0.8)
+                        Text("Analyzing bridge connections...")
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+                    
+                    Text("Analyzing \(allEvents.count) bridge events to discover connection patterns")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.orange.opacity(0.1))
+                .cornerRadius(8)
+                .onAppear {
+                    Task {
+                        await forceCascadeDetectionForDetail()
+                    }
+                }
+            } else if !cascadeEvents.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Found \(cascadeEvents.count) connection patterns")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.green)
+                    
+                    Text("Connections show when this bridge's openings often lead to other bridge openings nearby.")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+                .background(Color.green.opacity(0.1))
+                .cornerRadius(8)
+            } else {
+                Text("Analyzing how this bridge's openings connect to other Seattle bridges...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
         }
     }
     
@@ -902,6 +937,49 @@ public struct DynamicAnalysisSection: View {
         case (.impact, .duration): return "Duration impact analysis"
         }
     }
+    
+    // MARK: - Cascade detection function for bridge detail views
+    private func forceCascadeDetectionForDetail() async {
+        print(" [CASCADE DETAIL]  FORCING CASCADE DETECTION FOR BRIDGE DETAIL...")
+        
+        let currentEvents = Array(allEvents.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
+        
+        await Task.detached(priority: .userInitiated) {
+            let eventDTOs = currentEvents.map { event in
+                DrawbridgeEvent(
+                    entityType: event.entityType,
+                    entityName: event.entityName,
+                    entityID: event.entityID,
+                    openDateTime: event.openDateTime,
+                    closeDateTime: event.closeDateTime,
+                    minutesOpen: event.minutesOpen,
+                    latitude: event.latitude,
+                    longitude: event.longitude
+                )
+            }
+            
+            let cascadeEventsDetected = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
+            print(" [CASCADE DETAIL] Detected \(cascadeEventsDetected.count) cascade events!")
+            
+            await MainActor.run {
+                for existingEvent in self.cascadeEvents {
+                    self.modelContext.delete(existingEvent)
+                }
+                
+                for cascadeEvent in cascadeEventsDetected {
+                    self.modelContext.insert(cascadeEvent)
+                }
+                
+                do {
+                    try self.modelContext.save()
+                    print(" [CASCADE DETAIL]  CASCADE EVENTS SAVED TO SWIFTDATA!")
+                } catch {
+                    print(" [CASCADE DETAIL] Failed to save: \(error)")
+                }
+            }
+        }.value
+    }
+
 }
 
 // MARK: - Supporting Data Models

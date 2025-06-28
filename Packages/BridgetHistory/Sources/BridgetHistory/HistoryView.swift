@@ -128,16 +128,54 @@ public struct HistoryView: View {
     
     private var mainChartSection: some View {
         VStack(alignment: .leading, spacing: 24) { // INCREASED: From 20 to 24 for better separation
-            Text(selectedAnalysisType.chartTitle)
-                .font(.headline)
-                .fontWeight(.semibold)
-                .foregroundColor(.primary)
-                .padding(.bottom, 12) // INCREASED: From 8 to 12 for more separation from chart
+            HStack {
+                Text(selectedAnalysisType.chartTitle)
+                    .font(.headline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.primary)
+                
+                Spacer()
+                
+                Text("(\(filteredEvents.count) events)")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .onAppear {
+                        // ENHANCED: Debug logging for event count verification
+                        print("📊 [HISTORY] Event Count Verification:")
+                        print("📊 [HISTORY] Selected Time Range: \(selectedTimeRange.displayName) (\(selectedTimeRange.value) days)")
+                        print("📊 [HISTORY] Total Events Available: \(events.count)")
+                        print("📊 [HISTORY] Filtered Events: \(filteredEvents.count)")
+                        print("📊 [HISTORY] Selected Bridge: \(selectedBridge?.entityName ?? "All Bridges")")
+                        
+                        // Verify time range calculation
+                        let cutoffDate = Calendar.current.date(byAdding: selectedTimeRange.dateComponent, value: -selectedTimeRange.value, to: Date()) ?? Date.distantPast
+                        print("📊 [HISTORY] Cutoff Date: \(cutoffDate.formatted())")
+                        print("📊 [HISTORY] Current Date: \(Date().formatted())")
+                        
+                        // Sample recent events for verification
+                        let recentSample = events.sorted { $0.openDateTime > $1.openDateTime }.prefix(5)
+                        print("📊 [HISTORY] Recent Events Sample:")
+                        for (index, event) in recentSample.enumerated() {
+                            print("📊 [HISTORY]   \(index + 1). \(event.entityName) - \(event.openDateTime.formatted())")
+                        }
+                        
+                        // Verify 30-day calculation specifically
+                        if selectedTimeRange == .month {
+                            let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date.distantPast
+                            let last30DaysEvents = events.filter { $0.openDateTime >= thirtyDaysAgo }
+                            print("📊 [HISTORY] 🎯 30-DAY VERIFICATION:")
+                            print("📊 [HISTORY] Events in last 30 days: \(last30DaysEvents.count)")
+                            print("📊 [HISTORY] That's \(Double(last30DaysEvents.count) / 30.0) events per day average")
+                            print("📊 [HISTORY] Unique bridges in 30 days: \(Set(last30DaysEvents.map(\.entityID)).count)")
+                        }
+                    }
+            }
+            .padding(.bottom, 12) // INCREASED: From 8 to 12 for more separation from chart
             
             Group {
                 switch selectedAnalysisType {
                 case .frequency:
-                    frequencyChart
+                    enhancedFrequencyChart
                 case .duration:
                     durationChart
                 case .timeline:
@@ -165,37 +203,138 @@ public struct HistoryView: View {
         .padding(.vertical, 16) // INCREASED: From 12 to 16 for more section separation
     }
     
-    // MARK: - Chart Implementations
+    // MARK: - ENHANCED: HIG-Compliant Frequency Chart
     
-    private var frequencyChart: some View {
-        Chart(frequencyData.prefix(12)) { item in 
-            BarMark(
-                x: .value("Period", item.period),
-                y: .value("Count", item.count)
-            )
-            .foregroundStyle(
-                LinearGradient(
-                    colors: [Color.blue, Color.blue.opacity(0.6)],
-                    startPoint: .top,
-                    endPoint: .bottom
+    private var enhancedFrequencyChart: some View {
+        VStack(spacing: 16) {
+            // Chart data summary
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Time Period")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(selectedTimeRange.displayName)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.blue)
+                }
+                
+                Spacer()
+                
+                VStack(alignment: .trailing, spacing: 4) {
+                    Text("Peak Period")
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                    Text(peakFrequencyPeriod)
+                        .font(.caption)
+                        .fontWeight(.medium)
+                        .foregroundColor(.red)
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
+            
+            // Enhanced chart with proper spacing
+            Chart(Array(enhancedFrequencyData.enumerated()), id: \.offset) { index, item in 
+                BarMark(
+                    x: .value("Period", index),
+                    y: .value("Count", item.count)
                 )
-            )
-        }
-        .chartXAxis {
-            AxisMarks(values: .automatic(desiredCount: 3)) { value in 
-                AxisValueLabel()
-                    .font(.caption2)
-                    .foregroundStyle(Color.primary)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: item.count == enhancedFrequencyData.max(by: { $0.count < $1.count })?.count 
+                            ? [Color.red, Color.red.opacity(0.7)]
+                            : [Color.blue, Color.blue.opacity(0.7)],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+                .cornerRadius(4)
             }
-        }
-        .chartYAxis {
-            AxisMarks(values: .automatic(desiredCount: 4)) { value in
-                AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
-                    .foregroundStyle(Color.gray.opacity(0.3))
-                AxisValueLabel()
-                    .font(.caption2)
-                    .foregroundStyle(Color.primary)
+            .frame(height: 180) // INCREASED: From default to 180 for better readability
+            .chartXAxis {
+                AxisMarks(values: .automatic(desiredCount: min(5, enhancedFrequencyData.count))) { value in 
+                    AxisValueLabel {
+                        if let index = value.as(Int.self),
+                           index < enhancedFrequencyData.count {
+                            Text(enhancedFrequencyData[index].displayLabel)
+                                .font(.caption2)
+                                .foregroundStyle(Color.primary)
+                        }
+                    }
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                        .foregroundStyle(Color.gray.opacity(0.2))
+                }
             }
+            .chartYAxis {
+                AxisMarks(values: .automatic(desiredCount: 5)) { value in
+                    AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
+                        .foregroundStyle(Color.gray.opacity(0.3))
+                    AxisValueLabel {
+                        if let count = value.as(Int.self) {
+                            Text("\(count)")
+                                .font(.caption2)
+                                .foregroundStyle(Color.primary)
+                        }
+                    }
+                }
+            }
+            .chartPlotStyle { plotArea in
+                plotArea
+                    .background(Color(.systemBackground))
+            }
+            
+            // Frequency insights
+            VStack(spacing: 8) {
+                HStack {
+                    Text("Frequency Insights")
+                        .font(.caption)
+                        .fontWeight(.medium)
+                    Spacer()
+                }
+                
+                HStack {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Average")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("\(Int(averageFrequency)) events")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.blue)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .center, spacing: 4) {
+                        Text("Peak")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text("\(peakFrequencyCount) events")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.red)
+                    }
+                    
+                    Spacer()
+                    
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Text("Trend")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        Text(frequencyTrend)
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(frequencyTrendColor)
+                    }
+                }
+            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .background(Color(.systemGray6))
+            .cornerRadius(10)
         }
     }
     
@@ -728,9 +867,134 @@ extension HistoryView {
             )
         }.sorted { $0.weekStart < $1.weekStart }
     }
+    
+    // MARK: - Enhanced Frequency Data Processing
+    private var enhancedFrequencyData: [EnhancedFrequencyDataPoint] {
+        let calendar = Calendar.current
+        
+        // Group events by appropriate time intervals based on selected range
+        let groupedData: [String: [DrawbridgeEvent]]
+        
+        switch selectedTimeRange {
+        case .week:
+            // Group by day for 7-day view
+            groupedData = Dictionary(grouping: filteredEvents) { event in
+                let formatter = DateFormatter()
+                formatter.dateFormat = "M/d"
+                return formatter.string(from: event.openDateTime)
+            }
+        case .month:
+            // Group by week for 30-day view
+            groupedData = Dictionary(grouping: filteredEvents) { event in
+                let weekStart = calendar.dateInterval(of: .weekOfYear, for: event.openDateTime)?.start ?? event.openDateTime
+                let formatter = DateFormatter()
+                formatter.dateFormat = "M/d"
+                return formatter.string(from: weekStart)
+            }
+        case .quarter, .year:
+            // Group by month for longer views
+            groupedData = Dictionary(grouping: filteredEvents) { event in
+                let formatter = DateFormatter()
+                formatter.dateFormat = "MMM"
+                return formatter.string(from: event.openDateTime)
+            }
+        }
+        
+        return groupedData.map { period, events in
+            let displayLabel: String
+            switch selectedTimeRange {
+            case .week:
+                displayLabel = period // Already formatted as "M/d"
+            case .month:
+                displayLabel = "W\(period)" // Week of M/d
+            case .quarter, .year:
+                displayLabel = period // Month abbreviation
+            }
+            
+            return EnhancedFrequencyDataPoint(
+                period: period,
+                displayLabel: displayLabel,
+                count: events.count,
+                events: events
+            )
+        }.sorted { 
+            // Sort by actual date for proper chronological order
+            let formatter = DateFormatter()
+            
+            let date1: Date
+            let date2: Date
+            
+            switch selectedTimeRange {
+            case .week:
+                formatter.dateFormat = "M/d"
+                date1 = formatter.date(from: $0.period) ?? Date.distantPast
+                date2 = formatter.date(from: $1.period) ?? Date.distantPast
+            case .month:
+                formatter.dateFormat = "M/d"
+                date1 = formatter.date(from: $0.period) ?? Date.distantPast
+                date2 = formatter.date(from: $1.period) ?? Date.distantPast
+            case .quarter, .year:
+                formatter.dateFormat = "MMM"
+                date1 = formatter.date(from: $0.period) ?? Date.distantPast
+                date2 = formatter.date(from: $1.period) ?? Date.distantPast
+            }
+            
+            return date1 < date2
+        }
+    }
+    
+    private var peakFrequencyPeriod: String {
+        guard let peak = enhancedFrequencyData.max(by: { $0.count < $1.count }) else {
+            return "N/A"
+        }
+        return peak.displayLabel
+    }
+    
+    private var peakFrequencyCount: Int {
+        enhancedFrequencyData.max(by: { $0.count < $1.count })?.count ?? 0
+    }
+    
+    private var averageFrequency: Double {
+        guard !enhancedFrequencyData.isEmpty else { return 0 }
+        let total = enhancedFrequencyData.map(\.count).reduce(0, +)
+        return Double(total) / Double(enhancedFrequencyData.count)
+    }
+    
+    private var frequencyTrend: String {
+        guard enhancedFrequencyData.count >= 3 else { return "N/A" }
+        
+        let recent = Array(enhancedFrequencyData.suffix(2)).map(\.count).reduce(0, +)
+        let previous = Array(enhancedFrequencyData.dropLast(2).suffix(2)).map(\.count).reduce(0, +)
+        
+        if recent > previous {
+            return "↗ Rising"
+        } else if recent < previous {
+            return "↘ Falling"
+        } else {
+            return "→ Stable"
+        }
+    }
+    
+    private var frequencyTrendColor: Color {
+        if frequencyTrend.contains("Rising") {
+            return .red
+        } else if frequencyTrend.contains("Falling") {
+            return .green
+        } else {
+            return .blue
+        }
+    }
 }
 
 // MARK: - Supporting Types and Views
+
+struct EnhancedFrequencyDataPoint: Identifiable {
+    let id = UUID()
+    let period: String
+    let displayLabel: String
+    let count: Int
+    let events: [DrawbridgeEvent]
+}
 
 struct WeeklyTimelineDataPoint: Identifiable {
     let id = UUID()

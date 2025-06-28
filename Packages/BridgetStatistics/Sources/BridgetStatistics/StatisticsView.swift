@@ -1,4 +1,4 @@
-//
+// 
 //  StatisticsView.swift
 //  BridgetStatistics
 //
@@ -27,8 +27,31 @@ public struct StatisticsView: View {
     public init() {}
     
     private func updateNeuralEngineStatus() {
+        // DEBUG: Test Neural Engine detection
+        print(" [NEURAL ENGINE] Starting detection...")
+        
+        // ENHANCED: Proper Neural Engine detection with specific capabilities
         let neuralGeneration = NeuralEngineManager.detectNeuralEngineGeneration()
-        neuralEngineStatus = "\(neuralGeneration.rawValue) (\(neuralGeneration.coreCount) cores)"
+        let coreCount = neuralGeneration.coreCount
+        let topsCapability = neuralGeneration.topsCapability
+        let complexity = neuralGeneration.recommendedModelComplexity.rawValue
+        
+        // FIXED: HIG-compliant status with specific device information
+        neuralEngineStatus = "\(neuralGeneration.rawValue), \(coreCount) cores, \(String(format: "%.1f", topsCapability)) TOPS, \(complexity)"
+        
+        // DEBUG: Enhanced logging without special characters that might break
+        print("[NEURAL ENGINE] Detection Results:")
+        print("[NEURAL ENGINE] Generation: \(neuralGeneration.rawValue)")
+        print("[NEURAL ENGINE] Cores: \(coreCount)")
+        print("[NEURAL ENGINE] TOPS: \(String(format: "%.1f", topsCapability))")
+        print("[NEURAL ENGINE] Complexity: \(complexity)")
+        print("[NEURAL ENGINE] Final Status: \(neuralEngineStatus)")
+        
+        // FORCE: Update UI immediately
+        DispatchQueue.main.async {
+            // Force view refresh
+            print("[NEURAL ENGINE] Forcing view update with status: \(self.neuralEngineStatus)")
+        }
     }
 
     public var body: some View {
@@ -56,9 +79,10 @@ public struct StatisticsView: View {
                             Text("Neural Engine: \(neuralEngineStatus)")
                                 .font(.caption)
                                 .foregroundColor(.secondary)
+                                .lineLimit(2)
                         }
                         .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
+                        .padding(.vertical, 8) // INCREASED: From 6 to 8 for better spacing with longer text
                         .background(Color(.systemGray6))
                         .cornerRadius(8)
                         
@@ -86,15 +110,15 @@ public struct StatisticsView: View {
             .navigationTitle("Statistics")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
-                print("📊 [STATS] StatisticsView Appeared")
-                print("📊 [STATS] Events: \(events.count)")
-                print("📊 [STATS] Bridge Info: \(bridgeInfo.count)")
-                print("📊 [STATS] Analytics: \(analytics.count)")
-                print("📊 [STATS] Cascade Events: \(cascadeEvents.count)")
+                print(" [STATS] StatisticsView Appeared")
+                print(" [STATS] Events: \(events.count)")
+                print(" [STATS] Bridge Info: \(bridgeInfo.count)")
+                print(" [STATS] Analytics: \(analytics.count)")
+                print(" [STATS] Cascade Events: \(cascadeEvents.count)")
                 updateNeuralEngineStatus()
                 
                 if cascadeEvents.isEmpty && !events.isEmpty {
-                    print("📊 [STATS] 🎯 NO CASCADE EVENTS FOUND - FORCING IMMEDIATE DETECTION")
+                    print(" [STATS]  NO CASCADE EVENTS FOUND - FORCING IMMEDIATE DETECTION")
                     Task {
                         await forceCascadeDetection()
                     }
@@ -106,7 +130,7 @@ public struct StatisticsView: View {
             }
         }
     }
-
+    
     @ViewBuilder
     private var cascadeNetworkVisualization: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -139,63 +163,114 @@ public struct StatisticsView: View {
             
             // Better user explanation
             if cascadeEvents.isEmpty {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("🔍 Analyzing Bridge Relationships")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "info.circle.fill")
+                            .foregroundColor(.blue)
+                        Text("What This Analysis Shows")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
                     
-                    Text("We're analyzing \(events.count) bridge opening events to discover patterns where one bridge opening might trigger another. This helps predict traffic cascades across Seattle.")
+                    Text("We're looking for patterns where opening one Seattle bridge might cause another bridge to open soon after (within 30-90 minutes).")
                         .font(.caption2)
                         .foregroundColor(.secondary)
                     
-                    if events.count < 1000 {
-                        Text("💡 More historical data will improve connection detection")
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Why This Matters for Commuters:")
                             .font(.caption2)
+                            .fontWeight(.medium)
                             .foregroundColor(.blue)
+                        
+                        Text("• If Fremont Bridge opens, other bridges might follow")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("• Helps predict traffic delays across Seattle")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                        
+                        Text("• Plan alternate routes before congestion hits")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    if events.count < 1000 {
+                        HStack {
+                            Image(systemName: "clock")
+                                .foregroundColor(.orange)
+                            Text("Building analysis with \(events.count) bridge events...")
+                                .font(.caption2)
+                                .foregroundColor(.orange)
+                        }
                     }
                 }
                 .padding()
                 .background(Color.blue.opacity(0.1))
-                .cornerRadius(8)
+                .cornerRadius(12)
             } else {
-                // User-friendly explanation of what the visualization shows
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("How to Read This Diagram:")
-                        .font(.caption)
-                        .fontWeight(.medium)
+                // ENHANCED: Much clearer explanation with practical examples
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack {
+                        Image(systemName: "lightbulb.fill")
+                            .foregroundColor(.yellow)
+                        Text("How to Read This Traffic Pattern:")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
                     
-                    HStack(spacing: 16) {
-                        HStack(spacing: 6) {
-                            Circle()
-                                .fill(Color.blue)
-                                .frame(width: 16, height: 16)
-                            Text("Bridge")
+                    HStack(spacing: 20) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 6) {
+                                Circle()
+                                    .fill(Color.blue)
+                                    .frame(width: 16, height: 16)
+                                Text("Bridge")
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                            }
+                            
+                            Text("Each circle = Seattle bridge")
                                 .font(.caption2)
+                                .foregroundColor(.secondary)
                         }
                         
-                        HStack(spacing: 6) {
-                            Rectangle()
-                                .fill(Color.purple)
-                                .frame(width: 20, height: 3)
-                                .cornerRadius(1.5)
-                            Text("Connection")
-                                .font(.caption2)
-                        }
-                        
-                        HStack(spacing: 6) {
-                            Text("Larger = More Influential")
+                        VStack(alignment: .leading, spacing: 6) {
+                            HStack(spacing: 6) {
+                                Rectangle()
+                                    .fill(LinearGradient(colors: [.gray, .red], startPoint: .leading, endPoint: .trailing))
+                                    .frame(width: 24, height: 3)
+                                    .cornerRadius(1.5)
+                                Text("Connection")
+                                    .font(.caption2)
+                                    .fontWeight(.medium)
+                            }
+                            
+                            Text("Line = traffic chain reaction")
                                 .font(.caption2)
                                 .foregroundColor(.secondary)
                         }
                     }
                     
-                    Text("Connections show when one bridge opening often leads to another opening nearby. Thicker lines = stronger relationship.")
-                        .font(.caption2)
-                        .foregroundColor(.secondary)
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Real Example:")
+                            .font(.caption2)
+                            .fontWeight(.medium)
+                            .foregroundColor(.green)
+                        
+                        Text("Red thick line from Fremont to Ballard = \"When Fremont opens, Ballard often opens within an hour, causing major traffic delays\"")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                            .italic()
+                        
+                        Text("Thin gray lines = weak connections, thick red lines = strong patterns")
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding()
                 .background(Color(.systemGray6))
-                .cornerRadius(8)
+                .cornerRadius(12)
             }
             
             // Simplified Network Diagram or Placeholder
@@ -351,12 +426,13 @@ public struct StatisticsView: View {
     }
     
     private func cascadeStrengthColor(_ strength: Double) -> Color {
+        // ENHANCED: More meaningful color progression that matches legend
         switch strength {
-        case 0.0..<0.3: return .gray
-        case 0.3..<0.5: return .blue
-        case 0.5..<0.7: return .orange
-        case 0.7...1.0: return .red
-        default: return .gray
+        case 0.0..<0.3: return .gray.opacity(0.6)        // Weak connections
+        case 0.3..<0.5: return .blue.opacity(0.8)        // Moderate connections  
+        case 0.5..<0.7: return .orange.opacity(0.9)      // Strong connections
+        case 0.7...1.0: return .red.opacity(0.95)        // Very strong connections
+        default: return .gray.opacity(0.4)
         }
     }
     
@@ -410,7 +486,7 @@ public struct StatisticsView: View {
     }
     
     private func forceCascadeDetection() async {
-        print("📊 [STATS] 🚀 FORCING IMMEDIATE CASCADE DETECTION...")
+        print(" [STATS]  FORCING IMMEDIATE CASCADE DETECTION...")
         
         // Capture events on main thread
         let currentEvents = Array(events.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
@@ -430,12 +506,12 @@ public struct StatisticsView: View {
                 )
             }
             
-            print("📊 [STATS] Running cascade detection on \(eventDTOs.count) events...")
+            print(" [STATS] Running cascade detection on \(eventDTOs.count) events...")
             let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
-            print("📊 [STATS] Detected \(cascadeEvents.count) cascade events!")
+            print(" [STATS] Detected \(cascadeEvents.count) cascade events!")
             
             await MainActor.run {
-                print("📊 [STATS] 💾 SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                print(" [STATS]  SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                 
                 // Clear existing cascade events
                 for existingEvent in self.cascadeEvents {
@@ -449,9 +525,9 @@ public struct StatisticsView: View {
                 
                 do {
                     try self.modelContext.save()
-                    print("📊 [STATS] ✅ CASCADE EVENTS SAVED! UI should update now.")
+                    print(" [STATS]  CASCADE EVENTS SAVED! UI should update now.")
                 } catch {
-                    print("❌ [STATS] Failed to save cascade events: \(error)")
+                    print(" [STATS] Failed to save cascade events: \(error)")
                 }
             }
         }.value
@@ -501,10 +577,10 @@ public struct StatisticsView: View {
     }
 
     private func calculateAnalytics() {
-        print("📊 [STATS] Starting SAFE analytics calculation with \(events.count) events...")
+        print(" [STATS] Starting SAFE analytics calculation with \(events.count) events...")
         
         guard !events.isEmpty else {
-            print("📊 [STATS] No events available for analytics")
+            print(" [STATS] No events available for analytics")
             return
         }
         
@@ -524,13 +600,13 @@ public struct StatisticsView: View {
             )
         }
         
-        print("📊 [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
+        print(" [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
 
         Task.detached(priority: .userInitiated) { [eventDTOs] in
-            print("📊 [STATS] Running analytics on background thread with DTOs...")
+            print(" [STATS] Running analytics on background thread with DTOs...")
             
             let limitedEventDTOs = Array(eventDTOs.sorted { $0.openDateTime > $1.openDateTime }.prefix(1000))
-            print("📊 [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
+            print(" [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
             
             do {
                 let limitedEvents = limitedEventDTOs.map { dto in
@@ -548,14 +624,14 @@ public struct StatisticsView: View {
                 
                 let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEvents)
                 
-                print("📊 [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
+                print(" [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
 
                 await MainActor.run {
-                    print("📊 [STATS] Updating UI on main thread...")
+                    print(" [STATS] Updating UI on main thread...")
                     
                     let pendingCascadeEvents = CascadeEventStorage.consumePendingEvents()
                     if !pendingCascadeEvents.isEmpty {
-                        print("📊 [STATS] SAVING \(pendingCascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                        print(" [STATS]  SAVING \(pendingCascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                         
                         for existingEvent in self.cascadeEvents {
                             self.modelContext.delete(existingEvent)
@@ -567,8 +643,8 @@ public struct StatisticsView: View {
                         
                         do {
                             try self.modelContext.save()
-                            print("📊 [STATS] CASCADE EVENTS SAVED SUCCESSFULLY!")
-                            print("📊 [STATS] Cascade events should now appear in UI")
+                            print(" [STATS]  CASCADE EVENTS SAVED SUCCESSFULLY!")
+                            print(" [STATS] Cascade events should now appear in UI")
                         } catch {
                             print("Failed to save cascade events: \(error)")
                         }
@@ -666,6 +742,10 @@ public struct StatisticsView: View {
         let targetX = centerX + cos(targetAngle) * radius
         let targetY = centerY + sin(targetAngle) * radius
         
+        // ENHANCED: Meaningful line width calculation
+        let lineWidth = calculateMeaningfulLineWidth(strength: strength)
+        let connectionColor = cascadeStrengthColor(strength)
+        
         Path { path in
             path.move(to: CGPoint(x: sourceX, y: sourceY))
             
@@ -679,13 +759,27 @@ public struct StatisticsView: View {
             )
         }
         .stroke(
-            cascadeStrengthColor(strength),
+            connectionColor,
             style: StrokeStyle(
-                lineWidth: max(1, strength * 4),
+                lineWidth: lineWidth,
                 lineCap: .round
             )
         )
-        .opacity(0.8)
+        // ENHANCED: Better opacity for visual hierarchy
+        .opacity(0.85)
+        .shadow(color: connectionColor.opacity(0.3), radius: lineWidth * 0.5, x: 0, y: 1)
+    }
+    
+    // MARK: - NEW: Meaningful Line Width Calculation
+    private func calculateMeaningfulLineWidth(strength: Double) -> Double {
+        // Convert cascade strength to visually meaningful line widths
+        switch strength {
+        case 0.0..<0.3: return 1.5   // Weak connections: thin lines
+        case 0.3..<0.5: return 2.5   // Moderate connections: medium lines
+        case 0.5..<0.7: return 4.0   // Strong connections: thick lines  
+        case 0.7...1.0: return 6.0   // Very strong connections: very thick lines
+        default: return 1.0          // Fallback: minimal line
+        }
     }
 
     @ViewBuilder
@@ -720,41 +814,89 @@ public struct StatisticsView: View {
 
     @ViewBuilder
     private var networkStatisticsSection: some View {
-        VStack(spacing: 8) {
+        VStack(spacing: 12) {
             HStack {
-                Text("Network Statistics")
+                Text("Traffic Impact Summary")
                     .font(.subheadline)
                     .fontWeight(.medium)
                 
                 Spacer()
             }
             
+            // ENHANCED: User-friendly explanations instead of technical terms
             LazyVGrid(columns: [
                 GridItem(.flexible()),
                 GridItem(.flexible()),
                 GridItem(.flexible())
             ], spacing: 12) {
-                NetworkStatCard(
-                    title: "Strongest Trigger",
+                UserFriendlyStatCard(
+                    title: "Chain Starter",
+                    subtitle: "Often triggers others",
                     value: getStrongestTriggerBridge(),
                     icon: "arrow.up.circle.fill",
-                    color: .red
+                    color: .red,
+                    explanation: "This bridge opening often leads to traffic problems at other bridges"
                 )
                 
-                NetworkStatCard(
-                    title: "Most Affected",
+                UserFriendlyStatCard(
+                    title: "Gets Affected Most",
+                    subtitle: "Reacts to others",
                     value: getMostAffectedBridge(),
                     icon: "target",
-                    color: .orange
+                    color: .orange,
+                    explanation: "This bridge often opens after other bridges, creating cascade delays"
                 )
                 
-                NetworkStatCard(
-                    title: "Avg Cascade Time",
+                UserFriendlyStatCard(
+                    title: "Chain Reaction Time",
+                    subtitle: "Average delay",
                     value: getAverageCascadeDelay(),
                     icon: "clock",
-                    color: .blue
+                    color: .blue,
+                    explanation: "How long between the first bridge opening and the chain reaction"
                 )
             }
+        }
+    }
+
+    // MARK: - NEW: User-Friendly Statistics Card
+    
+    struct UserFriendlyStatCard: View {
+        let title: String
+        let subtitle: String
+        let value: String
+        let icon: String
+        let color: Color
+        let explanation: String
+        
+        var body: some View {
+            VStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(color)
+                
+                Text(value)
+                    .font(.caption)
+                    .fontWeight(.bold)
+                    .foregroundColor(color)
+                    .lineLimit(1)
+                
+                VStack(spacing: 2) {
+                    Text(title)
+                        .font(.caption2)
+                        .fontWeight(.medium)
+                        .lineLimit(1)
+                    
+                    Text(subtitle)
+                        .font(.caption2)
+                        .foregroundColor(.secondary)
+                        .lineLimit(1)
+                }
+            }
+            .padding(12)
+            .background(Color(.systemBackground))
+            .cornerRadius(10)
+            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
         }
     }
 
