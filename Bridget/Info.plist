@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Bridget uses your location to provide accurate bridge predictions and route recommendations when you're traveling.</string>
+	<key>NSMotionUsageDescription</key>
+	<string>Bridget uses motion data to detect when you're in a vehicle and provide better bridge predictions for your journey.</string>
+</dict>
+</plist>

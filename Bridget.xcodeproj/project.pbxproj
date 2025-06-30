@@ -41,9 +41,22 @@
 		48FB97F72E03820F009E62F7 /* BridgetUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = BridgetUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		4834BA392E1247E00090B566 /* Exceptions for "Bridget" folder in "Bridget" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 48FB97DD2E03820E009E62F7 /* Bridget */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		48FB97E02E03820E009E62F7 /* Bridget */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				4834BA392E1247E00090B566 /* Exceptions for "Bridget" folder in "Bridget" target */,
+			);
 			path = Bridget;
 			sourceTree = "<group>";
 		};
