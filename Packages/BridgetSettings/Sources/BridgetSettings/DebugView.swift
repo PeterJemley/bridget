@@ -9,6 +9,7 @@ import SwiftUI
 import SwiftData
 import BridgetCore
 import BridgetNetworking
+import MapKit
 
 public struct DebugView: View {
     @Environment(\.modelContext) private var modelContext
@@ -131,6 +132,15 @@ public struct DebugView: View {
                     }
                     .foregroundColor(.red)
                     .disabled(events.isEmpty && bridgeInfo.isEmpty)
+                    
+                    // TODO: Remove before App Store submission - Traffic Routing Example
+                    Button(action: runTrafficRoutingExample) {
+                        HStack {
+                            Image(systemName: "car.fill")
+                            Text("Run UW → Space Needle Route Example")
+                        }
+                    }
+                    .foregroundColor(.blue)
                 }
             }
             .navigationTitle("Debug Console")
@@ -257,6 +267,25 @@ public struct DebugView: View {
         UserDefaults.standard.set(newTotalCount, forKey: "BridgetAPICallCount")
         
         print("🌐 [DEBUG] API call count incremented: Session = \(newSessionCount), Total = \(newTotalCount)")
+    }
+    
+    // TODO: Remove before App Store submission - Traffic Routing Example
+    @MainActor
+    private func runTrafficRoutingExample() {
+        Task {
+            print("🚗 [DEBUG] Starting UW → Space Needle Traffic Routing Example...")
+            
+            // Create example instance
+            let example = TrafficRoutingExample()
+            
+            do {
+                // Run the example
+                await example.planUWToSpaceNeedleRoute()
+                print("✅ [DEBUG] Traffic routing example completed successfully!")
+            } catch {
+                print("❌ [DEBUG] Traffic routing example failed: \(error.localizedDescription)")
+            }
+        }
     }
 }
 

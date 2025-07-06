@@ -9,6 +9,41 @@ import Foundation
 import CoreMotion
 import SwiftUI
 
+// MARK: - Traffic Analysis Types
+
+public enum TrafficCondition: String, CaseIterable {
+    case unknown = "Unknown"
+    case freeFlow = "Free Flow"
+    case normalTraffic = "Normal Traffic"
+    case moderateTraffic = "Moderate Traffic"
+    case heavyTraffic = "Heavy Traffic"
+    
+    var description: String {
+        switch self {
+        case .unknown:
+            return "Unable to determine traffic conditions"
+        case .freeFlow:
+            return "Traffic flowing freely at normal speeds"
+        case .normalTraffic:
+            return "Typical traffic conditions"
+        case .moderateTraffic:
+            return "Some congestion, reduced speeds"
+        case .heavyTraffic:
+            return "Heavy congestion, frequent stops"
+        }
+    }
+    
+    var color: Color {
+        switch self {
+        case .unknown: return .gray
+        case .freeFlow: return .green
+        case .normalTraffic: return .blue
+        case .moderateTraffic: return .orange
+        case .heavyTraffic: return .red
+        }
+    }
+}
+
 @MainActor
 public class MotionDetectionService: ObservableObject {
     private let motionManager = CMMotionManager()
@@ -124,17 +159,31 @@ public class MotionDetectionService: ObservableObject {
         // Calculate heading from device orientation
         heading = atan2(data.attitude.rotationMatrix.m12, data.attitude.rotationMatrix.m11)
         
-        // Estimate speed from acceleration patterns
-        // This is a simplified calculation - could be enhanced with GPS
-        let speedChange = sqrt(
+        // Use gravity-corrected acceleration for better traffic analysis
+        // This represents the device's acceleration relative to the ground
+        let groundAccelerationMagnitude = sqrt(
             pow(data.userAcceleration.x, 2) +
             pow(data.userAcceleration.y, 2) +
             pow(data.userAcceleration.z, 2)
         )
+        
+        // Detect traffic patterns based on acceleration patterns
+        // Sudden deceleration often indicates traffic slowdowns
+        let isDecelerating = groundAccelerationMagnitude > 0.3 && 
+                            data.userAcceleration.z < -0.2 // Forward deceleration
+        
+        // Update speed based on acceleration patterns
+        // Positive acceleration increases speed, negative decreases it
+        let speedChange = data.userAcceleration.z * 0.5 // Scale factor for realistic speed changes
         currentSpeed = max(0, currentSpeed + speedChange)
         
         // Decay speed over time to simulate realistic behavior
-        currentSpeed *= 0.95
+        currentSpeed *= 0.98
+        
+        // Log traffic-related events
+        if isDecelerating && vehicleState == .inVehicle {
+            print("🚗 [Motion] Detected potential traffic slowdown - deceleration: \(String(format: "%.2f", groundAccelerationMagnitude)) m/s²")
+        }
     }
     
     public func getCurrentUserContext(estimatedTravelTime: TimeInterval = 0) -> UserContext {
@@ -149,6 +198,24 @@ public class MotionDetectionService: ObservableObject {
             estimatedTravelTime: estimatedTravelTime,
             isRushHour: isRushHour
         )
+    }
+    
+    /// Analyzes current motion patterns to detect traffic conditions
+    public func analyzeTrafficConditions() -> TrafficCondition {
+        guard vehicleState == .inVehicle else {
+            return .unknown
+        }
+        
+        // Analyze speed and acceleration patterns
+        if currentSpeed < 2.0 && acceleration > 0.1 {
+            return .heavyTraffic // Low speed with frequent acceleration/deceleration
+        } else if currentSpeed < 5.0 {
+            return .moderateTraffic // Moderate speed
+        } else if currentSpeed > 10.0 {
+            return .freeFlow // High speed, likely free-flowing traffic
+        } else {
+            return .normalTraffic
+        }
     }
 }
 
