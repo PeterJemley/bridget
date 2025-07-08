@@ -30,7 +30,13 @@ public struct DashboardView: View {
                                 .foregroundColor(.green)
                         }
                         
-                        Text("Bridge the gap between you and on time")
+                        let catchPhrase: Text =
+                            Text("Ditch the spanxiety: Bridge the gap between ") +
+                            Text("you").italic() +
+                            Text(" and ") +
+                            Text("on time").italic()
+                        
+                        catchPhrase
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
