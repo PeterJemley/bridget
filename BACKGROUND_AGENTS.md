@@ -4,6 +4,16 @@
 
 The Bridget Background Agents system provides intelligent, real-time traffic monitoring capabilities that continue to operate even when the app is in the background. This system is designed to help users navigate traffic efficiently by providing proactive alerts and route optimization suggestions.
 
+### **Indirect Bridge Delay Detection**
+
+A key feature of the background agents system is **indirect evidence of bridges causing traffic delays** using Apple Maps API congestion data. The system:
+
+- **Localizes congestion data** to the bridges' directional traffic flows
+- **Monitors congestion patterns** around bridge locations in the background
+- **Correlates congestion spikes** with bridge opening events
+- **Uses congestion as indirect evidence** of bridge-caused traffic delays
+- **Implements bridge-specific traffic flow monitoring zones**
+
 ## Architecture
 
 ### Core Components
@@ -12,6 +22,8 @@ The Bridget Background Agents system provides intelligent, real-time traffic mon
 2. **TrafficAwareRoutingService** - Existing service that provides traffic analysis
 3. **TrafficAlert** - Data structure for traffic-related notifications
 4. **BackgroundTaskHandler** - Manages iOS background task execution
+5. **BridgeCongestionMonitor** - Monitors bridge-specific congestion patterns
+6. **CongestionCorrelationEngine** - Correlates congestion with bridge events
 
 ### System Flow
 
@@ -19,7 +31,49 @@ The Bridget Background Agents system provides intelligent, real-time traffic mon
 User Sets Route → Background Agent Starts → Continuous Monitoring → Alert Generation → User Notification
 ```
 
+### **Indirect Evidence Flow**
+
+```
+Apple Maps Congestion Data → Bridge Localization → Pattern Correlation → Bridge Event Detection → Alert Generation
+```
+
 ## Implementation Details
+
+### **Indirect Bridge Delay Detection Implementation**
+
+The system uses Apple Maps API congestion data as indirect evidence of bridge-caused traffic delays:
+
+```swift
+public class BridgeCongestionMonitor: ObservableObject {
+    private let trafficService: TrafficAwareRoutingService
+    private let bridgeLocations: [DrawbridgeInfo]
+    private var congestionCorrelations: [CongestionCorrelation] = []
+    
+    // Monitor congestion around specific bridges
+    public func monitorBridgeCongestion(bridge: DrawbridgeInfo) async {
+        let bridgeZone = createBridgeMonitoringZone(bridge)
+        let congestionData = await fetchAppleMapsCongestion(zone: bridgeZone)
+        
+        // Correlate congestion with bridge events
+        let correlation = await correlateCongestionWithBridgeEvents(
+            congestionData: congestionData,
+            bridgeEvents: bridge.recentEvents
+        )
+        
+        if correlation.confidence > 0.7 {
+            // High confidence that congestion is bridge-related
+            await generateBridgeDelayAlert(correlation)
+        }
+    }
+    
+    private func createBridgeMonitoringZone(_ bridge: DrawbridgeInfo) -> CLCircularRegion {
+        // Create monitoring zone around bridge approaches
+        let center = bridge.coordinate
+        let radius = 500.0 // 500m radius around bridge
+        return CLCircularRegion(center: center, radius: radius, identifier: bridge.id)
+    }
+}
+```
 
 ### BackgroundTrafficAgent Class
 
@@ -46,6 +100,56 @@ public class BackgroundTrafficAgent: ObservableObject {
 - `performBackgroundTrafficCheck()` - Executes traffic analysis in background
 - `handleTrafficConditionChange()` - Responds to traffic condition changes
 - `handleRiskLevelChange()` - Responds to risk level changes
+
+### **Congestion Correlation Data Models**
+
+The system uses specialized data models for correlating congestion with bridge events:
+
+```swift
+public struct CongestionCorrelation: Identifiable, Codable {
+    public let id: UUID
+    public let bridge: DrawbridgeInfo
+    public let congestionLevel: TrafficCondition
+    public let correlationStrength: Double // 0.0 to 1.0
+    public let confidence: Double // 0.0 to 1.0
+    public let timestamp: Date
+    public let bridgeEvent: DrawbridgeEvent?
+    
+    public init(
+        bridge: DrawbridgeInfo,
+        congestionLevel: TrafficCondition,
+        correlationStrength: Double,
+        confidence: Double,
+        bridgeEvent: DrawbridgeEvent? = nil
+    ) {
+        self.id = UUID()
+        self.bridge = bridge
+        self.congestionLevel = congestionLevel
+        self.correlationStrength = correlationStrength
+        self.confidence = confidence
+        self.timestamp = Date()
+        self.bridgeEvent = bridgeEvent
+    }
+}
+
+public struct BridgeMonitoringZone {
+    public let bridge: DrawbridgeInfo
+    public let region: CLCircularRegion
+    public let approachDirections: [CLLocationDirection]
+    public let monitoringRadius: CLLocationDistance
+    
+    public init(bridge: DrawbridgeInfo, radius: CLLocationDistance = 500.0) {
+        self.bridge = bridge
+        self.region = CLCircularRegion(
+            center: bridge.coordinate,
+            radius: radius,
+            identifier: "bridge-\(bridge.id)"
+        )
+        self.approachDirections = calculateApproachDirections(bridge)
+        self.monitoringRadius = radius
+    }
+}
+```
 
 ### TrafficAlert System
 
@@ -82,6 +186,48 @@ public struct TrafficAlert: Identifiable, Codable {
 | `critical` | Red | Severe issues requiring attention |
 
 ## Integration Guide
+
+### **Indirect Bridge Delay Detection Setup**
+
+To implement the indirect bridge delay detection feature:
+
+```swift
+import BridgetCore
+
+class YourViewModel: ObservableObject {
+    @Published var bridgeCongestionMonitor: BridgeCongestionMonitor
+    @Published var backgroundAgent: BackgroundTrafficAgent
+    
+    init() {
+        self.bridgeCongestionMonitor = BridgeCongestionMonitor()
+        self.backgroundAgent = BackgroundTrafficAgent(trafficService: trafficService)
+        setupCongestionMonitoring()
+    }
+    
+    private func setupCongestionMonitoring() {
+        // Set up bridge-specific congestion monitoring
+        for bridge in availableBridges {
+            bridgeCongestionMonitor.startMonitoring(bridge: bridge)
+        }
+        
+        // Handle congestion correlation alerts
+        bridgeCongestionMonitor.$congestionCorrelations
+            .sink { [weak self] correlations in
+                self?.handleCongestionCorrelations(correlations)
+            }
+            .store(in: &cancellables)
+    }
+    
+    private func handleCongestionCorrelations(_ correlations: [CongestionCorrelation]) {
+        for correlation in correlations {
+            if correlation.confidence > 0.7 {
+                // High confidence bridge-caused congestion detected
+                showBridgeDelayAlert(correlation)
+            }
+        }
+    }
+}
+```
 
 ### 1. Basic Setup
 
@@ -382,6 +528,12 @@ private func logBackgroundActivity(_ message: String) {
    - Public transit integration
    - Walking route optimization
    - Bicycle route suggestions
+
+4. **Advanced Congestion Analysis**
+   - Bridge-specific congestion correlation algorithms
+   - Historical congestion-bridge opening correlation database
+   - Predictive models using congestion patterns
+   - Machine learning for congestion-bridge delay prediction
 
 ## API Reference
 

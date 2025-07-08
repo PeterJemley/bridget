@@ -60,6 +60,13 @@ This document catalogs all unimplemented or not-fully-implemented features in th
   - [ ] Implement traffic flow prediction algorithms
   - [ ] Add traffic pattern visualization
 
+- [ ] **Indirect Bridge Delay Detection (NEW)**
+  - [ ] Localize Apple Maps congestion data to bridge approach directions
+  - [ ] Monitor congestion patterns around bridge locations in background
+  - [ ] Correlate congestion spikes with bridge opening events
+  - [ ] Use congestion as indirect evidence of bridge-caused traffic delays
+  - [ ] Implement bridge-specific traffic flow monitoring zones
+
 - [ ] **Route Impact Assessment**
   - [ ] Calculate traffic impact of bridge openings
   - [ ] Create route delay predictions
@@ -111,6 +118,12 @@ This document catalogs all unimplemented or not-fully-implemented features in th
   - [ ] Create traffic alert system
   - [ ] Add traffic pattern learning
 
+- [ ] **Advanced Congestion Analysis (NEW)**
+  - [ ] Implement bridge-specific congestion correlation algorithms
+  - [ ] Create historical congestion-bridge opening correlation database
+  - [ ] Develop predictive models using congestion patterns
+  - [ ] Add machine learning for congestion-bridge delay prediction
+
 #### **3.2 Advanced Routing Features (7-10 hours)**
 - [ ] **Multi-modal Route Planning**
   - [ ] Add walking, cycling, and transit options
@@ -133,12 +146,14 @@ This document catalogs all unimplemented or not-fully-implemented features in th
 2. **Location Services** - Required for route optimization
 3. **Routes Tab UI** - Core user interface
 4. **Basic Route Intelligence** - Essential functionality
+5. **Indirect Bridge Delay Detection** - Apple Maps congestion correlation
 
 ### **⚡ HIGH (Important for MVP)**
 1. **Traffic Pattern Analysis** - Core intelligence features
 2. **Route Recommendations** - Smart routing capabilities
 3. **Traffic Updates** - Updates as new data becomes available
 4. **Route Analytics** - User insights and optimization
+5. **Advanced Congestion Analysis** - Bridge-specific correlation algorithms
 
 ### **🟡 MEDIUM (Enhancement Features)**
 1. **ARIMA Prediction Engine** - Advanced forecasting
