@@ -1,201 +1,229 @@
-# 📝 Assistant TODOs & Next Steps
+# 📝 Bridget Development Roadmap & Priorities
 
-## ✅ **Completed This Session (July 7, 2025)**
+**Version**: 2.0.0  
+**Last Updated**: July 8, 2025  
+**Status**: ✅ **Current** - Granular prioritization and task breakdown
 
-### **🔧 Critical Infrastructure Fixes**
-- [x] **Resolved Code Signing Issues** - Moved project from iCloud Drive to local storage (`/Users/peterjemley/Downloads/Developer/Bridget/Bridget`)
-- [x] **Fixed TrafficAwareRoutingService.swift Corruption** - Restored corrupted file with proper RiskLevelBuilder implementation
-- [x] **Fixed Routes Tab UI Problems** - Resolved compilation errors in routing components
-- [x] **Successfully Built and Deployed App** - App now runs on iPhone 16 Pro simulator without errors
-- [x] **Verified Build System Stability** - All modules compile successfully in new location
+## 📋 **Version History**
+- **v2.0.0** (July 8, 2025): Complete rewrite with granular prioritization, current status (4900 events, 7 bridges), detailed task breakdown
+- **v1.0.0** (July 7, 2025): Initial roadmap with phases and general priorities
 
-### **🐛 Specific Issues Resolved**
-- [x] **Resource Fork Errors** - Eliminated "resource fork, Finder information, or similar detritus not allowed" errors
-- [x] **RiskLevelBuilder Compilation Errors** - Fixed "cannot infer contextual base" and "closure containing control flow statement" errors
-- [x] **TrafficAwareRoutingService Corruption** - Rebuilt file with proper enum definitions and result builder implementation
-- [x] **Routes Tab UI Components** - Ensured RoutingView.swift and RouteDetailsView.swift are properly implemented
+## 🎯 **Current Status (July 8, 2025)**
 
-### **📱 Testing Accomplishments**
-- [x] **Simulator Testing** - App successfully runs on iPhone 16 Pro simulator
-- [x] **Build Verification** - All 10 packages compile without errors
-- [x] **Code Signing Verification** - App installs and launches properly on simulator
-- [x] **Real Device Ready** - Project now ready for iPhone 16 Pro device testing
-
-### **🏗️ Project Infrastructure**
-- [x] **Location Migration** - Successfully moved from iCloud Drive to local storage
-- [x] **Build System Cleanup** - Removed all build artifacts and performed clean build
-- [x] **Dependency Resolution** - All package dependencies properly resolved
-- [x] **Code Signing Setup** - Proper signing configuration for both simulator and device
-
-## ✅ **Completed Previous Sessions**
-
-- [x] **Fixed all critical build issues** - Public initializers, linking problems, result builder syntax
-- [x] **Stabilized test infrastructure** - All test targets now build and run successfully
-- [x] **Fixed UI test issues** - Replaced deprecated `allElements` with proper element iteration
-- [x] **Made ViewModels and properties public** - Proper test access across all modules
-- [x] **Added BridgetCore dependencies** - Test targets now properly link to core module
-- [x] **Fixed optional unwrapping issues** - BridgeDetailTests.swift and DynamicAnalysisTests.swift
-- [x] **Removed calls to non-existent methods** - Cleaned up test files
-- [x] **Verified Routing and Risk Builder stability** - Features are production-ready
-- [x] **Committed stable state** - Comprehensive commit with 95% test pass rate
-
-## 🎯 **Current Project Status**
-
-### **✅ Stable Components**
-- **Core Build System** - All modules compile successfully
-- **Test Infrastructure** - 95% of tests passing (51/55 tests)
-- **Routing Module** - Fully functional with risk builder
-- **Basic UI Components** - All SwiftUI views properly initialized
-- **Data Models** - SwiftData integration working
-- **Modular Architecture** - 10 packages properly linked
-- **Code Signing** - Properly configured for both simulator and device
+### **✅ What's Working**
+- **App runs successfully** on iPhone 16 Pro simulator
+- **All 10 packages compile** without errors
+- **4900 bridge events loaded**, 7 bridges available
 - **Routes Tab UI** - Basic routing interface functional
+- **TrafficAwareRoutingService** - Fully functional with risk builder
+- **Test infrastructure** - 95% of tests passing (51/55 tests)
+- **Code signing** - Properly configured for both simulator and device
 
-### **🟡 Partially Stable Components**
+### **🟡 What Needs Attention**
 - **Motion Detection** - Needs real device testing and background processing
 - **Statistics Visualization** - Placeholders remain for advanced charts
 - **Dynamic Analysis** - Placeholder algorithms need real implementation
-- **Integration Tests** - 4 failing due to simulator issues (not code problems)
+- **Settings Implementation** - User preferences and configuration
 
-### **❌ Missing Features**
+### **❌ What's Missing**
 - **ARIMA Prediction Engine** - Core prediction algorithm
 - **Background Processing** - Location services and motion detection
-- **Settings Implementation** - User preferences and configuration
 - **Advanced Analytics** - Real statistical analysis and ML models
 
 ---
 
-## 🚀 **NEW: Routes Tab Integration Workflow**
+## 🚀 **GRANULAR PRIORITY ROADMAP**
 
-### **Phase 1: Traffic Sensing Foundation (Priority: CRITICAL)**
-**Estimated Time**: 15-20 hours
+### **🔥 CRITICAL PRIORITY (This Week)**
 
-#### **1.1 Motion Detection Integration (8-10 hours)**
+#### **1.1 Real Device Testing (2-3 hours)**
+- [ ] **Test motion detection on iPhone 16 Pro**
+  - [ ] Verify MotionDetectionService works on real device
+  - [ ] Test background processing capabilities
+  - [ ] Validate location permissions and geofencing
+  - [ ] Document any device-specific issues
+
+#### **1.2 Indirect Bridge Delay Detection (4-6 hours)**
+- [ ] **Implement BridgeCongestionMonitor**
+  - [ ] Create `BridgeCongestionMonitor.swift` in BridgetCore
+  - [ ] Add `CongestionCorrelation` data model
+  - [ ] Implement bridge-specific monitoring zones
+  - [ ] Add Apple Maps congestion data integration
+
+- [ ] **Add congestion correlation logic**
+  - [ ] Create correlation algorithms for bridge-caused delays
+  - [ ] Implement confidence scoring system
+  - [ ] Add historical correlation database
+  - [ ] Test with real bridge data
+
+#### **1.3 Routes Tab Enhancement (3-4 hours)**
+- [ ] **Improve RoutesTabView**
+  - [ ] Add traffic indicators to route cards
+  - [ ] Implement bridge risk visualization
+  - [ ] Add congestion correlation display
+  - [ ] Create route comparison interface
+
+### **⚡ HIGH PRIORITY (Next 2 Weeks)**
+
+#### **2.1 Motion Detection Integration (6-8 hours)**
 - [ ] **Integrate MotionDetectionService into dashboard**
   - [ ] Add motion data to bridge status cards
-  - [ ] Create traffic flow indicators (using available traffic data)
+  - [ ] Create traffic flow indicators
   - [ ] Implement vibration patterns for bridge activity
   - [ ] Add motion-based alerts for nearby bridge openings
 
-- [ ] **Background Location Services (6-8 hours)**
-  - [ ] Implement CoreLocation integration
+#### **2.2 Background Location Services (4-6 hours)**
+- [ ] **Implement CoreLocation integration**
   - [ ] Add geofencing for bridge proximity alerts
   - [ ] Create location-based route optimization
   - [ ] Implement background location updates
+  - [ ] Add location permission handling
 
-#### **1.2 Traffic Pattern Analysis (7-10 hours)**
-- [ ] **Traffic Flow Detection (using available traffic data)**
+#### **2.3 Traffic Pattern Analysis (5-7 hours)**
+- [ ] **Traffic Flow Detection**
   - [ ] Analyze motion patterns during bridge openings
   - [ ] Create traffic congestion indicators
   - [ ] Implement traffic flow prediction algorithms
   - [ ] Add traffic pattern visualization
 
-- [ ] **Indirect Bridge Delay Detection (NEW)**
-  - [ ] Localize Apple Maps congestion data to bridge approach directions
-  - [ ] Monitor congestion patterns around bridge locations in background
-  - [ ] Correlate congestion spikes with bridge opening events
-  - [ ] Use congestion as indirect evidence of bridge-caused traffic delays
-  - [ ] Implement bridge-specific traffic flow monitoring zones
-
-- [ ] **Route Impact Assessment**
-  - [ ] Calculate traffic impact of bridge openings
-  - [ ] Create route delay predictions
-  - [ ] Implement alternative route suggestions
-  - [ ] Add traffic-aware routing logic
-
-### **Phase 2: Routes Tab Implementation (Priority: HIGH)**
-**Estimated Time**: 20-25 hours
-
-#### **2.1 Routes Tab UI (10-12 hours)**
-- [ ] **Create RoutesTabView**
-  - [ ] Design tab navigation integration
-  - [ ] Implement route list interface
-  - [ ] Add route details and status
-  - [ ] Create route filtering and search
-
-- [ ] **Route Management Interface**
-  - [ ] Add route creation and editing
-  - [ ] Implement favorite routes
-  - [ ] Create route sharing functionality
-  - [ ] Add route history and analytics
-
-#### **2.2 Route Intelligence Features (10-13 hours)**
+#### **2.4 Route Intelligence Features (6-8 hours)**
 - [ ] **Smart Route Recommendations**
   - [ ] Implement ML-based route suggestions
   - [ ] Add bridge opening probability to routes
   - [ ] Create traffic-aware route optimization
-  - [ ] Implement route updates (using available traffic data)
+  - [ ] Implement route updates
 
-- [ ] **Route Analytics and Insights**
-  - [ ] Add route performance metrics
-  - [ ] Create route comparison tools
-  - [ ] Implement route optimization suggestions
-  - [ ] Add historical route analysis
+### **🟡 MEDIUM PRIORITY (Next Month)**
 
-### **Phase 3: Advanced Traffic Features (Priority: MEDIUM)**
-**Estimated Time**: 15-20 hours
+#### **3.1 Advanced Congestion Analysis (8-10 hours)**
+- [ ] **Bridge-specific correlation algorithms**
+  - [ ] Implement advanced correlation algorithms
+  - [ ] Create historical correlation database
+  - [ ] Develop predictive models using congestion patterns
+  - [ ] Add machine learning for congestion-bridge delay prediction
 
-#### **3.1 Traffic Prediction Engine (8-10 hours)**
+#### **3.2 ARIMA Prediction Engine (10-12 hours)**
 - [ ] **ARIMA Implementation**
   - [ ] Implement ARIMA prediction algorithms
   - [ ] Add traffic pattern forecasting
   - [ ] Create bridge opening predictions
   - [ ] Implement confidence scoring
 
-- [ ] **Real-time Traffic Updates**
-  - [ ] Add integration with available traffic data
-  - [ ] Implement traffic flow monitoring
-  - [ ] Create traffic alert system
-  - [ ] Add traffic pattern learning
+#### **3.3 Settings Implementation (4-6 hours)**
+- [ ] **User Preferences**
+  - [ ] Add notification preferences
+  - [ ] Implement monitoring controls
+  - [ ] Create data privacy settings
+  - [ ] Add app customization options
 
-- [ ] **Advanced Congestion Analysis (NEW)**
-  - [ ] Implement bridge-specific congestion correlation algorithms
-  - [ ] Create historical congestion-bridge opening correlation database
-  - [ ] Develop predictive models using congestion patterns
-  - [ ] Add machine learning for congestion-bridge delay prediction
+### **🟢 LOW PRIORITY (Future Releases)**
 
-#### **3.2 Advanced Routing Features (7-10 hours)**
-- [ ] **Multi-modal Route Planning**
-  - [ ] Add walking, cycling, and transit options
-  - [ ] Implement route mode switching
-  - [ ] Create accessibility-aware routing
-  - [ ] Add weather-aware route planning
+#### **4.1 Multi-modal Routing (8-10 hours)**
+- [ ] **Walking, cycling, and transit options**
+- [ ] **Route mode switching**
+- [ ] **Accessibility-aware routing**
+- [ ] **Weather-aware route planning**
 
-- [ ] **Social and Community Features**
-  - [ ] Add user route sharing
-  - [ ] Implement community route ratings
-  - [ ] Create route discussion features
-  - [ ] Add route collaboration tools
+#### **4.2 Social Features (6-8 hours)**
+- [ ] **User route sharing**
+- [ ] **Community route ratings**
+- [ ] **Route discussion features**
+- [ ] **Route collaboration tools**
 
----
-
-## 📋 **Implementation Priority Matrix**
-
-### **🔥 CRITICAL (Must Complete First)**
-1. **Motion Detection Integration** - Foundation for traffic sensing
-2. **Location Services** - Required for route optimization
-3. **Routes Tab UI** - Core user interface
-4. **Basic Route Intelligence** - Essential functionality
-5. **Indirect Bridge Delay Detection** - Apple Maps congestion correlation
-
-### **⚡ HIGH (Important for MVP)**
-1. **Traffic Pattern Analysis** - Core intelligence features
-2. **Route Recommendations** - Smart routing capabilities
-3. **Traffic Updates** - Updates as new data becomes available
-4. **Route Analytics** - User insights and optimization
-5. **Advanced Congestion Analysis** - Bridge-specific correlation algorithms
-
-### **🟡 MEDIUM (Enhancement Features)**
-1. **ARIMA Prediction Engine** - Advanced forecasting
-2. **Multi-modal Routing** - Comprehensive route options
-3. **Social Features** - Community and sharing
-4. **Advanced Analytics** - Deep insights and optimization
+#### **4.3 Advanced Analytics (8-10 hours)**
+- [ ] **Deep statistical analysis**
+- [ ] **Machine learning models**
+- [ ] **Predictive analytics**
+- [ ] **Performance optimization**
 
 ---
 
-## 🛠 **Technical Implementation Strategy**
+## 📋 **DETAILED TASK BREAKDOWN**
 
-### **Architecture Updates Needed**
+### **This Session (Today)**
+
+#### **Task 1: Real Device Testing (2-3 hours)**
+```
+Priority: CRITICAL
+Estimated Time: 2-3 hours
+Dependencies: None
+Success Criteria: Motion detection works on iPhone 16 Pro
+```
+
+**Steps:**
+1. Connect iPhone 16 Pro to Mac
+2. Build and deploy Bridget app
+3. Test MotionDetectionService functionality
+4. Verify background processing capabilities
+5. Test location permissions and geofencing
+6. Document any issues found
+
+#### **Task 2: BridgeCongestionMonitor Implementation (3-4 hours)**
+```
+Priority: CRITICAL
+Estimated Time: 3-4 hours
+Dependencies: None
+Success Criteria: Can monitor bridge-specific congestion
+```
+
+**Steps:**
+1. Create `BridgeCongestionMonitor.swift` in BridgetCore
+2. Implement `CongestionCorrelation` data model
+3. Add bridge monitoring zone creation
+4. Integrate with Apple Maps congestion data
+5. Test with existing bridge data
+
+#### **Task 3: Routes Tab Enhancement (2-3 hours)**
+```
+Priority: CRITICAL
+Estimated Time: 2-3 hours
+Dependencies: Task 2
+Success Criteria: Routes tab shows traffic and bridge risk data
+```
+
+**Steps:**
+1. Add traffic indicators to route cards
+2. Implement bridge risk visualization
+3. Add congestion correlation display
+4. Create route comparison interface
+
+### **Next Session (Tomorrow)**
+
+#### **Task 4: Motion Detection Dashboard Integration (4-5 hours)**
+```
+Priority: HIGH
+Estimated Time: 4-5 hours
+Dependencies: Task 1
+Success Criteria: Dashboard shows motion-based traffic data
+```
+
+**Steps:**
+1. Integrate MotionDetectionService into dashboard
+2. Add motion data to bridge status cards
+3. Create traffic flow indicators
+4. Implement vibration patterns for bridge activity
+5. Add motion-based alerts
+
+#### **Task 5: Background Location Services (3-4 hours)**
+```
+Priority: HIGH
+Estimated Time: 3-4 hours
+Dependencies: Task 1
+Success Criteria: App can track location in background
+```
+
+**Steps:**
+1. Implement CoreLocation integration
+2. Add geofencing for bridge proximity alerts
+3. Create location-based route optimization
+4. Implement background location updates
+5. Add location permission handling
+
+---
+
+## 🛠 **TECHNICAL IMPLEMENTATION STRATEGY**
+
+### **Architecture Updates**
 - [ ] **Extend BridgetCore** with traffic sensing capabilities
 - [ ] **Create BridgetTraffic** package for traffic analysis
 - [ ] **Update BridgetRouting** with intelligent routing
@@ -208,6 +236,7 @@
 - [ ] **TrafficAlert** model for notifications
 - [ ] **RouteAnalytics** model for insights
 - [ ] **LocationData** model for GPS tracking
+- [ ] **CongestionCorrelation** model for bridge-caused delays
 
 ### **UI/UX Enhancements**
 - [ ] **Routes Tab** in main navigation
@@ -218,50 +247,69 @@
 
 ---
 
-## 📊 **Success Metrics**
+## 📊 **SUCCESS METRICS**
 
-### **Phase 1 Success Criteria**
+### **This Week Success Criteria**
 - [ ] Motion detection working on real devices
+- [ ] BridgeCongestionMonitor implemented and tested
+- [ ] Routes tab enhanced with traffic indicators
+- [ ] Background location services functional
+
+### **Next Week Success Criteria**
+- [ ] Motion detection integrated into dashboard
 - [ ] Location services providing accurate bridge proximity
 - [ ] Traffic patterns being detected and analyzed
 - [ ] Route impact calculations working correctly
 
-### **Phase 2 Success Criteria**
-- [ ] Routes Tab fully functional and intuitive
-- [ ] Route recommendations providing value to users
-- [ ] Route analytics offering useful insights
-- [ ] Route management features working smoothly
-
-### **Phase 3 Success Criteria**
+### **Next Month Success Criteria**
 - [ ] ARIMA predictions accurate and useful
-- [ ] Multi-modal routing providing comprehensive options
-- [ ] Social features enhancing user experience
-- [ ] Advanced analytics providing deep insights
+- [ ] Advanced congestion analysis providing insights
+- [ ] Settings fully functional and intuitive
+- [ ] All core features working smoothly
 
 ---
 
-## 🎯 **Next Immediate Actions**
+## 🎯 **IMMEDIATE NEXT STEPS**
 
-### **This Session (Priority 1)**
-1. **Start Phase 1.1** - Integrate MotionDetectionService into dashboard
-2. **Begin location services** - Implement CoreLocation integration
-3. **Create Routes Tab** - Add basic tab structure to main navigation
-4. **Update documentation** - Reflect new Routes Tab workflow
+### **Today (Priority 1)**
+1. **Test motion detection on iPhone 16 Pro** (2-3 hours)
+2. **Implement BridgeCongestionMonitor** (3-4 hours)
+3. **Enhance Routes Tab with traffic indicators** (2-3 hours)
+4. **Improve Documentation Organization** (1-2 hours)
+   - Create DOCUMENTATION_INDEX.md
+   - Update README.md with current status
+   - Add version tracking to major docs
 
-### **Next Session (Priority 2)**
-1. **Complete traffic sensing** - Finish motion and location integration
-2. **Implement route intelligence** - Add smart route recommendations
-3. **Create route analytics** - Build insights and optimization features
-4. **Test on real devices** - Validate motion detection and location services
+### **Tomorrow (Priority 2)**
+1. **Integrate motion detection into dashboard** (4-5 hours)
+2. **Implement background location services** (3-4 hours)
+3. **Add traffic pattern analysis** (3-4 hours)
+
+### **This Week (Priority 3)**
+1. **Complete traffic sensing foundation** (6-8 hours)
+2. **Implement route intelligence features** (6-8 hours)
+3. **Test all features on real device** (2-3 hours)
 
 ---
 
-## 📈 **Estimated Timeline**
+## 📈 **ESTIMATED TIMELINE**
 
-- **Phase 1**: 2-3 weeks (15-20 hours)
-- **Phase 2**: 3-4 weeks (20-25 hours)  
-- **Phase 3**: 2-3 weeks (15-20 hours)
-- **Total**: 7-10 weeks (50-65 hours)
+### **Week 1 (This Week)**
+- **Critical Features**: 8-10 hours
+- **Real Device Testing**: 2-3 hours
+- **Indirect Bridge Delay Detection**: 4-6 hours
+- **Routes Tab Enhancement**: 2-3 hours
 
-**Current Status**: Ready to begin Phase 1 - Traffic Sensing Foundation
-**Next Milestone**: Motion detection integrated into dashboard with location services 
+### **Week 2 (Next Week)**
+- **Motion Detection Integration**: 6-8 hours
+- **Background Location Services**: 4-6 hours
+- **Traffic Pattern Analysis**: 5-7 hours
+
+### **Week 3-4 (Next Month)**
+- **Advanced Congestion Analysis**: 8-10 hours
+- **ARIMA Prediction Engine**: 10-12 hours
+- **Settings Implementation**: 4-6 hours
+
+**Total Estimated Time**: 50-65 hours over 4 weeks
+**Current Status**: Ready to begin real device testing and indirect bridge delay detection
+**Next Milestone**: Motion detection working on iPhone 16 Pro with congestion correlation 

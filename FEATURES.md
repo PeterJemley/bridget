@@ -1,14 +1,21 @@
 # 🏗️ **Bridget iOS App - Feature Overview**
 
+**Version**: 2.0.0  
+**Last Updated**: July 8, 2025  
+**Status**: ✅ **Current** - Indirect bridge delay detection added
+
+## 📋 **Version History**
+- **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, updated priorities, enhanced roadmap
+- **v1.0.0** (July 7, 2025): Initial feature overview with core features and roadmap
+
 ## 📋 **Executive Summary**
 
-Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings and providing intelligent traffic predictions. The app features a modular architecture with 10 Swift Package Manager modules, historical and recent bridge opening data, updated as available, and AI-powered analytics.
+Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings and providing intelligent traffic predictions. The app features a modular architecture with 10 Swift Package Manager modules, historical and recent bridge opening data (4900+ events, 7 bridges), updated as available, and AI-powered analytics.
 
-**Last Updated**: July 7, 2025  
 **Build Status**: ✅ **STABLE** - All critical build issues resolved  
 **Test Status**: ✅ **MOST PASSING** - 95% of tests passing  
 **Architecture**: Modular Swift Package Manager (10 packages)  
-**Current Focus**: 🚀 **Routes Tab Integration** - Traffic sensing and intelligent routing
+**Current Focus**: 🚀 **Indirect Bridge Delay Detection** - Apple Maps congestion correlation
 
 ---
 

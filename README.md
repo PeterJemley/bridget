@@ -1,15 +1,24 @@
 # 🏗️ Bridget – Seattle Bridge Traffic & Smart Routing App
 
+**Version**: 2.0.0  
+**Last Updated**: July 8, 2025  
+**Status**: ✅ **Current** - Indirect bridge delay detection added
+
+## 📋 **Version History**
+- **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, updated current status (4900 events, 7 bridges), enhanced documentation
+- **v1.0.0** (July 7, 2025): Initial project overview and feature documentation
+
 **Bridget** is an intelligent iOS app for monitoring Seattle drawbridge openings, predicting traffic patterns, and planning smarter routes. Powered by AI and a modular Swift architecture, Bridget helps commuters, cyclists, and travelers avoid bridge delays and get to their destinations on time.
 
 ---
 
 ## 🚀 Features
 
-- **Bridge Status**: Historical and recent bridge opening data for Seattle drawbridges, updated as data becomes available from public sources.
+- **Bridge Status**: Historical and recent bridge opening data for Seattle drawbridges (4900+ events, 7 bridges), updated as data becomes available from public sources.
 - **AI-Powered Predictions**: Probability scoring, duration estimates, and smart reasoning for bridge openings.
 - **Traffic Cascade Detection**: See how one bridge opening affects others.
 - **Route Planning**: Apple Maps integration, bridge-aware routing, and alternative route suggestions.
+- **Indirect Bridge Delay Detection**: Uses Apple Maps congestion data to detect bridge-caused traffic delays.
 - **Motion-Aware Predictions**: Uses device motion sensors to improve prediction accuracy.
 - **Advanced Statistics Dashboard**: Historical pattern analysis, network diagrams, and traffic impact summaries.
 - **Modern SwiftUI Interface**: iOS 17+ design, dark mode, accessibility, and smooth animations.
@@ -78,26 +87,41 @@ Bridget/
 
 ---
 
-## 🚧 Roadmap & Unimplemented Features
+## 🚧 Current Development Status
 
-- **ARIMA Prediction Engine**: Advanced forecasting (in progress)
-- **Background Processing**: Location and motion detection in background
-- **Advanced Analytics**: Deeper statistical insights and ML models
-- **Social & Community Features**: Route sharing, ratings, and collaboration
+### **✅ What's Working**
+- **App runs successfully** on iPhone 16 Pro simulator
+- **All 10 packages compile** without errors
+- **4900+ bridge events loaded**, 7 bridges available
+- **Routes Tab UI** - Basic routing interface functional
+- **TrafficAwareRoutingService** - Fully functional with risk builder
+- **Test infrastructure** - 95% of tests passing (51/55 tests)
 
-See `UNIMPLEMENTED_FEATURES.md` for details.
+### **🟡 In Progress**
+- **Indirect Bridge Delay Detection**: Apple Maps congestion correlation (CRITICAL priority)
+- **Motion Detection Integration**: Real device testing and dashboard integration
+- **Background Location Services**: CoreLocation integration and geofencing
+- **Routes Tab Enhancement**: Traffic indicators and bridge risk visualization
+
+### **📋 Development Priorities**
+- **This Week**: Real device testing, BridgeCongestionMonitor implementation
+- **Next Week**: Motion detection dashboard integration, background location services
+- **Next Month**: Advanced congestion analysis, ARIMA prediction engine
+
+See `ASSISTANT_TODO.md` for detailed roadmap and `FEATURES.md` for feature planning.
 
 ---
 
 ## 📄 Documentation
 
-- [Feature Overview](FEATURES.md)
-- [Modularization Guide](MODULARIZATION_GUIDE.md)
-- [Statistics User Guide](STATISTICS_USER_GUIDE.md)
-- [Motion Detection Implementation](MOTION_DETECTION_IMPLEMENTATION_GUIDE.md)
-- [Refactoring Summary](REFACTORING_SUMMARY.md)
-- [Manual Testing Checklist](MANUAL_TESTING_CHECKLIST.md)
-- [Background Agents](BACKGROUND_AGENTS.md)
+- **[Documentation Index](DOCUMENTATION_INDEX.md)** - Complete overview of all documentation
+- **[Development Roadmap](ASSISTANT_TODO.md)** - Current priorities and detailed task breakdown
+- **[Feature Planning](FEATURES.md)** - Comprehensive feature roadmap and implementation phases
+- **[Background Agents](BACKGROUND_AGENTS.md)** - Indirect bridge delay detection and traffic monitoring
+- **[Statistics User Guide](STATISTICS_USER_GUIDE.md)** - How to use statistics and predictions
+- **[Motion Detection Implementation](MOTION_DETECTION_IMPLEMENTATION_GUIDE.md)** - Device motion integration
+- **[Testing Guide](TESTING_INTEGRATION_GUIDE.md)** - Comprehensive testing strategy
+- **[Manual Testing Checklist](MANUAL_TESTING_CHECKLIST.md)** - iPhone 16 Pro testing procedures
 
 ---
 

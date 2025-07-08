@@ -1,5 +1,13 @@
 # Bridget Background Agents Documentation
 
+**Version**: 2.0.0  
+**Last Updated**: July 8, 2025  
+**Status**: ✅ **Current** - Indirect bridge delay detection implemented
+
+## 📋 **Version History**
+- **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, BridgeCongestionMonitor, CongestionCorrelation models
+- **v1.0.0** (July 7, 2025): Initial background agents documentation
+
 ## Overview
 
 The Bridget Background Agents system provides intelligent, real-time traffic monitoring capabilities that continue to operate even when the app is in the background. This system is designed to help users navigate traffic efficiently by providing proactive alerts and route optimization suggestions.
