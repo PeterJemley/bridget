@@ -58,7 +58,7 @@ Bridget's Statistics feature uses artificial intelligence to analyze Seattle bri
 
 ### Current Predictions Section
 
-Shows real-time predictions for the next hour:
+Shows predictions for the next hour based on historical and recent data:
 
 - **Bridge Name**: Which bridge is being predicted
 - **Probability**: Visual indicator (color-coded) and percentage
@@ -145,7 +145,7 @@ Predictions update as new historical or recent data becomes available:
 ### During Commute
 1. **Watch for cascade triggers** (bridges that often cause others to open)
 2. **Adjust route** if strong cascade patterns are detected
-3. **Use real-time updates** to make quick decisions
+3. **Use updated predictions** to make quick decisions
 
 ### Route Planning
 1. **Avoid "chain starter" bridges** during high-risk times
@@ -156,7 +156,7 @@ Predictions update as new historical or recent data becomes available:
 ### Using the Routes Tab for Smarter Commutes
 
 The new **Routes Tab** lets you:
-- Plan trips with real-time traffic and bridge status
+- Plan trips with available traffic data and bridge status (not live bridge feeds)
 - See which routes are affected by current or predicted bridge openings
 - Get alternative route suggestions to avoid delays
 - Visualize congestion points and bridge risks along your journey
@@ -165,7 +165,7 @@ The new **Routes Tab** lets you:
 1. Enter your start and end locations in the Routes Tab.
 2. Review the suggested route, including traffic and bridge risk indicators.
 3. Compare alternative routes and select the best option for your needs.
-4. Use real-time updates to adjust your route as conditions change.
+4. Use updated predictions to adjust your route as conditions change.
 
 ## Tips for Best Results
 

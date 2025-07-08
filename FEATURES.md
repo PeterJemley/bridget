@@ -73,7 +73,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
 - **Package**: `BridgetNetworking`
 - **Features**:
   - Enhanced drawbridge API integration
-  - Real-time data fetching
+  - Data fetching (updated as available)
   - API error handling and retry logic
   - Data synchronization
 
@@ -125,7 +125,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
 #### **1.1 Motion Detection Integration (8-10 hours)**
 - [ ] **Integrate MotionDetectionService into dashboard**
   - [ ] Add motion data to bridge status cards
-  - [ ] Create real-time traffic flow indicators
+  - [ ] Create traffic flow indicators (using available traffic data)
   - [ ] Implement vibration patterns for bridge activity
   - [ ] Add motion-based alerts for nearby bridge openings
 
@@ -136,7 +136,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
   - [ ] Implement background location updates
 
 #### **1.2 Traffic Pattern Analysis (7-10 hours)**
-- [ ] **Real-time Traffic Flow Detection**
+- [ ] **Traffic Flow Detection (using available traffic data)**
   - [ ] Analyze motion patterns during bridge openings
   - [ ] Create traffic congestion indicators
   - [ ] Implement traffic flow prediction algorithms
@@ -169,7 +169,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
   - [ ] Implement ML-based route suggestions
   - [ ] Add bridge opening probability to routes
   - [ ] Create traffic-aware route optimization
-  - [ ] Implement real-time route updates
+  - [ ] Implement route updates (using available traffic data)
 
 - [ ] **Route Analytics and Insights**
   - [ ] Add route performance metrics
@@ -188,7 +188,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
   - [ ] Implement confidence scoring
 
 - [ ] **Real-time Traffic Updates**
-  - [ ] Add live traffic data integration
+  - [ ] Add integration with available traffic data
   - [ ] Implement traffic flow monitoring
   - [ ] Create traffic alert system
   - [ ] Add traffic pattern learning
@@ -219,7 +219,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
 ### **⚡ HIGH (Important for MVP)**
 1. **Traffic Pattern Analysis** - Core intelligence features
 2. **Route Recommendations** - Smart routing capabilities
-3. **Real-time Updates** - Live traffic integration
+3. **Real-time Updates** - Updates as new data becomes available
 4. **Route Analytics** - User insights and optimization
 
 ### **🟡 MEDIUM (Enhancement Features)**

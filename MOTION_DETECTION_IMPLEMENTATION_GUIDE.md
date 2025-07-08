@@ -6,7 +6,7 @@ This document outlines the implementation of accelerometer-enhanced bridge predi
 - Detect when users are in vehicles
 - Enhance prediction accuracy based on travel context
 - Provide proactive notifications for approaching bridges
-- Improve route planning with real-time traffic context
+- Improve route planning with available traffic data context
 
 ## 🏗️ **Architecture Overview**
 

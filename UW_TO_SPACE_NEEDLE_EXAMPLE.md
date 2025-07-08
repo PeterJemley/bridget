@@ -64,7 +64,7 @@ let routeAnalysis = RouteAnalysis(
 )
 ```
 
-### **Real-Time Traffic Conditions:**
+### **Traffic Conditions (using available traffic data):**
 
 | Bridge | Opening Probability | Expected Delay | Traffic Impact |
 |--------|-------------------|----------------|---------------|

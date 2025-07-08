@@ -310,7 +310,7 @@ private var cachedDataDrivenThresholds: (weak: Double, moderate: Double, strong:
 
 ### Current Predictions Section
 
-Real-time bridge opening predictions for the next hour:
+Bridge opening predictions for the next hour based on historical and recent data:
 
 ```swift
 struct PredictionCard: View {
@@ -335,7 +335,7 @@ struct PredictionCard: View {
 
 ### Neural Engine Status Display
 
-Real-time hardware capability information:
+Hardware capability information (updated as available):
 
 ```swift
 HStack {
