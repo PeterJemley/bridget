@@ -429,7 +429,8 @@ final class ComprehensiveUITests: XCTestCase {
         let bridgeElements = app.staticTexts.matching(NSPredicate(format: "label CONTAINS 'Bridge'"))
         XCTAssertGreaterThan(bridgeElements.count, 0)
         
-        for element in bridgeElements.allElements {
+        for i in 0..<bridgeElements.count {
+            let element = bridgeElements.element(boundBy: i)
             XCTAssertFalse(element.label.isEmpty, "Bridge element should have accessibility label")
         }
     }
@@ -443,7 +444,8 @@ final class ComprehensiveUITests: XCTestCase {
         
         // Then: Interactive elements should have proper traits
         let buttons = app.buttons
-        for button in buttons.allElements {
+        for i in 0..<buttons.count {
+            let button = buttons.element(boundBy: i)
             XCTAssertTrue(button.isEnabled, "Button should be enabled")
         }
     }

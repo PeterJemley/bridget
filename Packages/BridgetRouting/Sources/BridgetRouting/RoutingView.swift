@@ -10,7 +10,7 @@ import MapKit
 import BridgetCore
 import BridgetSharedUI
 
-struct RoutingView: View {
+public struct RoutingView: View {
     @StateObject private var routingService = TrafficAwareRoutingService()
     @State private var startLocation = ""
     @State private var endLocation = ""
@@ -29,7 +29,9 @@ struct RoutingView: View {
         ("West Seattle Bridge", "West Seattle")
     ]
     
-    var body: some View {
+    public init() {}
+    
+    public var body: some View {
         NavigationView {
             VStack(spacing: 20) {
                 // Header
@@ -199,13 +201,20 @@ struct RoutingView: View {
     }
 }
 
-struct RouteResultCard: View {
+public struct RouteResultCard: View {
     let route: MKRoute
     let trafficCondition: TrafficCondition
-    let routeRisk: RouteRiskLevel
+    let routeRisk: RiskLevel
     let congestionPoints: [CongestionPoint]
     
-    var body: some View {
+    public init(route: MKRoute, trafficCondition: TrafficCondition, routeRisk: RiskLevel, congestionPoints: [CongestionPoint]) {
+        self.route = route
+        self.trafficCondition = trafficCondition
+        self.routeRisk = routeRisk
+        self.congestionPoints = congestionPoints
+    }
+    
+    public var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
                 Image(systemName: "checkmark.circle.fill")
@@ -269,10 +278,14 @@ struct RouteResultCard: View {
     }
 }
 
-struct TrafficStatusCard: View {
+public struct TrafficStatusCard: View {
     let condition: TrafficCondition
     
-    var body: some View {
+    public init(condition: TrafficCondition) {
+        self.condition = condition
+    }
+    
+    public var body: some View {
         HStack(spacing: 4) {
             Image(systemName: conditionIcon)
                 .foregroundColor(conditionColor)
@@ -288,8 +301,8 @@ struct TrafficStatusCard: View {
     
     private var conditionIcon: String {
         switch condition {
-        case .clear: return "car.fill"
-        case .lightTraffic: return "car.fill"
+        case .freeFlow: return "car.fill"
+        case .normalTraffic: return "car.fill"
         case .moderateTraffic: return "car.2.fill"
         case .heavyTraffic: return "car.3.fill"
         case .unknown: return "questionmark.circle.fill"
@@ -298,8 +311,8 @@ struct TrafficStatusCard: View {
     
     private var conditionColor: Color {
         switch condition {
-        case .clear: return .green
-        case .lightTraffic: return .yellow
+        case .freeFlow: return .green
+        case .normalTraffic: return .yellow
         case .moderateTraffic: return .orange
         case .heavyTraffic: return .red
         case .unknown: return .gray
@@ -307,10 +320,14 @@ struct TrafficStatusCard: View {
     }
 }
 
-struct RouteRiskCard: View {
-    let riskLevel: RouteRiskLevel
+public struct RouteRiskCard: View {
+    let riskLevel: RiskLevel
     
-    var body: some View {
+    public init(riskLevel: RiskLevel) {
+        self.riskLevel = riskLevel
+    }
+    
+    public var body: some View {
         HStack(spacing: 4) {
             Image(systemName: riskIcon)
                 .foregroundColor(riskColor)
@@ -329,7 +346,7 @@ struct RouteRiskCard: View {
         case .low: return "checkmark.shield.fill"
         case .medium: return "exclamationmark.shield.fill"
         case .high: return "xmark.shield.fill"
-        case .unknown: return "questionmark.shield.fill"
+        // .unknown is not a valid case; use .low as fallback
         }
     }
     
@@ -338,7 +355,7 @@ struct RouteRiskCard: View {
         case .low: return .green
         case .medium: return .orange
         case .high: return .red
-        case .unknown: return .gray
+        // .unknown is not a valid case; use .low as fallback
         }
     }
 }

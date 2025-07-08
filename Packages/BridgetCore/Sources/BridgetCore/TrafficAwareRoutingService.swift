@@ -290,3 +290,38 @@ extension CLLocationCoordinate2D: CustomStringConvertible {
         return "(\(latitude), \(longitude))"
     }
 } 
+
+@resultBuilder
+public struct RiskLevelBuilder {
+    public static func buildBlock(_ components: RiskLevel...) -> RiskLevel {
+        components.first ?? .medium
+    }
+    public static func buildEither(first component: RiskLevel) -> RiskLevel {
+        component
+    }
+    public static func buildEither(second component: RiskLevel) -> RiskLevel {
+        component
+    }
+}
+
+public func risk(@RiskLevelBuilder _ content: () -> RiskLevel) -> RiskLevel {
+    content()
+} 
+
+#if DEBUG
+@MainActor
+public func testRiskBuilder() {
+    let test1 = risk {
+        RiskLevel.high
+    }
+    let test2 = risk {
+        RiskLevel.medium // Simplified to avoid if-else in result builder
+    }
+    let test3 = risk {
+        // No explicit return, should fallback to .medium
+    }
+    print("[RiskBuilderTest] test1: \(test1)") // Should print .high
+    print("[RiskBuilderTest] test2: \(test2)") // Should print .medium
+    print("[RiskBuilderTest] test3: \(test3)") // Should print .medium
+}
+#endif 

@@ -14,17 +14,17 @@ import BridgetSharedUI
 // MARK: - View Model for Dynamic Analysis
 
 @MainActor
-final class DynamicAnalysisViewModel: ObservableObject {
-    @Published var isAnalyzing = false
-    @Published var analysisError: String?
-    @Published var cachedAnalysisData: AnalysisData?
+public final class DynamicAnalysisViewModel: ObservableObject {
+    @Published public var isAnalyzing = false
+    @Published public var analysisError: String?
+    @Published public var cachedAnalysisData: AnalysisData?
     
     private let events: [DrawbridgeEvent]
     private let analysisType: AnalysisType
     private let viewType: ViewType
     private let bridgeName: String
     
-    init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
+    public init(events: [DrawbridgeEvent], analysisType: AnalysisType, viewType: ViewType, bridgeName: String) {
         self.events = events
         self.analysisType = analysisType
         self.viewType = viewType
@@ -33,50 +33,91 @@ final class DynamicAnalysisViewModel: ObservableObject {
     
     // MARK: - Analysis Data Structure
     
-    struct AnalysisData {
-        let hourlyData: [HourlyData]
-        let weeklyData: [WeeklyData]
-        let durationRanges: [DurationRange]
-        let severityBreakdown: [SeverityBreakdown]
-        let cascadeConnections: [CascadeConnection]
-        let predictions: [BridgePrediction]
-        let impactMetrics: ImpactMetrics
+    public struct AnalysisData {
+        public let hourlyData: [HourlyData]
+        public let weeklyData: [WeeklyData]
+        public let durationRanges: [DurationRange]
+        public let severityBreakdown: [SeverityBreakdown]
+        public let cascadeConnections: [CascadeConnection]
+        public let predictions: [BridgePrediction]
+        public let impactMetrics: ImpactMetrics
         
-        struct HourlyData {
-            let hour: Int
-            let count: Int
-            let maxCount: Int
+        public init(hourlyData: [HourlyData], weeklyData: [WeeklyData], durationRanges: [DurationRange], severityBreakdown: [SeverityBreakdown], cascadeConnections: [CascadeConnection], predictions: [BridgePrediction], impactMetrics: ImpactMetrics) {
+            self.hourlyData = hourlyData
+            self.weeklyData = weeklyData
+            self.durationRanges = durationRanges
+            self.severityBreakdown = severityBreakdown
+            self.cascadeConnections = cascadeConnections
+            self.predictions = predictions
+            self.impactMetrics = impactMetrics
         }
         
-        struct WeeklyData {
-            let day: Int
-            let count: Int
+        public struct HourlyData {
+            public let hour: Int
+            public let count: Int
+            public let maxCount: Int
+            
+            public init(hour: Int, count: Int, maxCount: Int) {
+                self.hour = hour
+                self.count = count
+                self.maxCount = maxCount
+            }
         }
         
-        struct DurationRange {
-            let range: String
-            let count: Int
-            let percentage: Double
+        public struct WeeklyData {
+            public let day: Int
+            public let count: Int
+            
+            public init(day: Int, count: Int) {
+                self.day = day
+                self.count = count
+            }
         }
         
-        struct CascadeConnection {
-            let sourceBridge: String
-            let targetBridge: String
-            let strength: Double
-            let delayMinutes: Double
+        public struct DurationRange {
+            public let range: String
+            public let count: Int
+            public let percentage: Double
+            
+            public init(range: String, count: Int, percentage: Double) {
+                self.range = range
+                self.count = count
+                self.percentage = percentage
+            }
         }
         
-        struct ImpactMetrics {
-            let totalEvents: Int
-            let highImpactCount: Int
-            let averageDelay: Double
-            let peakHour: String
+        public struct CascadeConnection {
+            public let sourceBridge: String
+            public let targetBridge: String
+            public let strength: Double
+            public let delayMinutes: Double
+            
+            public init(sourceBridge: String, targetBridge: String, strength: Double, delayMinutes: Double) {
+                self.sourceBridge = sourceBridge
+                self.targetBridge = targetBridge
+                self.strength = strength
+                self.delayMinutes = delayMinutes
+            }
+        }
+        
+        public struct ImpactMetrics {
+            public let totalEvents: Int
+            public let highImpactCount: Int
+            public let averageDelay: Double
+            public let peakHour: String
+            
+            public init(totalEvents: Int, highImpactCount: Int, averageDelay: Double, peakHour: String) {
+                self.totalEvents = totalEvents
+                self.highImpactCount = highImpactCount
+                self.averageDelay = averageDelay
+                self.peakHour = peakHour
+            }
         }
     }
     
     // MARK: - Public Interface
     
-    func performAnalysis() async {
+    public func performAnalysis() async {
         guard !events.isEmpty else {
             analysisError = "No events available for analysis"
             return
@@ -1019,11 +1060,18 @@ public struct DynamicAnalysisSection: View {
 
 // MARK: - Supporting Types
 
-struct SeverityBreakdown {
-    let severity: String
-    let count: Int
-    let percentage: Double
-    let color: Color
+public struct SeverityBreakdown {
+    public let severity: String
+    public let count: Int
+    public let percentage: Double
+    public let color: Color
+    
+    public init(severity: String, count: Int, percentage: Double, color: Color) {
+        self.severity = severity
+        self.count = count
+        self.percentage = percentage
+        self.color = color
+    }
 }
 
 // MARK: - Array Extension for Safe Access

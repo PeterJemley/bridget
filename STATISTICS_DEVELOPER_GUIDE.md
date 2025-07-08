@@ -7,17 +7,13 @@ This guide provides technical details for developers working with Bridget's Stat
 ## Architecture Overview
 
 ```
-StatisticsView (UI Layer)
+RoutingView (UI Layer)
     ↓
-BridgeAnalytics (Data Models)
+TrafficAwareRoutingService (Business Logic)
     ↓
-BridgeAnalyticsCalculator (Business Logic)
+MotionDetectionService (Traffic Sensing)
     ↓
-NeuralEngineARIMAPredictor (AI Engine)
-    ↓
-CascadeDetectionEngine (Pattern Detection)
-    ↓
-SwiftData (Persistence)
+Apple Maps API (Live Traffic Data)
 ```
 
 ## Core Data Models
@@ -574,4 +570,21 @@ Key takeaways:
 - Implement proper error handling and logging
 - Test thoroughly with realistic datasets
 - Monitor performance and memory usage
-- Follow SwiftData best practices for persistence 
+- Follow SwiftData best practices for persistence
+
+## Integration Patterns
+
+```swift
+// Integrate RoutingView in main TabView
+TabView {
+    // ... other tabs ...
+    RoutingView()
+        .tabItem {
+            Image(systemName: "car.fill")
+            Text("Routes")
+        }
+}
+```
+
+- Use `TrafficAwareRoutingService` for route planning and traffic analysis
+- Use `MotionDetectionService` for real-time traffic sensing and context 

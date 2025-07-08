@@ -153,6 +153,20 @@ Predictions update continuously based on:
 3. **Factor in cascade delays** (typically 30-60 minutes)
 4. **Use network visualization** to understand traffic relationships
 
+### Using the Routes Tab for Smarter Commutes
+
+The new **Routes Tab** lets you:
+- Plan trips with real-time traffic and bridge status
+- See which routes are affected by current or predicted bridge openings
+- Get alternative route suggestions to avoid delays
+- Visualize congestion points and bridge risks along your journey
+
+**How to use:**
+1. Enter your start and end locations in the Routes Tab.
+2. Review the suggested route, including traffic and bridge risk indicators.
+3. Compare alternative routes and select the best option for your needs.
+4. Use real-time updates to adjust your route as conditions change.
+
 ## Tips for Best Results
 
 ### Data Quality

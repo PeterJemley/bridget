@@ -4,10 +4,10 @@
 <dict>
 	<key>SchemeUserState</key>
 	<dict>
-		<key>BridgetStatistics.xcscheme_^#shared#^_</key>
+		<key>BridgetRouting.xcscheme_^#shared#^_</key>
 		<dict>
 			<key>orderHint</key>
-			<integer>7</integer>
+			<integer>10</integer>
 		</dict>
 	</dict>
 </dict>

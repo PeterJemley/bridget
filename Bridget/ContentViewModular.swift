@@ -18,6 +18,7 @@ import BridgetBridgesList
 import BridgetHistory
 import BridgetStatistics
 import BridgetSettings
+import BridgetRouting
 
 struct ContentViewModular: View {
     @Environment(\.modelContext) private var modelContext
@@ -43,6 +44,13 @@ struct ContentViewModular: View {
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")
+                    }
+                
+                // Routes Tab - Using modular RoutingView
+                RoutingView()
+                    .tabItem {
+                        Image(systemName: "car.fill")
+                        Text("Routes")
                     }
                 
                 // Bridges Tab - Using modular BridgesListView

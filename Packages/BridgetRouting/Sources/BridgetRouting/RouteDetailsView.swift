@@ -112,8 +112,8 @@ struct RouteSummaryCard: View {
     
     private var trafficColor: Color {
         switch routingService.trafficConditions {
-        case .clear: return .green
-        case .lightTraffic: return .yellow
+        case .freeFlow: return .green
+        case .normalTraffic: return .yellow
         case .moderateTraffic: return .orange
         case .heavyTraffic: return .red
         case .unknown: return .gray
@@ -176,7 +176,6 @@ struct TrafficAnalysisCard: View {
         case .low: return .green
         case .medium: return .orange
         case .high: return .red
-        case .unknown: return .gray
         }
     }
 }

@@ -14,24 +14,24 @@ import BridgetSharedUI
 // MARK: - View Model for Bridge Detail
 
 @MainActor
-class BridgeDetailViewModel: ObservableObject {
-    @Published var selectedPeriod: TimePeriod = .sevenDays
-    @Published var selectedAnalysis: AnalysisType = .patterns
-    @Published var selectedView: ViewType = .activity
-    @Published var isDataReady = false
-    @Published var isLoading = false
-    @Published var errorMessage: String?
+public class BridgeDetailViewModel: ObservableObject {
+    @Published public var selectedPeriod: TimePeriod = .sevenDays
+    @Published public var selectedAnalysis: AnalysisType = .patterns
+    @Published public var selectedView: ViewType = .activity
+    @Published public var isDataReady = false
+    @Published public var isLoading = false
+    @Published public var errorMessage: String?
     
     private let bridgeEvent: DrawbridgeEvent
     private var dataCheckTimer: Timer?
     
-    init(bridgeEvent: DrawbridgeEvent) {
+    public init(bridgeEvent: DrawbridgeEvent) {
         self.bridgeEvent = bridgeEvent
     }
     
     // MARK: - Public Interface
     
-    func checkDataAvailability(allEvents: [DrawbridgeEvent]) {
+    public func checkDataAvailability(allEvents: [DrawbridgeEvent]) {
         let bridgeSpecificEvents = allEvents.filter { $0.entityID == bridgeEvent.entityID }
         
         if !bridgeSpecificEvents.isEmpty {
@@ -45,7 +45,7 @@ class BridgeDetailViewModel: ObservableObject {
         }
     }
     
-    func forceCascadeDetection(allEvents: [DrawbridgeEvent], cascadeEvents: [CascadeEvent], modelContext: ModelContext) async {
+    public func forceCascadeDetection(allEvents: [DrawbridgeEvent], cascadeEvents: [CascadeEvent], modelContext: ModelContext) async {
         isLoading = true
         errorMessage = nil
         
