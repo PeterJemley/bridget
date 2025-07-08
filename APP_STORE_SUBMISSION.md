@@ -26,7 +26,7 @@
 Navigate Seattle's drawbridge traffic with confidence using AI-powered predictions and real-time analysis. Bridget helps you avoid bridge delays and plan smarter routes through the Emerald City.
 
 **🧠 AI-Powered Predictions**
-• Real-time predictions for all Seattle drawbridges
+• Predictions for all Seattle drawbridges based on historical and recent data
 • Probability scoring (red = likely to open, green = unlikely)
 • Duration estimates for bridge openings
 • Smart reasoning explaining why predictions were made
@@ -51,7 +51,7 @@ Navigate Seattle's drawbridge traffic with confidence using AI-powered predictio
 • Battery-optimized monitoring
 
 **🗺️ Traffic-Aware Route Planning**
-• Apple Maps integration with real-time traffic data
+• Apple Maps integration with available traffic data
 • Bridge-aware routing that considers drawbridge schedules
 • Alternative route suggestions when bridges are predicted to open
 • Travel time estimates including potential bridge delays

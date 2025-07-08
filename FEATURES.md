@@ -2,7 +2,7 @@
 
 ## 📋 **Executive Summary**
 
-Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings and providing intelligent traffic predictions. The app features a modular architecture with 10 Swift Package Manager modules, real-time data processing, and AI-powered analytics.
+Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings and providing intelligent traffic predictions. The app features a modular architecture with 10 Swift Package Manager modules, historical and recent bridge opening data, updated as available, and AI-powered analytics.
 
 **Last Updated**: July 7, 2025  
 **Build Status**: ✅ **STABLE** - All critical build issues resolved  
@@ -20,7 +20,7 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
 - **Status**: ✅ **FULLY IMPLEMENTED**
 - **Package**: `BridgetDashboard`
 - **Features**:
-  - Real-time bridge status overview
+  - Historical and recent bridge status overview
   - Historical status tracking
   - Recent activity monitoring
   - Status overview cards with live updates

@@ -107,8 +107,8 @@ For each bridge, Bridget calculates:
 - **Confidence level**: How reliable the prediction is based on data quality
 - **Reasoning**: Factors that influenced the prediction
 
-### 4. Real-time Updates
-Predictions update continuously based on:
+### 4. Data-Driven Updates
+Predictions update as new historical or recent data becomes available:
 - Recent bridge activity
 - Current time and day
 - Recent cascade events
