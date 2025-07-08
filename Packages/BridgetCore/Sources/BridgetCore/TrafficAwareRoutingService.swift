@@ -307,21 +307,3 @@ public struct RiskLevelBuilder {
 public func risk(@RiskLevelBuilder _ content: () -> RiskLevel) -> RiskLevel {
     content()
 } 
-
-#if DEBUG
-@MainActor
-public func testRiskBuilder() {
-    let test1 = risk {
-        RiskLevel.high
-    }
-    let test2 = risk {
-        RiskLevel.medium // Simplified to avoid if-else in result builder
-    }
-    let test3 = risk {
-        // No explicit return, should fallback to .medium
-    }
-    print("[RiskBuilderTest] test1: \(test1)") // Should print .high
-    print("[RiskBuilderTest] test2: \(test2)") // Should print .medium
-    print("[RiskBuilderTest] test3: \(test3)") // Should print .medium
-}
-#endif 

@@ -346,7 +346,6 @@ public struct RouteRiskCard: View {
         case .low: return "checkmark.shield.fill"
         case .medium: return "exclamationmark.shield.fill"
         case .high: return "xmark.shield.fill"
-        // .unknown is not a valid case; use .low as fallback
         }
     }
     
@@ -355,7 +354,6 @@ public struct RouteRiskCard: View {
         case .low: return .green
         case .medium: return .orange
         case .high: return .red
-        // .unknown is not a valid case; use .low as fallback
         }
     }
 }
