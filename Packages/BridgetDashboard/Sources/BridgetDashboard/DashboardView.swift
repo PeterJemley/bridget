@@ -6,11 +6,13 @@ public struct DashboardView: View {
     public let events: [DrawbridgeEvent]
     public let bridgeInfo: [DrawbridgeInfo]
     public let motionService: MotionDetectionService?
+    public let backgroundAgent: BackgroundTrafficAgent?
     
-    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo], motionService: MotionDetectionService? = nil) {
+    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo], motionService: MotionDetectionService? = nil, backgroundAgent: BackgroundTrafficAgent? = nil) {
         self.events = events
         self.bridgeInfo = bridgeInfo
         self.motionService = motionService
+        self.backgroundAgent = backgroundAgent
     }
     
     public var body: some View {
@@ -74,6 +76,11 @@ public struct DashboardView: View {
                         MotionStatusCard(motionService: motionService)
                     }
                     
+                    // Background Monitoring Card
+                    if let backgroundAgent = backgroundAgent {
+                        BackgroundMonitoringCard(backgroundAgent: backgroundAgent)
+                    }
+                    
                     LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
                     RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)
@@ -108,5 +115,5 @@ public struct DashboardView: View {
 }
 
 #Preview {
-    DashboardView(events: [], bridgeInfo: [], motionService: nil)
+    DashboardView(events: [], bridgeInfo: [], motionService: nil, backgroundAgent: nil)
 }

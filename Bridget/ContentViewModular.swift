@@ -35,15 +35,28 @@ struct ContentViewModular: View {
     // Motion Detection Service
     @StateObject private var motionService = MotionDetectionService()
     
+    // Background Traffic Agent
+    @StateObject private var backgroundAgent: BackgroundTrafficAgent
+    
     private var events: [DrawbridgeEvent] {
         return allEvents 
+    }
+    
+    init() {
+        let motionService = MotionDetectionService()
+        let trafficService = TrafficAwareRoutingService()
+        self._motionService = StateObject(wrappedValue: motionService)
+        self._backgroundAgent = StateObject(wrappedValue: BackgroundTrafficAgent(
+            trafficService: trafficService,
+            motionService: motionService
+        ))
     }
     
     var body: some View {
         ZStack {
             TabView {
                 // Dashboard Tab - Using modular DashboardView
-                DashboardView(events: events, bridgeInfo: bridgeInfo, motionService: motionService)
+                DashboardView(events: events, bridgeInfo: bridgeInfo, motionService: motionService, backgroundAgent: backgroundAgent)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")

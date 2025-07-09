@@ -4,7 +4,20 @@
 <dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Bridget uses your location to provide accurate bridge predictions and route recommendations when you're traveling.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Bridget needs location access to provide background traffic monitoring and bridge proximity alerts.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>Bridget uses motion data to detect when you're in a vehicle and provide better bridge predictions for your journey.</string>
+	<key>UIBackgroundModes</key>
+	<array>
+		<string>background-processing</string>
+		<string>background-app-refresh</string>
+		<string>location</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>com.bridget.traffic-refresh</string>
+		<string>com.bridget.motion-monitoring</string>
+	</array>
 </dict>
 </plist>
