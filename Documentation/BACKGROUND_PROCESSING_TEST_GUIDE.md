@@ -1,4 +1,4 @@
-# Background Processing Testing Guide
+s# Background Processing Testing Guide
 
 ## Overview
 This guide covers testing the background processing capabilities implemented in Bridget, including the BackgroundTrafficAgent and related features.
@@ -36,7 +36,7 @@ This guide covers testing the background processing capabilities implemented in 
 
 **Steps**:
 1. Start background monitoring
-2. Press home button to background app
+2. Swipe up from the bottom of the screen to go to the Home screen (background the app)
 3. Wait 30-60 seconds
 4. Return to app
 5. Check if monitoring is still active
@@ -211,12 +211,11 @@ If issues are encountered during testing:
 **Objective**: Debug and verify the accuracy of motion detection, especially speed and acceleration readings when stationary.
 
 **Steps:**
-1. Place the device on a stable, stationary surface.
-2. Start background monitoring and motion detection.
-3. Observe the speed and acceleration values reported in the app.
-4. Note any non-zero values when the device is not moving.
-5. Move the device slightly and observe how quickly the values change.
-6. Repeat in different environments (e.g., on a table, in a car, outdoors).
+1. Place the device on a stable, stationary surface and start monitoring.
+2. Observe the speed and acceleration values reported in the app.
+3. Note any non-zero values when the device is not moving.
+4. Move the device slightly and observe how quickly the values change.
+5. Repeat in different environments (e.g., on a table, in a car, outdoors).
 
 **Expected Results:**
 - Speed and acceleration should be close to zero when stationary (allowing for minor sensor noise).
@@ -230,7 +229,7 @@ If issues are encountered during testing:
 **Objective**: Ensure that small, insignificant speed/acceleration values are not shown to the user, improving clarity.
 
 **Steps:**
-1. Place the device stationary and start monitoring.
+1. Place the device on a stable, stationary surface and start monitoring.
 2. Observe the displayed speed/acceleration values.
 3. Confirm that values below the defined threshold (e.g., < 0.2 m/s for speed, < 0.05 m/s² for acceleration) are displayed as zero or "stationary".
 4. Move the device to exceed the threshold and confirm values are displayed accurately.

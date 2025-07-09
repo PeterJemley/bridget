@@ -54,6 +54,7 @@ public class MotionDetectionService: ObservableObject {
     @Published public var acceleration: Double = 0.0
     @Published public var isMonitoring = false
     @Published public var isHighDetailMode = false
+    @Published public var showMotionDebug: Bool = false
     
     // Configurable polling intervals
     @Published public var pollingInterval: TimeInterval = 1.0 // Default 1 Hz
@@ -77,6 +78,8 @@ public class MotionDetectionService: ObservableObject {
     public init() {
         print("🚗 [Motion] MotionDetectionService initialized")
     }
+    
+    public static let shared = MotionDetectionService()
     
     // MARK: - Configuration Methods
     
@@ -312,7 +315,7 @@ public class MotionDetectionService: ObservableObject {
         }
         
         // Log to console for real-time monitoring
-        print("🚗 [Motion] Logged: \(entry.vehicleState.rawValue) | Speed: \(String(format: "%.1f", entry.speed)) m/s | Traffic: \(entry.trafficCondition.rawValue)")
+        print("🚗 [Motion] Logged: \(entry.vehicleState.rawValue) | Speed: \(String(format: "%.1f", entry.speed)) m/s | Acceleration: \(String(format: "%.2f", entry.acceleration)) m/s² | Traffic: \(entry.trafficCondition.rawValue)")
     }
     
     /// Exports motion data to a JSON file

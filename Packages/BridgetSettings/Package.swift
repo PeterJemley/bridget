@@ -22,6 +22,7 @@ let package = Package(
             name: "BridgetSettings",
             dependencies: [
                 "BridgetCore",
+                "BridgetDashboard",
                 "BridgetNetworking"
             ]),
         .testTarget(

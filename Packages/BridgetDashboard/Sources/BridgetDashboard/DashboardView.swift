@@ -71,16 +71,6 @@ public struct DashboardView: View {
                     
                     StatusOverviewCard(events: events, bridgeInfo: bridgeInfo)
                     
-                    // Motion Detection Status Card
-                    if let motionService = motionService {
-                        MotionStatusCard(motionService: motionService)
-                    }
-                    
-                    // Background Monitoring Card
-                    if let backgroundAgent = backgroundAgent {
-                        BackgroundMonitoringCard(backgroundAgent: backgroundAgent)
-                    }
-                    
                     LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
                     RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)

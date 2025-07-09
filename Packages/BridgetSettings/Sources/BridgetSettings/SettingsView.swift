@@ -17,6 +17,7 @@ public struct SettingsView: View {
     @AppStorage("dataRetentionDays") private var dataRetentionDays = 30
     @AppStorage("analyticsEnabled") private var analyticsEnabled = true
     @AppStorage("compactMode") private var compactMode = false
+    @AppStorage("showMotionDebug") private var showMotionDebug = false
     
     @State private var showDebugView = false
     @State private var showAPIDocumentationView = false
@@ -77,6 +78,10 @@ public struct SettingsView: View {
                     Toggle("Enable Geek Features", isOn: $showGeekFeatures)
                     
                     if showGeekFeatures {
+                        Toggle("Show Motion Debug Info", isOn: $showMotionDebug)
+                            .onChange(of: showMotionDebug) { newValue in
+                                MotionDetectionService.shared.showMotionDebug = newValue
+                            }
                         Button("Debug Console") {
                             showDebugView = true
                         }

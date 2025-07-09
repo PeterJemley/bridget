@@ -41,24 +41,23 @@ public struct MotionStatusCard: View {
                 }
             }
             
-            if motionService.isInVehicle {
+            if motionService.showMotionDebug {
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
                         Text("Speed:")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
-                        Text("\(String(format: "%.1f", motionService.currentSpeed * 3.6)) km/h")
+                        let speed = abs(motionService.currentSpeed) < 0.2 ? 0.0 : motionService.currentSpeed
+                        Text("\(String(format: "%.2f", speed)) m/s")
                             .font(.caption)
                             .fontWeight(.medium)
                     }
-                    
                     HStack {
                         Text("Acceleration:")
                             .font(.caption)
                             .foregroundColor(.secondary)
-                        
-                        Text("\(String(format: "%.2f", motionService.acceleration)) m/s²")
+                        let accel = abs(motionService.acceleration) < 0.05 ? 0.0 : motionService.acceleration
+                        Text("\(String(format: "%.2f", accel)) m/s²")
                             .font(.caption)
                             .fontWeight(.medium)
                     }
