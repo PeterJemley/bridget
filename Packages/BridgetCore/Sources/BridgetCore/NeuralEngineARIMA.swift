@@ -134,8 +134,8 @@ public class NeuralEngineManager {
         let generation = detectNeuralEngineGeneration()
         let complexity = generation.recommendedModelComplexity
         
-        print("🧠 [Neural Engine] Detected: \(generation.rawValue) (\(generation.coreCount) cores, \(generation.topsCapability) TOPS)")
-        print("🧠 [Neural Engine] Optimal complexity: \(complexity.rawValue)")
+        SecurityLogger.neural("Detected: \(generation.rawValue) (\(generation.coreCount) cores, \(generation.topsCapability) TOPS)")
+        SecurityLogger.neural("Optimal complexity: \(complexity.rawValue)")
         
         return (generation, complexity)
     }
@@ -153,7 +153,7 @@ public class NeuralEngineARIMAPredictor {
         self.neuralGeneration = config.generation
         self.modelComplexity = config.complexity
         
-        print("🧠 [Neural ARIMA] Initialized for \(neuralGeneration.rawValue) with \(modelComplexity.rawValue) complexity")
+        SecurityLogger.neural("Initialized for \(neuralGeneration.rawValue) with \(modelComplexity.rawValue) complexity")
     }
     
     // MARK: - Main Prediction Interface
@@ -164,9 +164,9 @@ public class NeuralEngineARIMAPredictor {
         existingAnalytics: [BridgeAnalytics] = []
     ) -> [NeuralARIMAPrediction] {
         
-        print("\n🧠 [Neural ARIMA] Starting Neural Engine-accelerated prediction")
-        print("🧠 [Neural ARIMA] Device: \(neuralGeneration.rawValue) (\(neuralGeneration.topsCapability) TOPS)")
-        print("🧠 [Neural ARIMA] Model: \(modelComplexity.rawValue) ARIMA\(modelComplexity.arimaOrder)")
+        SecurityLogger.neural("Starting Neural Engine-accelerated prediction")
+        SecurityLogger.neural("Device: \(neuralGeneration.rawValue) (\(neuralGeneration.topsCapability) TOPS)")
+        SecurityLogger.neural("Model: \(modelComplexity.rawValue) ARIMA\(modelComplexity.arimaOrder)")
         
         let startTime = Date()
         var predictions: [NeuralARIMAPrediction] = []
@@ -176,7 +176,7 @@ public class NeuralEngineARIMAPredictor {
         let maxBridges = events.count > 3000 ? 3 : 5 // Limit to 3 bridges for large datasets
         let limitedBridgeIDs = Array(uniqueBridgeIDs.prefix(maxBridges))
         
-        print("🧠 [Neural ARIMA] Processing \(limitedBridgeIDs.count) bridges (limited from \(uniqueBridgeIDs.count)) with \(events.count) events")
+        SecurityLogger.neural("Processing \(limitedBridgeIDs.count) bridges (limited from \(uniqueBridgeIDs.count)) with \(events.count) events")
         
         for (index, bridgeID) in limitedBridgeIDs.enumerated() {
             let bridgeStartTime = Date()
@@ -188,17 +188,17 @@ public class NeuralEngineARIMAPredictor {
             ) {
                 predictions.append(prediction)
                 let bridgeTime = Date().timeIntervalSince(bridgeStartTime)
-                print("🧠 [Neural ARIMA] ✅ \(prediction.entityName): \(Int(prediction.neuralAccuracy * 100))% accuracy (\(String(format: "%.3f", bridgeTime))s)")
+                SecurityLogger.neural("✅ \(prediction.entityName): \(Int(prediction.neuralAccuracy * 100))% accuracy (\(String(format: "%.3f", bridgeTime))s)")
             }
         }
         
         let totalTime = Date().timeIntervalSince(startTime)
         let sortedPredictions = predictions.sorted { $0.probability > $1.probability }
         
-        print("🧠 [Neural ARIMA] ✅ Neural Engine processing complete!")
-        print("🧠 [Neural ARIMA] 📊 \(sortedPredictions.count) predictions in \(String(format: "%.3f", totalTime))s")
-        print("🧠 [Neural ARIMA] ⚡ Avg: \(String(format: "%.3f", totalTime / Double(max(1, sortedPredictions.count))))s per bridge")
-        print("🧠 [Neural ARIMA] 🏆 Top: \(sortedPredictions.first?.entityName ?? "None") (\(Int((sortedPredictions.first?.probability ?? 0) * 100))%)\n")
+        SecurityLogger.neural("✅ Neural Engine processing complete!")
+        SecurityLogger.neural("📊 \(sortedPredictions.count) predictions in \(String(format: "%.3f", totalTime))s")
+        SecurityLogger.neural("⚡ Avg: \(String(format: "%.3f", totalTime / Double(max(1, sortedPredictions.count))))s per bridge")
+        SecurityLogger.neural("🏆 Top: \(sortedPredictions.first?.entityName ?? "None") (\(Int((sortedPredictions.first?.probability ?? 0) * 100))%)")
         
         return sortedPredictions
     }

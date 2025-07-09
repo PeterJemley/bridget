@@ -46,7 +46,7 @@ public struct StatisticsView: View {
     public init() {}
     
     private func updateNeuralEngineStatus() {
-        print(" [NEURAL ENGINE] Starting detection...")
+        SecurityLogger.neural("Starting detection...")
         
         let neuralGeneration = NeuralEngineManager.detectNeuralEngineGeneration()
         let coreCount = neuralGeneration.coreCount
@@ -55,15 +55,15 @@ public struct StatisticsView: View {
         
         neuralEngineStatus = "\(neuralGeneration.rawValue), \(coreCount) cores, \(String(format: "%.1f", topsCapability)) TOPS, \(complexity)"
         
-        print("[NEURAL ENGINE] Detection Results:")
-        print("[NEURAL ENGINE] Generation: \(neuralGeneration.rawValue)")
-        print("[NEURAL ENGINE] Cores: \(coreCount)")
-        print("[NEURAL ENGINE] TOPS: \(String(format: "%.1f", topsCapability))")
-        print("[NEURAL ENGINE] Complexity: \(complexity)")
-        print("[NEURAL ENGINE] Final Status: \(neuralEngineStatus)")
+        SecurityLogger.neural("Detection Results:")
+        SecurityLogger.neural("Generation: \(neuralGeneration.rawValue)")
+        SecurityLogger.neural("Cores: \(coreCount)")
+        SecurityLogger.neural("TOPS: \(String(format: "%.1f", topsCapability))")
+        SecurityLogger.neural("Complexity: \(complexity)")
+        SecurityLogger.neural("Final Status: \(neuralEngineStatus)")
         
         DispatchQueue.main.async {
-            print("[NEURAL ENGINE] Forcing view update with status: \(self.neuralEngineStatus)")
+            SecurityLogger.neural("Forcing view update with status: \(self.neuralEngineStatus)")
         }
     }
 
@@ -123,15 +123,15 @@ public struct StatisticsView: View {
             .navigationTitle("Statistics")
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
-                print(" [STATS] StatisticsView Appeared")
-                print(" [STATS] Events: \(events.count)")
-                print(" [STATS] Bridge Info: \(bridgeInfo.count)")
-                print(" [STATS] Analytics: \(analytics.count)")
-                print(" [STATS] Cascade Events: \(cascadeEvents.count)")
+                SecurityLogger.stats("StatisticsView Appeared")
+                SecurityLogger.stats("Events: \(events.count)")
+                SecurityLogger.stats("Bridge Info: \(bridgeInfo.count)")
+                SecurityLogger.stats("Analytics: \(analytics.count)")
+                SecurityLogger.stats("Cascade Events: \(cascadeEvents.count)")
                 updateNeuralEngineStatus()
                 
                 if cascadeEvents.isEmpty && !events.isEmpty {
-                    print(" [STATS]  NO CASCADE EVENTS FOUND - FORCING IMMEDIATE DETECTION")
+                    SecurityLogger.stats("NO CASCADE EVENTS FOUND - FORCING IMMEDIATE DETECTION")
                     Task {
                         await forceCascadeDetection()
                     }
@@ -462,18 +462,18 @@ public struct StatisticsView: View {
     }
     
     private func forceCascadeDetection() async {
-        print(" [STATS]  FORCING IMMEDIATE CASCADE DETECTION...")
+        SecurityLogger.stats("FORCING IMMEDIATE CASCADE DETECTION...")
         
         let currentEvents = Array(events.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
         let eventDTOs = currentEvents.toDTOs
         
         await Task.detached(priority: .userInitiated) {
-            print(" [STATS] Running cascade detection on \(eventDTOs.count) events...")
+            SecurityLogger.stats("Running cascade detection on \(eventDTOs.count) events...")
             let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
-            print(" [STATS] Detected \(cascadeEvents.count) cascade events!")
+            SecurityLogger.stats("Detected \(cascadeEvents.count) cascade events!")
             
             await MainActor.run {
-                print(" [STATS]  SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                SecurityLogger.stats("SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                 
                 for existingEvent in self.cascadeEvents {
                     self.modelContext.delete(existingEvent)
@@ -485,9 +485,9 @@ public struct StatisticsView: View {
                 
                 do {
                     try self.modelContext.save()
-                    print(" [STATS]  CASCADE EVENTS SAVED! UI should update now.")
+                    SecurityLogger.stats("CASCADE EVENTS SAVED! UI should update now.")
                 } catch {
-                    print(" [STATS] Failed to save cascade events: \(error)")
+                    SecurityLogger.error("Failed to save cascade events", error: error)
                 }
             }
         }.value
@@ -503,7 +503,7 @@ public struct StatisticsView: View {
     }
 
     private func generateCurrentPredictions() -> [BridgePrediction] {
-        print(" [STATS] Generating current predictions from \(analytics.count) analytics records")
+        SecurityLogger.stats("Generating current predictions from \(analytics.count) analytics records")
         
         var predictions: [BridgePrediction] = []
 
@@ -518,15 +518,15 @@ public struct StatisticsView: View {
             }
         }
 
-        print(" [STATS] Generated \(predictions.count) predictions successfully")
+        SecurityLogger.stats("Generated \(predictions.count) predictions successfully")
         return predictions.sorted { $0.probability > $1.probability }
     }
 
     private func calculateAnalytics() {
-        print(" [STATS] Starting SAFE analytics calculation with \(events.count) events...")
+        SecurityLogger.stats("Starting SAFE analytics calculation with \(events.count) events...")
         
         guard !events.isEmpty else {
-            print(" [STATS] No events available for analytics")
+            SecurityLogger.stats("No events available for analytics")
             return
         }
         
@@ -534,25 +534,25 @@ public struct StatisticsView: View {
 
         let eventDTOs = events.toDTOs
         
-        print(" [STATS] Created \(eventDTOs.count) EventDTOs safely on main thread")
+        SecurityLogger.stats("Created \(eventDTOs.count) EventDTOs safely on main thread")
 
         Task.detached(priority: .userInitiated) { [eventDTOs] in
-            print(" [STATS] Running analytics on background thread with DTOs...")
+            SecurityLogger.stats("Running analytics on background thread with DTOs...")
             
             let limitedEventDTOs = Array(eventDTOs.sorted { $0.openDateTime > $1.openDateTime }.prefix(1000))
-            print(" [STATS] Using \(limitedEventDTOs.count) most recent events for analytics")
+            SecurityLogger.stats("Using \(limitedEventDTOs.count) most recent events for analytics")
             
             do {
                 let newAnalytics = BridgeAnalyticsCalculator.calculateAnalytics(from: limitedEventDTOs)
                 
-                print(" [STATS] Analytics calculation complete on background thread: \(newAnalytics.count) records")
+                SecurityLogger.stats("Analytics calculation complete on background thread: \(newAnalytics.count) records")
 
                 await MainActor.run {
-                    print(" [STATS] Updating UI on main thread...")
+                    SecurityLogger.stats("Updating UI on main thread...")
                     
                     let pendingCascadeEvents = CascadeEventStorage.consumePendingEvents()
                     if !pendingCascadeEvents.isEmpty {
-                        print(" [STATS]  SAVING \(pendingCascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                        SecurityLogger.stats("SAVING \(pendingCascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                         
                         for existingEvent in self.cascadeEvents {
                             self.modelContext.delete(existingEvent)
@@ -564,17 +564,17 @@ public struct StatisticsView: View {
                         
                         do {
                             try self.modelContext.save()
-                            print(" [STATS]  CASCADE EVENTS SAVED SUCCESSFULLY!")
-                            print(" [STATS] Cascade events should now appear in UI")
+                            SecurityLogger.stats("CASCADE EVENTS SAVED SUCCESSFULLY!")
+                            SecurityLogger.stats("Cascade events should now appear in UI")
                         } catch {
-                            print("Failed to save cascade events: \(error)")
+                            SecurityLogger.error("Failed to save cascade events", error: error)
                         }
                     }
                     
                     isCalculating = false
                 }
             } catch {
-                print("Analytics calculation failed: \(error)")
+                SecurityLogger.error("Analytics calculation failed", error: error)
                 await MainActor.run {
                     isCalculating = false
                 }

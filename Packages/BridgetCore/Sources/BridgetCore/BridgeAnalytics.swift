@@ -135,7 +135,7 @@ public struct CascadeDetectionEngine {
     /// Efficient cascade detection using spatial indexing, graph algorithms, and batching
     /// Thread-safe version that accepts EventDTOs for concurrency
     public static func detectCascadeEffects(from eventDTOs: [EventDTO]) -> [CascadeEvent] {
-        print(" [CASCADE] Starting efficient cascade detection for \(eventDTOs.count) events (DTO version)...")
+        SecurityLogger.cascade("Starting efficient cascade detection for \(eventDTOs.count) events (DTO version)...")
         let startTime = Date()
         
         // Convert DTOs to model objects for processing (safe since we're not crossing concurrency boundaries here)
@@ -179,7 +179,7 @@ public struct CascadeDetectionEngine {
         let filteredCascades = filterAndRankCascades(allCascades)
         
         let totalTime = Date().timeIntervalSince(startTime)
-        print(" [CASCADE] Efficient cascade detection complete: \(filteredCascades.count) cascades in \(String(format: "%.2f", totalTime))s")
+        SecurityLogger.cascade("Efficient cascade detection complete: \(filteredCascades.count) cascades in \(String(format: "%.2f", totalTime))s")
         
         return filteredCascades
     }
@@ -187,7 +187,7 @@ public struct CascadeDetectionEngine {
     /// Legacy method for backward compatibility - accepts DrawbridgeEvent models
     /// Use detectCascadeEffects(from: [EventDTO]) for thread-safe concurrency
     public static func detectCascadeEffects(from events: [DrawbridgeEvent]) -> [CascadeEvent] {
-        print(" [CASCADE] Starting efficient cascade detection for \(events.count) events (legacy version)...")
+        SecurityLogger.cascade("Starting efficient cascade detection for \(events.count) events (legacy version)...")
         let startTime = Date()
         
         // Build spatial index and bridge network graph
@@ -217,7 +217,7 @@ public struct CascadeDetectionEngine {
         let filteredCascades = filterAndRankCascades(allCascades)
         
         let totalTime = Date().timeIntervalSince(startTime)
-        print(" [CASCADE] Efficient cascade detection complete: \(filteredCascades.count) cascades in \(String(format: "%.2f", totalTime))s")
+        SecurityLogger.cascade("Efficient cascade detection complete: \(filteredCascades.count) cascades in \(String(format: "%.2f", totalTime))s")
         
         return filteredCascades
     }
@@ -584,7 +584,7 @@ public struct BridgeAnalyticsCalculator {
     
     /// Thread-safe version that accepts EventDTOs for concurrency
     public static func calculateAnalytics(from eventDTOs: [EventDTO]) -> [BridgeAnalytics] {
-        print("📊 Starting optimized analytics calculation for \(eventDTOs.count) events (DTO version)...")
+        SecurityLogger.stats("Starting optimized analytics calculation for \(eventDTOs.count) events (DTO version)...")
         let startTime = Date()
         
         // Convert DTOs to model objects for processing (safe since we're not crossing concurrency boundaries here)
@@ -659,7 +659,7 @@ public struct BridgeAnalyticsCalculator {
         
         let totalTime = Date().timeIntervalSince(startTime)
         let result = Array(analytics.values)
-        print("📊 Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
+        SecurityLogger.stats("Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
         
         return result
     }
@@ -667,7 +667,7 @@ public struct BridgeAnalyticsCalculator {
     /// Legacy method for backward compatibility - accepts DrawbridgeEvent models
     /// Use calculateAnalytics(from: [EventDTO]) for thread-safe concurrency
     public static func calculateAnalytics(from events: [DrawbridgeEvent]) -> [BridgeAnalytics] {
-        print("📊 Starting optimized analytics calculation for \(events.count) events (legacy version)...")
+        SecurityLogger.stats("Starting optimized analytics calculation for \(events.count) events (legacy version)...")
         let startTime = Date()
         
         var analytics: [String: BridgeAnalytics] = [:]
@@ -711,7 +711,7 @@ public struct BridgeAnalyticsCalculator {
             
             processedEvents += 1
             if processedEvents % progressInterval == 0 {
-                print("📊 [PROGRESS] Processed \(processedEvents)/\(events.count) events...")
+                SecurityLogger.stats("Processed \(processedEvents)/\(events.count) events...")
             }
         }
         
@@ -728,7 +728,7 @@ public struct BridgeAnalyticsCalculator {
         
         let totalTime = Date().timeIntervalSince(startTime)
         let result = Array(analytics.values)
-        print("📊 Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
+        SecurityLogger.stats("Analytics calculation complete: \(result.count) records in \(String(format: "%.2f", totalTime))s")
         
         return result
     }
@@ -737,7 +737,7 @@ public struct BridgeAnalyticsCalculator {
     private static func saveCascadeEventsToStorage(_ cascadeEvents: [CascadeEvent]) {
         // This function will be called from the main thread
         // The actual saving will happen in StatisticsView where we have access to modelContext
-        print("📊 [CASCADE SAVE] Prepared \(cascadeEvents.count) cascade events for storage")
+        SecurityLogger.cascade("Prepared \(cascadeEvents.count) cascade events for storage")
         
         // Store cascade events in a global location for StatisticsView to pick up
         CascadeEventStorage.pendingCascadeEvents = cascadeEvents
@@ -1039,7 +1039,7 @@ public struct BridgePrediction {
         if expectedDuration < 1 {
             return "< 1 minute"
         } else if expectedDuration < 60 {
-            return "\(Int(expectedDuration)) minutes"
+            return "\(Int(expectedDuration)) min"
         } else {
             let hours = Int(expectedDuration / 60)
             let minutes = Int(expectedDuration.truncatingRemainder(dividingBy: 60))

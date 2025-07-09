@@ -14,8 +14,8 @@ public struct DrawbridgeAPI {
     /// Fetch drawbridge data from Seattle Open Data API with pagination
     /// Thread-safe version that returns EventDTOs for concurrency
     public static func fetchDrawbridgeData(limit: Int = 50000) async throws -> [EventDTO] {
-        print("🌐 [API] Starting drawbridge data fetch - Target: ALL DATA (~4,113 rows)")
-        print("🌐 [API] Using correct endpoint: \(baseURL)")
+        SecurityLogger.api("Starting drawbridge data fetch - Target: ALL DATA (~4,113 rows)")
+        SecurityLogger.api("Using correct endpoint")
         
         var allEventDTOs: [EventDTO] = []
         var offset = 0
@@ -23,21 +23,21 @@ public struct DrawbridgeAPI {
         let startTime = Date()
         
         while true {
-            print("🌐 [API] Fetching batch \(offset/batchSize + 1) - Offset: \(offset), Limit: \(batchSize)")
+            SecurityLogger.api("Fetching batch \(offset/batchSize + 1) - Offset: \(offset), Limit: \(batchSize)")
             
             let batchEventDTOs = try await fetchBatch(offset: offset, limit: batchSize)
             
             if batchEventDTOs.isEmpty {
-                print("🌐 [API] No more data - stopping pagination")
+                SecurityLogger.api("No more data - stopping pagination")
                 break
             }
             
             allEventDTOs.append(contentsOf: batchEventDTOs)
-            print("🌐 [API] Batch \(offset/batchSize + 1) complete: +\(batchEventDTOs.count) events (Total: \(allEventDTOs.count))")
+            SecurityLogger.api("Batch \(offset/batchSize + 1) complete: +\(batchEventDTOs.count) events (Total: \(allEventDTOs.count))")
             
             // If we got less than batchSize, we've reached the end
             if batchEventDTOs.count < batchSize {
-                print("🌐 [API] Last batch detected (\(batchEventDTOs.count) < \(batchSize)) - stopping")
+                SecurityLogger.api("Last batch detected (\(batchEventDTOs.count) < \(batchSize)) - stopping")
                 break
             }
             
@@ -45,13 +45,13 @@ public struct DrawbridgeAPI {
             
             // Safety limit to prevent infinite loop
             if offset > 10000 {
-                print("🌐 [API WARNING] Safety limit reached at \(offset) - stopping")
+                SecurityLogger.api("Safety limit reached at \(offset) - stopping")
                 break
             }
         }
         
         let fetchTime = Date().timeIntervalSince(startTime)
-        print("🌐 [API] Fetch complete: \(allEventDTOs.count) events in \(String(format: "%.2f", fetchTime))s")
+        SecurityLogger.api("Fetch complete: \(allEventDTOs.count) events in \(String(format: "%.2f", fetchTime))s")
         
         logDataAnalysis(eventDTOs: allEventDTOs)
         return allEventDTOs
@@ -78,23 +78,23 @@ public struct DrawbridgeAPI {
     /// Fetch a single batch with offset
     private static func fetchBatch(offset: Int, limit: Int) async throws -> [EventDTO] {
         guard let url = URL(string: "\(baseURL)?$limit=\(limit)&$offset=\(offset)") else {
-            print("🌐 [API ERROR] Invalid URL: \(baseURL)?$limit=\(limit)&$offset=\(offset)")
+            SecurityLogger.error("Invalid URL for batch fetch", error: URLError(.badURL))
             throw URLError(.badURL)
         }
         
-        print("🌐 [API] Fetching: \(url)")
+        SecurityLogger.api("Fetching batch", url: url)
         
         let (data, response) = try await URLSession.shared.data(from: url)
         
         guard let httpResponse = response as? HTTPURLResponse else {
-            print("🌐 [API ERROR] Invalid response type")
+            SecurityLogger.error("Invalid response type")
             throw URLError(.badServerResponse)
         }
         
-        print("🌐 [API] Response: \(httpResponse.statusCode) - \(httpResponse.url?.absoluteString ?? "unknown")")
+        SecurityLogger.api("Response: \(httpResponse.statusCode)")
         
         guard httpResponse.statusCode == 200 else {
-            print("🌐 [API ERROR] HTTP \(httpResponse.statusCode)")
+            SecurityLogger.error("HTTP \(httpResponse.statusCode)")
             throw URLError(.badServerResponse)
         }
         
@@ -112,9 +112,9 @@ public struct DrawbridgeAPI {
             return eventDTOs
             
         } catch {
-            print("🌐 [API ERROR] JSON parsing failed for batch at offset \(offset): \(error)")
+            SecurityLogger.error("JSON parsing failed for batch at offset \(offset)", error: error)
             if offset == 0 {
-                print("🌐 [API ERROR] Raw data preview: \(String(data: data.prefix(500), encoding: .utf8) ?? "Unable to decode")")
+                SecurityLogger.debug("Raw data preview: \(String(data: data.prefix(500), encoding: .utf8) ?? "Unable to decode")")
             }
             throw error
         }
@@ -122,25 +122,25 @@ public struct DrawbridgeAPI {
     
     /// Log detailed data analysis
     private static func logDataAnalysis(eventDTOs: [EventDTO]) {
-        print("\n🌐 [DATA ANALYSIS] ================")
-        print("🌐 [DATA ANALYSIS] Total Events: \(eventDTOs.count)")
+        SecurityLogger.api("DATA ANALYSIS ================")
+        SecurityLogger.api("Total Events: \(eventDTOs.count)")
         
         if let earliest = eventDTOs.map(\.openDateTime).min(),
            let latest = eventDTOs.map(\.openDateTime).max() {
             let formatter = DateFormatter()
             formatter.dateStyle = .medium
             formatter.timeStyle = .short
-            print("🌐 [DATA ANALYSIS] Date Range: \(formatter.string(from: earliest)) to \(formatter.string(from: latest))")
+            SecurityLogger.api("Date Range: \(formatter.string(from: earliest)) to \(formatter.string(from: latest))")
             
             let timeSpan = latest.timeIntervalSince(earliest) / (24 * 3600)
-            print("🌐 [DATA ANALYSIS] Time Span: \(String(format: "%.1f", timeSpan)) days")
+            SecurityLogger.api("Time Span: \(String(format: "%.1f", timeSpan)) days")
         }
         
         // Bridge breakdown
         let bridgeGroups = Dictionary(grouping: eventDTOs, by: \.entityName)
-        print("🌐 [DATA ANALYSIS] Bridges (\(bridgeGroups.count)):")
+        SecurityLogger.api("Bridges (\(bridgeGroups.count)):")
         for (bridgeName, events) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
-            print("🌐 [DATA ANALYSIS]    • \(bridgeName): \(events.count) events")
+            SecurityLogger.api("    • \(bridgeName): \(events.count) events")
         }
         
         // Time analysis
@@ -149,10 +149,10 @@ public struct DrawbridgeAPI {
         }
         let mostActiveHour = hourDistribution.max(by: { $0.value.count < $1.value.count })
         if let (hour, events) = mostActiveHour {
-            print("🌐 [DATA ANALYSIS] Most active hour: \(hour):00 (\(events.count) events)")
+            SecurityLogger.api("Most active hour: \(hour):00 (\(events.count) events)")
         }
         
-        print("🌐 [DATA ANALYSIS] ================\n")
+        SecurityLogger.api("DATA ANALYSIS ================")
     }
     
     /// Convert API response to EventDTO
@@ -167,7 +167,7 @@ public struct DrawbridgeAPI {
               let latitude = Double(latitudeString),
               let longitudeString = response.longitude,
               let longitude = Double(longitudeString) else {
-            print("🌐 [API WARNING] Skipping event with missing/invalid fields")
+            SecurityLogger.api("Skipping event with missing/invalid fields")
             return nil
         }
         
@@ -199,7 +199,7 @@ public struct DrawbridgeAPI {
         } else if let date = dateFormatter2.date(from: openDateTimeString) {
             openDateTime = date
         } else {
-            print("🌐 [API WARNING] Could not parse date: \(openDateTimeString)")
+            SecurityLogger.api("Could not parse date: \(openDateTimeString)")
             return nil
         }
         

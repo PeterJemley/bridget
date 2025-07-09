@@ -72,43 +72,43 @@ public struct BridgeStatsSection: View {
             calculatePredictions()
         }
         .onChange(of: analysisType) { oldValue, newValue in
-            print(" [PREDICTION] Analysis type changed from \(oldValue) to \(newValue)")
+            SecurityLogger.bridge("Analysis type changed from \(oldValue) to \(newValue)")
             calculatePredictions()
         }
     }
     
     // MARK: - ADD: Prediction Calculation
     private func calculatePredictions() {
-        print(" [PREDICTION] calculatePredictions() called")
-        print(" [PREDICTION] analysisType: \(analysisType)")
-        print(" [PREDICTION] events.count: \(events.count)")
-        print(" [PREDICTION] allEvents.count: \(allEvents.count)")
+        SecurityLogger.bridge("calculatePredictions() called")
+        SecurityLogger.bridge("analysisType: \(analysisType)")
+        SecurityLogger.bridge("events.count: \(events.count)")
+        SecurityLogger.bridge("allEvents.count: \(allEvents.count)")
         
         guard analysisType == .predictions else { 
-            print(" [PREDICTION]  Wrong analysis type: \(analysisType)")
+            SecurityLogger.bridge("Wrong analysis type: \(analysisType)")
             return 
         }
         
         guard !events.isEmpty else { 
-            print(" [PREDICTION]  No events available")
+            SecurityLogger.bridge("No events available")
             return 
         }
         
-        print(" [PREDICTION]  Starting prediction calculation...")
+        SecurityLogger.bridge("Starting prediction calculation...")
         isCalculatingPrediction = true
         
         Task.detached(priority: .userInitiated) {
             do {
                 // Get bridge info from events
                 guard let firstEvent = events.first else { 
-                    print(" [PREDICTION]  No first event found")
+                    SecurityLogger.bridge("No first event found")
                     await MainActor.run {
                         self.isCalculatingPrediction = false
                     }
                     return 
                 }
                 
-                print(" [PREDICTION] Bridge: \(firstEvent.entityName) (ID: \(firstEvent.entityID))")
+                SecurityLogger.bridge("Bridge: \(firstEvent.entityName) (ID: \(firstEvent.entityID))")
                 
                 let bridgeInfo = DrawbridgeInfo(
                     entityID: firstEvent.entityID,
@@ -124,10 +124,10 @@ public struct BridgeStatsSection: View {
                 await MainActor.run {
                     self.currentPrediction = prediction
                     self.isCalculatingPrediction = false
-                    print(" [PREDICTION]  Updated prediction for \(bridgeInfo.entityName): \(prediction?.probabilityText ?? "No Data")")
+                    SecurityLogger.bridge("Updated prediction for \(bridgeInfo.entityName): \(prediction?.probabilityText ?? "No Data")")
                 }
             } catch {
-                print(" [PREDICTION]  Error: \(error)")
+                SecurityLogger.error("Prediction calculation error", error: error)
                 await MainActor.run {
                     self.isCalculatingPrediction = false
                 }
@@ -137,7 +137,7 @@ public struct BridgeStatsSection: View {
     
     // MARK: - REWRITE: Statistical Prediction Calculation
     private func calculateSimplePrediction(for bridge: DrawbridgeInfo, events: [DrawbridgeEvent]) async -> BridgePrediction? {
-        print("📊 [STATS] Statistical prediction for \(bridge.entityName)")
+        SecurityLogger.stats("Statistical prediction for \(bridge.entityName)")
         
         let calendar = Calendar.current
         let now = Date()
@@ -147,7 +147,7 @@ public struct BridgeStatsSection: View {
         // Get all bridge events for analysis
         let bridgeEvents = events.filter { $0.entityID == bridge.entityID }
         
-        print("📊 [STATS] Total bridge events: \(bridgeEvents.count)")
+        SecurityLogger.stats("Total bridge events: \(bridgeEvents.count)")
         
         // STATISTICAL TIME WINDOWS - Use increasingly wider windows until we have sufficient data
         let timeWindows = [
@@ -194,7 +194,7 @@ public struct BridgeStatsSection: View {
                 totalEvents: bridgeEvents.count
             )
             
-            print("📊 [WINDOW] \(windowName): \(windowEvents.count) events, confidence: \(String(format: "%.2f", confidence))")
+            SecurityLogger.stats("WINDOW \(windowName): \(windowEvents.count) events, confidence: \(String(format: "%.2f", confidence))")
             
             // Use the first window with reasonable data
             if windowEvents.count >= 3 || windowName == "alltime" {
@@ -230,7 +230,7 @@ public struct BridgeStatsSection: View {
             currentWeekday: currentWeekday
         )
         
-        print("📊 [FINAL] Window: \(selectedWindow.name), Probability: \(String(format: "%.1f%%", probability * 100)), Confidence: \(String(format: "%.2f", selectedWindow.confidence))")
+        SecurityLogger.stats("FINAL Window: \(selectedWindow.name), Probability: \(String(format: "%.1f%%", probability * 100)), Confidence: \(String(format: "%.2f", selectedWindow.confidence))")
         
         return BridgePrediction(
             bridge: bridge,
@@ -394,7 +394,7 @@ public struct BridgeStatsSection: View {
         
         let systemProbability = averageEventsPerBridge / Double(max(totalPossibleHours, 1))
         
-        print("📊 [SYSTEM] System-wide: \(systemWideEvents.count) events, \(totalBridges) bridges, probability: \(String(format: "%.1f%%", systemProbability * 100))")
+        SecurityLogger.stats("SYSTEM System-wide: \(systemWideEvents.count) events, \(totalBridges) bridges, probability: \(String(format: "%.1f%%", systemProbability * 100))")
         
         return (max(0.01, min(0.30, systemProbability)), 0.4)
     }
@@ -455,7 +455,7 @@ public struct BridgeStatsSection: View {
     
     // MARK: - RESTORED: Utility Functions
     private func calculatePatternBasedProbability(hour: Int, weekday: Int, bridge: DrawbridgeInfo) -> Double {
-        print(" [PATTERN] Using pattern-based probability fallback (insufficient data)")
+        SecurityLogger.bridge("Using pattern-based probability fallback (insufficient data)")
         
         var baseProbability = 0.10 // Conservative default
         
@@ -621,7 +621,7 @@ private func calculateQuickProbability(for events: [DrawbridgeEvent], hour: Int)
         Calendar.current.component(.hour, from: $0.openDateTime) == hour
     }
     
-    print(" [QUICK] Found \(hourlyEvents.count) events at hour \(hour) out of \(events.count) total")
+    SecurityLogger.bridge("Found \(hourlyEvents.count) events at hour \(hour) out of \(events.count) total")
     
     if hourlyEvents.count < 3 {
         return 0.05 

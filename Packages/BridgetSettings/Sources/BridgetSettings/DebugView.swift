@@ -26,6 +26,8 @@ public struct DebugView: View {
     @State private var showingMotionSummary = false
     @State private var motionSummaryText = ""
     
+    @AppStorage("showMotionDebug") private var showMotionDebug = false
+    
     public init() {}
     
     public var body: some View {
@@ -256,7 +258,10 @@ public struct DebugView: View {
                 }
                 .onAppear {
                     loadApiCallCounts()
-                    motionService.startMonitoring()
+                    MotionDetectionService.shared.showMotionDebug = showMotionDebug
+                    if !MotionDetectionService.shared.isMonitoring {
+                        MotionDetectionService.shared.startMonitoring()
+                    }
                 }
                 .onChange(of: events.count) { oldValue, newValue in
                     loadApiCallCounts()
@@ -317,8 +322,16 @@ public struct DebugView: View {
             await MainActor.run {
                 isLoading = true
                 errorMessage = nil
+                // Clear all existing DrawbridgeEvent records before inserting new ones
+                let fetchRequest = FetchDescriptor<DrawbridgeEvent>()
+                if let oldEvents = try? modelContext.fetch(fetchRequest) {
+                    for event in oldEvents {
+                        modelContext.delete(event)
+                    }
+                    try? modelContext.save()
+                    SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData (DebugView)")
+                }
             }
-            
             do {
                 let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 100)
                 
@@ -378,7 +391,7 @@ public struct DebugView: View {
     private func loadApiCallCounts() {
         sessionApiCalls = UserDefaults.standard.integer(forKey: "BridgetSessionAPICallCount")
         totalApiCalls = UserDefaults.standard.integer(forKey: "BridgetAPICallCount")
-        print("🌐 [DEBUG] Loaded API call counts: Session = \(sessionApiCalls), Total = \(totalApiCalls)")
+        SecurityLogger.debug("Loaded API call counts: Session = \(sessionApiCalls), Total = \(totalApiCalls)")
     }
 
     private func incrementApiCallCount() {
@@ -388,14 +401,14 @@ public struct DebugView: View {
         UserDefaults.standard.set(newSessionCount, forKey: "BridgetSessionAPICallCount")
         UserDefaults.standard.set(newTotalCount, forKey: "BridgetAPICallCount")
         
-        print("🌐 [DEBUG] API call count incremented: Session = \(newSessionCount), Total = \(newTotalCount)")
+        SecurityLogger.debug("API call count incremented: Session = \(newSessionCount), Total = \(newTotalCount)")
     }
     
     // TODO: Remove before App Store submission - Traffic Routing Example
     @MainActor
     private func runTrafficRoutingExample() {
         Task {
-            print("🚗 [DEBUG] Starting UW → Space Needle Traffic Routing Example...")
+            SecurityLogger.debug("Starting UW → Space Needle Traffic Routing Example...")
             
             // Create example instance
             let example = TrafficRoutingExample()
@@ -403,9 +416,9 @@ public struct DebugView: View {
             do {
                 // Run the example
                 await example.planUWToSpaceNeedleRoute()
-                print("✅ [DEBUG] Traffic routing example completed successfully!")
+                SecurityLogger.debug("Traffic routing example completed successfully!")
             } catch {
-                print("❌ [DEBUG] Traffic routing example failed: \(error.localizedDescription)")
+                SecurityLogger.error("Traffic routing example failed", error: error)
             }
         }
     }
@@ -414,19 +427,19 @@ public struct DebugView: View {
     
     private func exportMotionData() {
         if let fileURL = motionService.exportMotionData() {
-            print("✅ [DEBUG] Motion data exported to: \(fileURL.path)")
+            SecurityLogger.debug("Motion data exported successfully")
             
             // Show success message
             errorMessage = "Motion data exported successfully to Documents folder"
         } else {
-            print("❌ [DEBUG] Failed to export motion data")
+            SecurityLogger.error("Failed to export motion data")
             errorMessage = "Failed to export motion data"
         }
     }
     
     private func clearMotionData() {
         motionService.clearMotionLogs()
-        print("🗑️ [DEBUG] Motion logs cleared")
+        SecurityLogger.debug("Motion logs cleared")
         errorMessage = "Motion logs cleared"
     }
     

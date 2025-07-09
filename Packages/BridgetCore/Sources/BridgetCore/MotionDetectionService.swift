@@ -76,7 +76,7 @@ public class MotionDetectionService: ObservableObject {
     private let requiredReadingsForStateChange = 3
     
     public init() {
-        print("🚗 [Motion] MotionDetectionService initialized")
+        SecurityLogger.motion("MotionDetectionService initialized")
     }
     
     public static let shared = MotionDetectionService()
@@ -94,7 +94,7 @@ public class MotionDetectionService: ObservableObject {
             startMonitoring()
         }
         
-        print("🚗 [Motion] Polling interval set to \(String(format: "%.2f", pollingInterval))s (\(String(format: "%.1f", 1.0/pollingInterval)) Hz)")
+        SecurityLogger.motion("Polling interval set to \(String(format: "%.2f", pollingInterval))s (\(String(format: "%.1f", 1.0/pollingInterval)) Hz)")
     }
     
     /// Enables or disables high detail mode
@@ -111,7 +111,7 @@ public class MotionDetectionService: ObservableObject {
         let currentInterval = enabled ? highDetailInterval : pollingInterval
         let currentRate = 1.0 / currentInterval
         
-        print("🚗 [Motion] High detail mode \(enabled ? "enabled" : "disabled") - \(String(format: "%.1f", currentRate)) Hz polling")
+        SecurityLogger.motion("High detail mode \(enabled ? "enabled" : "disabled") - \(String(format: "%.1f", currentRate)) Hz polling")
     }
     
     /// Gets the current effective polling interval
@@ -126,14 +126,14 @@ public class MotionDetectionService: ObservableObject {
     
     public func startMonitoring() {
         guard motionManager.isAccelerometerAvailable else {
-            print("❌ [Motion] Accelerometer not available")
+            SecurityLogger.error("Accelerometer not available")
             return
         }
         
         let interval = currentPollingInterval
         let rate = currentPollingRate
         
-        print("🚗 [Motion] Starting motion monitoring at \(String(format: "%.1f", rate)) Hz...")
+        SecurityLogger.motion("Starting motion monitoring at \(String(format: "%.1f", rate)) Hz...")
         
         motionManager.accelerometerUpdateInterval = interval
         motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
@@ -150,11 +150,11 @@ public class MotionDetectionService: ObservableObject {
         }
         
         isMonitoring = true
-        print("🚗 [Motion] Motion monitoring started at \(String(format: "%.1f", rate)) Hz")
+        SecurityLogger.motion("Motion monitoring started at \(String(format: "%.1f", rate)) Hz")
     }
     
     public func stopMonitoring() {
-        print("🚗 [Motion] Stopping motion monitoring...")
+        SecurityLogger.motion("Stopping motion monitoring...")
         
         motionManager.stopAccelerometerUpdates()
         motionManager.stopDeviceMotionUpdates()
@@ -165,7 +165,7 @@ public class MotionDetectionService: ObservableObject {
         heading = 0.0
         acceleration = 0.0
         
-        print("🚗 [Motion] Motion monitoring stopped")
+        SecurityLogger.motion("Motion monitoring stopped")
     }
     
     private func processAccelerometerData(_ data: CMAccelerometerData) {
@@ -202,7 +202,7 @@ public class MotionDetectionService: ObservableObject {
                 let oldState = vehicleState
                 vehicleState = newState
                 
-                print("🚗 [Motion] State changed: \(oldState.rawValue) → \(newState.rawValue)")
+                SecurityLogger.motion("State changed: \(oldState.rawValue) → \(newState.rawValue)")
                 
                 // Post notifications for state changes
                 if newState == .inVehicle && oldState != .inVehicle {
@@ -245,7 +245,7 @@ public class MotionDetectionService: ObservableObject {
         
         // Log traffic-related events
         if isDecelerating && vehicleState == .inVehicle {
-            print("🚗 [Motion] Detected potential traffic slowdown - deceleration: \(String(format: "%.2f", groundAccelerationMagnitude)) m/s²")
+            SecurityLogger.motion("Detected potential traffic slowdown - deceleration: \(String(format: "%.2f", groundAccelerationMagnitude)) m/s²")
         }
         
         // Log motion data for analysis (with device motion data)
@@ -315,13 +315,13 @@ public class MotionDetectionService: ObservableObject {
         }
         
         // Log to console for real-time monitoring
-        print("🚗 [Motion] Logged: \(entry.vehicleState.rawValue) | Speed: \(String(format: "%.1f", entry.speed)) m/s | Acceleration: \(String(format: "%.2f", entry.acceleration)) m/s² | Traffic: \(entry.trafficCondition.rawValue)")
+        SecurityLogger.motion("Logged: \(entry.vehicleState.rawValue) | Speed: \(String(format: "%.1f", entry.speed)) m/s | Acceleration: \(String(format: "%.2f", entry.acceleration)) m/s² | Traffic: \(entry.trafficCondition.rawValue)")
     }
     
     /// Exports motion data to a JSON file
     public func exportMotionData() -> URL? {
         guard !motionLogs.isEmpty else {
-            print("❌ [Motion] No motion data to export")
+            SecurityLogger.error("No motion data to export")
             return nil
         }
         
@@ -341,11 +341,11 @@ public class MotionDetectionService: ObservableObject {
             
             try data.write(to: fileURL)
             
-            print("✅ [Motion] Exported \(motionLogs.count) motion entries to: \(fileURL.path)")
+            SecurityLogger.motion("Exported \(motionLogs.count) motion entries")
             return fileURL
             
         } catch {
-            print("❌ [Motion] Failed to export motion data: \(error)")
+            SecurityLogger.error("Failed to export motion data", error: error)
             return nil
         }
     }
@@ -353,7 +353,7 @@ public class MotionDetectionService: ObservableObject {
     /// Clears all logged motion data
     public func clearMotionLogs() {
         motionLogs.removeAll()
-        print("🗑️ [Motion] Cleared all motion logs")
+        SecurityLogger.motion("Cleared all motion logs")
     }
     
     /// Returns summary statistics of logged motion data

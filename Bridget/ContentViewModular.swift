@@ -107,11 +107,11 @@ struct ContentViewModular: View {
             await loadInitialDataIfNeeded()
         }
         .onAppear {
-            print("🏠 [MAIN] ContentView appeared - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count)")
+            SecurityLogger.main("ContentView appeared - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count)")
             
             // Start motion detection monitoring
             motionService.startMonitoring()
-            print("🏠 [MAIN] Motion detection monitoring started")
+            SecurityLogger.main("Motion detection monitoring started")
             
             // IMPROVED: Always check for bridge info sync on appear
             Task {
@@ -120,17 +120,17 @@ struct ContentViewModular: View {
         }
         .onChange(of: allEvents.count) { oldCount, newCount in
             // FIXED: Trigger bridge info sync when events change
-            print("🏠 [MAIN] Events count changed: \(oldCount) → \(newCount)")
+            SecurityLogger.main("Events count changed: \(oldCount) → \(newCount)")
             
             if newCount > 0 && bridgeInfo.count == 0 && !bridgeInfoSyncInProgress {
-                print("🏠 [MAIN] Events loaded but no bridge info - triggering sync...")
+                SecurityLogger.main("Events loaded but no bridge info - triggering sync...")
                 Task {
                     await ensureBridgeInfoSynchronized()
                 }
             }
         }
         .refreshable {
-            print("🏠 [MAIN] Manual refresh triggered")
+            SecurityLogger.main("Manual refresh triggered")
             await forceDataRefresh()
         }
     }
@@ -144,23 +144,23 @@ struct ContentViewModular: View {
         UserDefaults.standard.set(currentSessionCount, forKey: "BridgetSessionAPICallCount")
         UserDefaults.standard.set(totalCount, forKey: "BridgetAPICallCount")
         
-        print("🌐 [API TRACKING] API call count updated: Session = \(currentSessionCount), Total = \(totalCount)")
+        SecurityLogger.api("API call count updated: Session = \(currentSessionCount), Total = \(totalCount)")
     }
     
     // IMPROVED: Dedicated bridge info synchronization function
     private func ensureBridgeInfoSynchronized() async {
         guard !events.isEmpty else {
-            print("🏠 [SYNC] No events available for bridge info sync")
+            SecurityLogger.sync("No events available for bridge info sync")
             return
         }
         
         guard bridgeInfo.isEmpty else {
-            print("🏠 [SYNC] Bridge info already exists (\(bridgeInfo.count) bridges)")
+            SecurityLogger.sync("Bridge info already exists (\(bridgeInfo.count) bridges)")
             return
         }
         
         guard !bridgeInfoSyncInProgress else {
-            print("🏠 [SYNC] Bridge info sync already in progress")
+            SecurityLogger.sync("Bridge info sync already in progress")
             return
         }
         
@@ -168,8 +168,8 @@ struct ContentViewModular: View {
             bridgeInfoSyncInProgress = true
         }
         
-        print("🏠 [SYNC] Starting bridge info synchronization...")
-        print("🏠 [SYNC] Have \(events.count) events, \(bridgeInfo.count) bridge info records")
+        SecurityLogger.sync("Starting bridge info synchronization...")
+        SecurityLogger.sync("Have \(events.count) events, \(bridgeInfo.count) bridge info records")
         
         await MainActor.run {
             createBridgeInfoFromEvents()
@@ -177,15 +177,15 @@ struct ContentViewModular: View {
             // CRITICAL: Force save and wait for completion
             do {
                 try modelContext.save()
-                print("🏠 [SYNC] ✅ Bridge info saved to SwiftData")
+                SecurityLogger.sync("✅ Bridge info saved to SwiftData")
                 
                 // Give SwiftData time to update @Query
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
                     bridgeInfoSyncInProgress = false
-                    print("🏠 [SYNC] ✅ Bridge info sync completed - Final count: \(bridgeInfo.count)")
+                    SecurityLogger.sync("✅ Bridge info sync completed - Final count: \(bridgeInfo.count)")
                 }
             } catch {
-                print("❌ [SYNC ERROR] Failed to save bridge info: \(error)")
+                SecurityLogger.error("Failed to save bridge info", error: error)
                 bridgeInfoSyncInProgress = false
             }
         }
@@ -193,10 +193,10 @@ struct ContentViewModular: View {
     
     // Initial data loading function
     private func loadInitialDataIfNeeded() async {
-        print("🏠 [MAIN] Data check - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
+        SecurityLogger.main("Data check - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
         
         guard events.isEmpty else { 
-            print("🏠 [MAIN] Skipping data load - already have \(events.count) events")
+            SecurityLogger.main("Skipping data load - already have \(events.count) events")
             
             // IMPROVED: Use dedicated sync function
             await ensureBridgeInfoSynchronized()
@@ -207,7 +207,7 @@ struct ContentViewModular: View {
     }
     
     private func loadNewData() async {
-        print("🏠 [MAIN] Starting data load...")
+        SecurityLogger.main("Starting data load...")
         
         await MainActor.run {
             isLoadingInitialData = true
@@ -216,12 +216,15 @@ struct ContentViewModular: View {
         }
         
         do {
-            print("🏠 [MAIN] Calling DrawbridgeAPI.fetchDrawbridgeData...")
+            SecurityLogger.main("Calling DrawbridgeAPI.fetchDrawbridgeData...");
+
+            // Use the reusable clearing function
+            clearAllDrawbridgeEvents()
             
             // Using modular DrawbridgeAPI from BridgetNetworking - get all available data
             let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10000)
             
-            print("🏠 [MAIN] 🎯 API RETURNED \(fetchedEventDTOs.count) EVENTS")
+            SecurityLogger.main("🎯 API RETURNED \(fetchedEventDTOs.count) EVENTS")
             
             // FIXED: Track the API call that just completed successfully
             await MainActor.run {
@@ -247,9 +250,9 @@ struct ContentViewModular: View {
             // CRITICAL: Save events first, then create bridge info
             do {
                 try modelContext.save()
-                print("🏠 [MAIN] ✅ Events saved to SwiftData")
+                SecurityLogger.main("✅ Events saved to SwiftData")
             } catch {
-                print("❌ [MAIN ERROR] Failed to save events: \(error)")
+                SecurityLogger.error("Failed to save events", error: error)
                 await MainActor.run {
                     dataFetchError = error.localizedDescription
                     isLoadingInitialData = false
@@ -260,9 +263,9 @@ struct ContentViewModular: View {
             
             // Log per-bridge event counts
             let bridgeGroups = Dictionary(grouping: events, by: \.entityName)
-            print("🏠 [MAIN] 📈 BRIDGE BREAKDOWN:")
+            SecurityLogger.main("📈 BRIDGE BREAKDOWN:")
             for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
-                print("🏠 [MAIN]    • \(bridgeName): \(bridgeEvents.count) events")
+                SecurityLogger.main("    • \(bridgeName): \(bridgeEvents.count) events")
             }
             
             await MainActor.run {
@@ -270,14 +273,14 @@ struct ContentViewModular: View {
                 isLoadingInitialData = false
             }
             
-            print("🏠 [MAIN] ✅ DATA LOAD COMPLETE")
-            print("🏠 [MAIN] 🎯 FINAL STATS: \(events.count) total events across \(bridgeGroups.count) bridges")
+            SecurityLogger.main("✅ DATA LOAD COMPLETE")
+            SecurityLogger.main("🎯 FINAL STATS: \(events.count) total events across \(bridgeGroups.count) bridges")
             
             // IMPROVED: Bridge info creation happens after events are saved
             await ensureBridgeInfoSynchronized()
             
         } catch {
-            print("❌ [MAIN ERROR] Data load failed: \(error)")
+            SecurityLogger.error("Data load failed", error: error)
             
             // FIXED: Track failed API calls too
             await MainActor.run {
@@ -289,13 +292,30 @@ struct ContentViewModular: View {
         }
     }
     
+    // Add this reusable function near other private methods
+    private func clearAllDrawbridgeEvents() {
+        Task { @MainActor in
+            do {
+                let fetchRequest = FetchDescriptor<DrawbridgeEvent>()
+                let oldEvents = try modelContext.fetch(fetchRequest)
+                for event in oldEvents {
+                    modelContext.delete(event)
+                }
+                try modelContext.save()
+                SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData")
+            } catch {
+                SecurityLogger.error("Failed to clear old events", error: error)
+            }
+        }
+    }
+    
     // SIMPLIFIED: Bridge info creation function (must run on MainActor)
     @MainActor
     private func createBridgeInfoFromEvents() {
-        print("🏗️ [BRIDGE INFO] Starting bridge info creation...")
+        SecurityLogger.bridge("Starting bridge info creation...")
         
         let uniqueBridges = DrawbridgeEvent.getUniqueBridges(events)
-        print("🏗️ [BRIDGE INFO] Found \(uniqueBridges.count) unique bridges from \(events.count) events")
+        SecurityLogger.bridge("Found \(uniqueBridges.count) unique bridges from \(events.count) events")
         
         var createdCount = 0
         
@@ -304,7 +324,7 @@ struct ContentViewModular: View {
             let existingInfo = bridgeInfo.first { $0.entityID == bridgeData.entityID }
             
             if existingInfo == nil {
-                print("🏗️ [BRIDGE INFO] Creating new info for \(bridgeData.entityName) (ID: \(bridgeData.entityID))")
+                SecurityLogger.bridge("Creating new info for \(bridgeData.entityName) (ID: \(bridgeData.entityID))")
                 
                 // Get all events for this specific bridge
                 let allBridgeEvents = events.filter { $0.entityID == bridgeData.entityID }
@@ -330,18 +350,18 @@ struct ContentViewModular: View {
                 modelContext.insert(newBridgeInfo)
                 createdCount += 1
                 
-                print("🏗️ [BRIDGE INFO] ✅ Created \(bridgeData.entityName): \(allBridgeEvents.count) events, avg \(String(format: "%.1f", newBridgeInfo.averageOpenTimeMinutes))min")
+                SecurityLogger.bridge("✅ Created \(bridgeData.entityName): \(allBridgeEvents.count) events, avg \(String(format: "%.1f", newBridgeInfo.averageOpenTimeMinutes))min")
             } else {
-                print("🏗️ [BRIDGE INFO] Bridge info already exists for \(bridgeData.entityName)")
+                SecurityLogger.bridge("Bridge info already exists for \(bridgeData.entityName)")
             }
         }
         
-        print("🏗️ [BRIDGE INFO] ✅ Bridge info creation complete - Created: \(createdCount) new records")
+        SecurityLogger.bridge("✅ Bridge info creation complete - Created: \(createdCount) new records")
     }
     
     // IMPROVED: Force refresh with proper synchronization and API tracking
     public func forceDataRefresh() async {
-        print("🏠 [MAIN] 🔄 Force refresh initiated")
+        SecurityLogger.main("🔄 Force refresh initiated")
         
         await MainActor.run {
             initialDataLoaded = false

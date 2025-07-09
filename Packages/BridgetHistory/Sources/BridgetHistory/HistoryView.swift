@@ -141,32 +141,32 @@ public struct HistoryView: View {
                     .foregroundColor(.secondary)
                     .onAppear {
                         // ENHANCED: Debug logging for event count verification
-                        print("📊 [HISTORY] Event Count Verification:")
-                        print("📊 [HISTORY] Selected Time Range: \(selectedTimeRange.displayName) (\(selectedTimeRange.value) days)")
-                        print("📊 [HISTORY] Total Events Available: \(events.count)")
-                        print("📊 [HISTORY] Filtered Events: \(filteredEvents.count)")
-                        print("📊 [HISTORY] Selected Bridge: \(selectedBridge?.entityName ?? "All Bridges")")
+                        SecurityLogger.stats("Event Count Verification:")
+                        SecurityLogger.stats("Selected Time Range: \(selectedTimeRange.displayName) (\(selectedTimeRange.value) days)")
+                        SecurityLogger.stats("Total Events Available: \(events.count)")
+                        SecurityLogger.stats("Filtered Events: \(filteredEvents.count)")
+                        SecurityLogger.stats("Selected Bridge: \(selectedBridge?.entityName ?? "All Bridges")")
                         
                         // Verify time range calculation
                         let cutoffDate = Calendar.current.date(byAdding: selectedTimeRange.dateComponent, value: -selectedTimeRange.value, to: Date()) ?? Date.distantPast
-                        print("📊 [HISTORY] Cutoff Date: \(cutoffDate.formatted())")
-                        print("📊 [HISTORY] Current Date: \(Date().formatted())")
+                        SecurityLogger.stats("Cutoff Date: \(cutoffDate.formatted())")
+                        SecurityLogger.stats("Current Date: \(Date().formatted())")
                         
                         // Sample recent events for verification
                         let recentSample = events.sorted { $0.openDateTime > $1.openDateTime }.prefix(5)
-                        print("📊 [HISTORY] Recent Events Sample:")
+                        SecurityLogger.stats("Recent Events Sample:")
                         for (index, event) in recentSample.enumerated() {
-                            print("📊 [HISTORY]   \(index + 1). \(event.entityName) - \(event.openDateTime.formatted())")
+                            SecurityLogger.stats("  \(index + 1). \(event.entityName) - \(event.openDateTime.formatted())")
                         }
                         
                         // Verify 30-day calculation specifically
                         if selectedTimeRange == .month {
                             let thirtyDaysAgo = Calendar.current.date(byAdding: .day, value: -30, to: Date()) ?? Date.distantPast
                             let last30DaysEvents = events.filter { $0.openDateTime >= thirtyDaysAgo }
-                            print("📊 [HISTORY] 🎯 30-DAY VERIFICATION:")
-                            print("📊 [HISTORY] Events in last 30 days: \(last30DaysEvents.count)")
-                            print("📊 [HISTORY] That's \(Double(last30DaysEvents.count) / 30.0) events per day average")
-                            print("📊 [HISTORY] Unique bridges in 30 days: \(Set(last30DaysEvents.map(\.entityID)).count)")
+                            SecurityLogger.stats("🎯 30-DAY VERIFICATION:")
+                            SecurityLogger.stats("Events in last 30 days: \(last30DaysEvents.count)")
+                            SecurityLogger.stats("That's \(Double(last30DaysEvents.count) / 30.0) events per day average")
+                            SecurityLogger.stats("Unique bridges in 30 days: \(Set(last30DaysEvents.map(\.entityID)).count)")
                         }
                     }
             }

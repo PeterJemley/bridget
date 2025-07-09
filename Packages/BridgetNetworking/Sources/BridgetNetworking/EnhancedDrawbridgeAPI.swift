@@ -68,11 +68,11 @@ public actor EnhancedDrawbridgeAPI {
     
     /// Fetch drawbridge data with enhanced error handling and caching
     public func fetchDrawbridgeData(limit: Int = 50000) async throws -> [EventDTO] {
-        print("🌐 [ENHANCED API] Starting enhanced drawbridge data fetch")
+        SecurityLogger.api("Starting enhanced drawbridge data fetch")
         
         // Check cache first
         if let cachedData = getCachedData() {
-            print("🌐 [ENHANCED API] Returning cached data: \(cachedData.events.count) events")
+            SecurityLogger.api("Returning cached data: \(cachedData.events.count) events")
             return cachedData.events
         }
         
@@ -82,38 +82,38 @@ public actor EnhancedDrawbridgeAPI {
         // Cache the results
         cacheData(events)
         
-        print("🌐 [ENHANCED API] Fetch complete: \(events.count) events")
+        SecurityLogger.api("Fetch complete: \(events.count) events")
         return events
     }
     
     /// Fetch data for a specific bridge
     public func fetchBridgeData(bridgeID: Int, limit: Int = 1000) async throws -> [EventDTO] {
-        print("🌐 [ENHANCED API] Fetching data for bridge ID: \(bridgeID)")
+        SecurityLogger.api("Fetching data for bridge ID: \(bridgeID)")
         
         let allEvents = try await fetchDrawbridgeData(limit: limit)
         let bridgeEvents = allEvents.filter { $0.entityID == bridgeID }
         
-        print("🌐 [ENHANCED API] Found \(bridgeEvents.count) events for bridge \(bridgeID)")
+        SecurityLogger.api("Found \(bridgeEvents.count) events for bridge \(bridgeID)")
         return bridgeEvents
     }
     
     /// Fetch data for a specific time range
     public func fetchDataInRange(from startDate: Date, to endDate: Date, limit: Int = 10000) async throws -> [EventDTO] {
-        print("🌐 [ENHANCED API] Fetching data from \(startDate) to \(endDate)")
+        SecurityLogger.api("Fetching data from \(startDate) to \(endDate)")
         
         let allEvents = try await fetchDrawbridgeData(limit: limit)
         let filteredEvents = allEvents.filter { event in
             event.openDateTime >= startDate && event.openDateTime <= endDate
         }
         
-        print("🌐 [ENHANCED API] Found \(filteredEvents.count) events in date range")
+        SecurityLogger.api("Found \(filteredEvents.count) events in date range")
         return filteredEvents
     }
     
     /// Clear the cache
     public func clearCache() {
         cache.removeAllObjects()
-        print("🌐 [ENHANCED API] Cache cleared")
+        SecurityLogger.api("Cache cleared")
     }
     
     /// Get cache statistics
@@ -141,16 +141,16 @@ public actor EnhancedDrawbridgeAPI {
                 let batchEvents = try await fetchBatchWithRetry(offset: offset, limit: configuration.batchSize)
                 
                 if batchEvents.isEmpty {
-                    print("🌐 [ENHANCED API] No more data - stopping pagination")
+                    SecurityLogger.api("No more data - stopping pagination")
                     break
                 }
                 
                 allEvents.append(contentsOf: batchEvents)
-                print("🌐 [ENHANCED API] Batch \(offset/configuration.batchSize + 1) complete: +\(batchEvents.count) events (Total: \(allEvents.count))")
+                SecurityLogger.api("Batch \(offset/configuration.batchSize + 1) complete: +\(batchEvents.count) events (Total: \(allEvents.count))")
                 
                 // If we got less than batchSize, we've reached the end
                 if batchEvents.count < configuration.batchSize {
-                    print("🌐 [ENHANCED API] Last batch detected (\(batchEvents.count) < \(configuration.batchSize)) - stopping")
+                    SecurityLogger.api("Last batch detected (\(batchEvents.count) < \(configuration.batchSize)) - stopping")
                     break
                 }
                 
@@ -159,7 +159,7 @@ public actor EnhancedDrawbridgeAPI {
                 
                 // Safety limit to prevent infinite loop
                 if offset > 10000 {
-                    print("🌐 [ENHANCED API WARNING] Safety limit reached at \(offset) - stopping")
+                    SecurityLogger.api("Safety limit reached at \(offset) - stopping")
                     break
                 }
                 
@@ -169,7 +169,7 @@ public actor EnhancedDrawbridgeAPI {
                     throw APIError.maxRetriesExceeded(error: error)
                 }
                 
-                print("🌐 [ENHANCED API] Batch failed, retrying (\(retryCount)/\(configuration.maxRetries)): \(error)")
+                SecurityLogger.api("Batch failed, retrying (\(retryCount)/\(configuration.maxRetries)): \(error)")
                 
                 // Exponential backoff
                 try await Task.sleep(nanoseconds: UInt64(pow(2.0, Double(retryCount))) * 1_000_000_000)
@@ -187,7 +187,7 @@ public actor EnhancedDrawbridgeAPI {
                 return try await fetchBatch(offset: offset, limit: limit)
             } catch {
                 lastError = error
-                print("🌐 [ENHANCED API] Attempt \(attempt) failed: \(error)")
+                SecurityLogger.api("Attempt \(attempt) failed: \(error)")
                 
                 if attempt < configuration.maxRetries {
                     // Exponential backoff
@@ -205,7 +205,7 @@ public actor EnhancedDrawbridgeAPI {
             throw APIError.invalidURL
         }
         
-        print("🌐 [ENHANCED API] Fetching: \(url)")
+        SecurityLogger.api("Fetching", url: url)
         
         let request = URLRequest(url: url)
         let (data, response) = try await session.data(for: request)
@@ -214,7 +214,7 @@ public actor EnhancedDrawbridgeAPI {
             throw APIError.invalidResponse
         }
         
-        print("🌐 [ENHANCED API] Response: \(httpResponse.statusCode)")
+        SecurityLogger.api("Response: \(httpResponse.statusCode)")
         
         guard httpResponse.statusCode == 200 else {
             throw APIError.httpError(statusCode: httpResponse.statusCode)
@@ -227,9 +227,9 @@ public actor EnhancedDrawbridgeAPI {
             return eventDTOs
             
         } catch {
-            print("🌐 [ENHANCED API] JSON parsing failed: \(error)")
+            SecurityLogger.error("JSON parsing failed", error: error)
             if offset == 0 {
-                print("🌐 [ENHANCED API] Raw data preview: \(String(data: data.prefix(500), encoding: .utf8) ?? "Unable to decode")")
+                SecurityLogger.debug("Raw data preview: \(String(data: data.prefix(500), encoding: .utf8) ?? "Unable to decode")")
             }
             throw APIError.parsingError(error: error)
         }
@@ -246,14 +246,14 @@ public actor EnhancedDrawbridgeAPI {
               let latitude = Double(latitudeString),
               let longitudeString = response.longitude,
               let longitude = Double(longitudeString) else {
-            print("🌐 [ENHANCED API WARNING] Skipping event with missing/invalid fields")
+            SecurityLogger.api("Skipping event with missing/invalid fields")
             return nil
         }
         
         // Parse open date with multiple format support
         let openDateTime = parseDate(openDateTimeString)
         guard let openDateTime = openDateTime else {
-            print("🌐 [ENHANCED API WARNING] Could not parse open date: \(openDateTimeString)")
+            SecurityLogger.api("Could not parse open date: \(openDateTimeString)")
             return nil
         }
         
@@ -331,7 +331,7 @@ public actor EnhancedDrawbridgeAPI {
         
         let age = Date().timeIntervalSince(cachedData.timestamp)
         if age > configuration.cacheTimeout {
-            print("🌐 [ENHANCED API] Cache expired, age: \(age)s")
+            SecurityLogger.api("Cache expired, age: \(age)s")
             cache.removeObject(forKey: key)
             return nil
         }
@@ -343,7 +343,7 @@ public actor EnhancedDrawbridgeAPI {
         let key = "drawbridge_data" as NSString
         let cachedData = CachedData(events: events, timestamp: Date())
         cache.setObject(cachedData, forKey: key)
-        print("🌐 [ENHANCED API] Cached \(events.count) events")
+        SecurityLogger.api("Cached \(events.count) events")
     }
 }
 

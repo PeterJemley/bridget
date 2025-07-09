@@ -1026,18 +1026,18 @@ public struct DynamicAnalysisSection: View {
     
     // MARK: - Cascade detection function for bridge detail views
     private func forceCascadeDetectionForDetail() async {
-        print(" [BRIDGE DETAIL]  FORCING CASCADE DETECTION...")
+        SecurityLogger.bridge("FORCING CASCADE DETECTION...")
         
         let currentEvents = Array(allEvents.sorted { $0.openDateTime > $1.openDateTime }.prefix(500))
         let eventDTOs = currentEvents.toDTOs
         
         await Task.detached(priority: .userInitiated) {
-            print(" [BRIDGE DETAIL] Running cascade detection on \(eventDTOs.count) events...")
+            SecurityLogger.bridge("Running cascade detection on \(eventDTOs.count) events...")
             let cascadeEvents = CascadeDetectionEngine.detectCascadeEffects(from: eventDTOs)
-            print(" [BRIDGE DETAIL] Detected \(cascadeEvents.count) cascade events!")
+            SecurityLogger.bridge("Detected \(cascadeEvents.count) cascade events!")
             
             await MainActor.run {
-                print(" [BRIDGE DETAIL]  SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
+                SecurityLogger.bridge("SAVING \(cascadeEvents.count) CASCADE EVENTS TO SWIFTDATA")
                 
                 for existingEvent in self.cascadeEvents {
                     self.modelContext.delete(existingEvent)
@@ -1049,9 +1049,9 @@ public struct DynamicAnalysisSection: View {
                 
                 do {
                     try self.modelContext.save()
-                    print(" [BRIDGE DETAIL]  CASCADE EVENTS SAVED! UI should update now.")
+                    SecurityLogger.bridge("CASCADE EVENTS SAVED! UI should update now.")
                 } catch {
-                    print(" [BRIDGE DETAIL] Failed to save cascade events: \(error)")
+                    SecurityLogger.error("Failed to save cascade events", error: error)
                 }
             }
         }.value
