@@ -7,6 +7,7 @@
 ## 📋 **Version History**
 - **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, updated current status (4900 events, 7 bridges), enhanced documentation
 - **v1.0.0** (July 7, 2025): Initial project overview and feature documentation
+- **v1.1.0** (July 8, 2025): Added motion detection integration, API documentation generator, enhanced modularization
 
 **Bridget** is an intelligent iOS app for monitoring Seattle drawbridge openings, predicting traffic patterns, and planning smarter routes. Powered by AI and a modular Swift architecture, Bridget helps commuters, cyclists, and travelers avoid bridge delays and get to their destinations on time.
 

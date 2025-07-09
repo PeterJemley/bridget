@@ -102,6 +102,9 @@ let enhancedPrediction = predictionEngine.generatePredictions(
 - **Speed estimation** from device motion
 - **Heading calculation** from device orientation
 - **Rush hour detection** for context-aware predictions
+- **Configurable polling intervals** (1 Hz to 20 Hz)
+- **High detail mode** (10 Hz polling)
+- **Motion data export** for analysis
 
 ### **Enhanced Prediction Engine**
 - **Context adjustments** based on user state

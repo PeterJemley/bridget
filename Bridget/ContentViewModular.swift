@@ -32,6 +32,9 @@ struct ContentViewModular: View {
     @State private var bridgeInfoSyncInProgress = false
     @State private var lastRefreshDate: Date?
     
+    // Motion Detection Service
+    @StateObject private var motionService = MotionDetectionService()
+    
     private var events: [DrawbridgeEvent] {
         return allEvents 
     }
@@ -40,7 +43,7 @@ struct ContentViewModular: View {
         ZStack {
             TabView {
                 // Dashboard Tab - Using modular DashboardView
-                DashboardView(events: events, bridgeInfo: bridgeInfo)
+                DashboardView(events: events, bridgeInfo: bridgeInfo, motionService: motionService)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")
@@ -92,6 +95,10 @@ struct ContentViewModular: View {
         }
         .onAppear {
             print("🏠 [MAIN] ContentView appeared - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count)")
+            
+            // Start motion detection monitoring
+            motionService.startMonitoring()
+            print("🏠 [MAIN] Motion detection monitoring started")
             
             // IMPROVED: Always check for bridge info sync on appear
             Task {

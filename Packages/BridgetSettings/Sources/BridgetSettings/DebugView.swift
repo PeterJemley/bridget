@@ -21,6 +21,9 @@ public struct DebugView: View {
     @State private var lastRefresh: Date?
     @State private var sessionApiCalls = 0
     @State private var totalApiCalls = 0
+    @State private var motionService = MotionDetectionService()
+    @State private var showingMotionSummary = false
+    @State private var motionSummaryText = ""
     
     public init() {}
     
@@ -142,6 +145,102 @@ public struct DebugView: View {
                     }
                     .foregroundColor(.blue)
                 }
+                
+                Section("Motion Data") {
+                    HStack {
+                        Text("Logged Entries")
+                        Spacer()
+                        Text("\(motionService.loggedEntriesCount)")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("Polling Rate")
+                        Spacer()
+                        Text("\(String(format: "%.1f", motionService.currentPollingRate)) Hz")
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    HStack {
+                        Text("High Detail Mode")
+                        Spacer()
+                        Toggle("", isOn: Binding(
+                            get: { motionService.isHighDetailMode },
+                            set: { motionService.setHighDetailMode($0) }
+                        ))
+                    }
+                    
+                    Button(action: exportMotionData) {
+                        HStack {
+                            Image(systemName: "square.and.arrow.up")
+                            Text("Export Motion Data")
+                        }
+                    }
+                    .disabled(motionService.loggedEntriesCount == 0)
+                    
+                    Button(action: clearMotionData) {
+                        HStack {
+                            Image(systemName: "trash")
+                            Text("Clear Motion Logs")
+                        }
+                    }
+                    .foregroundColor(.red)
+                    .disabled(motionService.loggedEntriesCount == 0)
+                    
+                    if motionService.loggedEntriesCount > 0 {
+                        Button(action: showMotionSummary) {
+                            HStack {
+                                Image(systemName: "chart.bar")
+                                Text("Show Motion Summary")
+                            }
+                        }
+                        .foregroundColor(.blue)
+                    }
+                }
+                
+                Section("Motion Configuration") {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Polling Interval")
+                            .font(.headline)
+                        
+                        HStack {
+                            Text("Current:")
+                            Spacer()
+                            Text("\(String(format: "%.2f", motionService.pollingInterval))s")
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        VStack(spacing: 8) {
+                            Button("1 Hz (1.0s) - Battery Efficient") {
+                                motionService.setPollingInterval(1.0)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(motionService.pollingInterval == 1.0)
+                            
+                            Button("5 Hz (0.2s) - Balanced") {
+                                motionService.setPollingInterval(0.2)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(motionService.pollingInterval == 0.2)
+                            
+                            Button("10 Hz (0.1s) - High Detail") {
+                                motionService.setPollingInterval(0.1)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(motionService.pollingInterval == 0.1)
+                            
+                            Button("20 Hz (0.05s) - Maximum") {
+                                motionService.setPollingInterval(0.05)
+                            }
+                            .buttonStyle(.bordered)
+                            .disabled(motionService.pollingInterval == 0.05)
+                        }
+                        
+                        Text("Higher rates use more battery and generate more data")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
             .navigationTitle("Debug Console")
             .toolbar {
@@ -154,9 +253,28 @@ public struct DebugView: View {
             }
             .onAppear {
                 loadApiCallCounts()
+                motionService.startMonitoring()
             }
             .onChange(of: events.count) { oldValue, newValue in
                 loadApiCallCounts()
+            }
+            .sheet(isPresented: $showingMotionSummary) {
+                NavigationView {
+                    ScrollView {
+                        Text(motionSummaryText)
+                            .font(.system(.body, design: .monospaced))
+                            .padding()
+                    }
+                    .navigationTitle("Motion Summary")
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showingMotionSummary = false
+                            }
+                        }
+                    }
+                }
             }
         }
     }
@@ -286,6 +404,31 @@ public struct DebugView: View {
                 print("❌ [DEBUG] Traffic routing example failed: \(error.localizedDescription)")
             }
         }
+    }
+    
+    // MARK: - Motion Data Actions
+    
+    private func exportMotionData() {
+        if let fileURL = motionService.exportMotionData() {
+            print("✅ [DEBUG] Motion data exported to: \(fileURL.path)")
+            
+            // Show success message
+            errorMessage = "Motion data exported successfully to Documents folder"
+        } else {
+            print("❌ [DEBUG] Failed to export motion data")
+            errorMessage = "Failed to export motion data"
+        }
+    }
+    
+    private func clearMotionData() {
+        motionService.clearMotionLogs()
+        print("🗑️ [DEBUG] Motion logs cleared")
+        errorMessage = "Motion logs cleared"
+    }
+    
+    private func showMotionSummary() {
+        motionSummaryText = motionService.getMotionLogSummary()
+        showingMotionSummary = true
     }
 }
 

@@ -11,7 +11,7 @@ import SwiftUI
 
 // MARK: - Traffic Analysis Types
 
-public enum TrafficCondition: String, CaseIterable {
+public enum TrafficCondition: String, CaseIterable, Codable {
     case unknown = "Unknown"
     case freeFlow = "Free Flow"
     case normalTraffic = "Normal Traffic"
@@ -53,6 +53,16 @@ public class MotionDetectionService: ObservableObject {
     @Published public var heading: Double = 0.0
     @Published public var acceleration: Double = 0.0
     @Published public var isMonitoring = false
+    @Published public var isHighDetailMode = false
+    
+    // Configurable polling intervals
+    @Published public var pollingInterval: TimeInterval = 1.0 // Default 1 Hz
+    @Published public var highDetailInterval: TimeInterval = 0.1 // 10 Hz for high detail
+    
+    // Enhanced logging and export capabilities
+    private var motionLogs: [MotionLogEntry] = []
+    private let maxLogEntries = 10000 // Prevent memory issues
+    private let logFileName = "motion_data.json"
     
     // Vehicle detection thresholds
     private let vehicleAccelerationThreshold = 0.5 // m/s²
@@ -68,22 +78,68 @@ public class MotionDetectionService: ObservableObject {
         print("🚗 [Motion] MotionDetectionService initialized")
     }
     
+    // MARK: - Configuration Methods
+    
+    /// Sets the polling interval for motion detection
+    /// - Parameter interval: Time interval in seconds (0.01 = 100 Hz, 1.0 = 1 Hz)
+    public func setPollingInterval(_ interval: TimeInterval) {
+        pollingInterval = max(0.01, min(interval, 10.0)) // Clamp between 0.01s (100 Hz) and 10s (0.1 Hz)
+        
+        if isMonitoring {
+            // Restart monitoring with new interval
+            stopMonitoring()
+            startMonitoring()
+        }
+        
+        print("🚗 [Motion] Polling interval set to \(String(format: "%.2f", pollingInterval))s (\(String(format: "%.1f", 1.0/pollingInterval)) Hz)")
+    }
+    
+    /// Enables or disables high detail mode
+    /// - Parameter enabled: Whether to enable high detail mode (10 Hz polling)
+    public func setHighDetailMode(_ enabled: Bool) {
+        isHighDetailMode = enabled
+        
+        if isMonitoring {
+            // Restart monitoring with new mode
+            stopMonitoring()
+            startMonitoring()
+        }
+        
+        let currentInterval = enabled ? highDetailInterval : pollingInterval
+        let currentRate = 1.0 / currentInterval
+        
+        print("🚗 [Motion] High detail mode \(enabled ? "enabled" : "disabled") - \(String(format: "%.1f", currentRate)) Hz polling")
+    }
+    
+    /// Gets the current effective polling interval
+    public var currentPollingInterval: TimeInterval {
+        return isHighDetailMode ? highDetailInterval : pollingInterval
+    }
+    
+    /// Gets the current polling rate in Hz
+    public var currentPollingRate: Double {
+        return 1.0 / currentPollingInterval
+    }
+    
     public func startMonitoring() {
         guard motionManager.isAccelerometerAvailable else {
             print("❌ [Motion] Accelerometer not available")
             return
         }
         
-        print("🚗 [Motion] Starting motion monitoring...")
+        let interval = currentPollingInterval
+        let rate = currentPollingRate
         
-        motionManager.accelerometerUpdateInterval = 1.0
+        print("🚗 [Motion] Starting motion monitoring at \(String(format: "%.1f", rate)) Hz...")
+        
+        motionManager.accelerometerUpdateInterval = interval
         motionManager.startAccelerometerUpdates(to: .main) { [weak self] data, error in
             guard let data = data else { return }
             self?.processAccelerometerData(data)
         }
         
         if motionManager.isDeviceMotionAvailable {
-            motionManager.deviceMotionUpdateInterval = 1.0
+            motionManager.deviceMotionUpdateInterval = interval
             motionManager.startDeviceMotionUpdates(to: .main) { [weak self] data, error in
                 guard let data = data else { return }
                 self?.processDeviceMotionData(data)
@@ -91,7 +147,7 @@ public class MotionDetectionService: ObservableObject {
         }
         
         isMonitoring = true
-        print("🚗 [Motion] Motion monitoring started")
+        print("🚗 [Motion] Motion monitoring started at \(String(format: "%.1f", rate)) Hz")
     }
     
     public func stopMonitoring() {
@@ -153,6 +209,10 @@ public class MotionDetectionService: ObservableObject {
                 }
             }
         }
+        
+        // Log motion data for analysis
+        let trafficCondition = analyzeTrafficConditions()
+        logMotionData(accelerationData: data, deviceMotionData: nil, trafficCondition: trafficCondition)
     }
     
     private func processDeviceMotionData(_ data: CMDeviceMotion) {
@@ -184,6 +244,10 @@ public class MotionDetectionService: ObservableObject {
         if isDecelerating && vehicleState == .inVehicle {
             print("🚗 [Motion] Detected potential traffic slowdown - deceleration: \(String(format: "%.2f", groundAccelerationMagnitude)) m/s²")
         }
+        
+        // Log motion data for analysis (with device motion data)
+        let trafficCondition = analyzeTrafficConditions()
+        logMotionData(accelerationData: nil, deviceMotionData: data, trafficCondition: trafficCondition)
     }
     
     public func getCurrentUserContext(estimatedTravelTime: TimeInterval = 0) -> UserContext {
@@ -215,6 +279,191 @@ public class MotionDetectionService: ObservableObject {
             return .freeFlow // High speed, likely free-flowing traffic
         } else {
             return .normalTraffic
+        }
+    }
+    
+    // MARK: - Enhanced Logging and Export Methods
+    
+    /// Logs current motion data for analysis
+    private func logMotionData(
+        accelerationData: CMAccelerometerData?,
+        deviceMotionData: CMDeviceMotion?,
+        trafficCondition: TrafficCondition
+    ) {
+        let entry = MotionLogEntry(
+            vehicleState: vehicleState,
+            speed: currentSpeed,
+            heading: heading,
+            acceleration: acceleration,
+            accelerationX: accelerationData?.acceleration.x ?? 0.0,
+            accelerationY: accelerationData?.acceleration.y ?? 0.0,
+            accelerationZ: accelerationData?.acceleration.z ?? 0.0,
+            userAccelerationX: deviceMotionData?.userAcceleration.x ?? 0.0,
+            userAccelerationY: deviceMotionData?.userAcceleration.y ?? 0.0,
+            userAccelerationZ: deviceMotionData?.userAcceleration.z ?? 0.0,
+            trafficCondition: trafficCondition
+        )
+        
+        motionLogs.append(entry)
+        
+        // Prevent memory issues by limiting log size
+        if motionLogs.count > maxLogEntries {
+            motionLogs.removeFirst(motionLogs.count - maxLogEntries)
+        }
+        
+        // Log to console for real-time monitoring
+        print("🚗 [Motion] Logged: \(entry.vehicleState.rawValue) | Speed: \(String(format: "%.1f", entry.speed)) m/s | Traffic: \(entry.trafficCondition.rawValue)")
+    }
+    
+    /// Exports motion data to a JSON file
+    public func exportMotionData() -> URL? {
+        guard !motionLogs.isEmpty else {
+            print("❌ [Motion] No motion data to export")
+            return nil
+        }
+        
+        let deviceInfo = "iPhone 16 Pro - iOS \(UIDevice.current.systemVersion)"
+        let export = MotionLogExport(entries: motionLogs, deviceInfo: deviceInfo)
+        
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            encoder.outputFormatting = .prettyPrinted
+            
+            let data = try encoder.encode(export)
+            
+            // Save to Documents directory
+            let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
+            let fileURL = documentsPath.appendingPathComponent(logFileName)
+            
+            try data.write(to: fileURL)
+            
+            print("✅ [Motion] Exported \(motionLogs.count) motion entries to: \(fileURL.path)")
+            return fileURL
+            
+        } catch {
+            print("❌ [Motion] Failed to export motion data: \(error)")
+            return nil
+        }
+    }
+    
+    /// Clears all logged motion data
+    public func clearMotionLogs() {
+        motionLogs.removeAll()
+        print("🗑️ [Motion] Cleared all motion logs")
+    }
+    
+    /// Returns summary statistics of logged motion data
+    public func getMotionLogSummary() -> String {
+        guard !motionLogs.isEmpty else {
+            return "No motion data logged"
+        }
+        
+        let totalEntries = motionLogs.count
+        let vehicleEntries = motionLogs.filter { $0.vehicleState == .inVehicle }.count
+        let walkingEntries = motionLogs.filter { $0.vehicleState == .walking }.count
+        let stationaryEntries = motionLogs.filter { $0.vehicleState == .stationary }.count
+        
+        let avgSpeed = motionLogs.map { $0.speed }.reduce(0, +) / Double(totalEntries)
+        let maxSpeed = motionLogs.map { $0.speed }.max() ?? 0.0
+        
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        
+        let timeRange = if let first = motionLogs.first?.timestamp,
+                          let last = motionLogs.last?.timestamp {
+            "\(formatter.string(from: first)) - \(formatter.string(from: last))"
+        } else {
+            "Unknown"
+        }
+        
+        return """
+        📊 Motion Log Summary:
+        • Total Entries: \(totalEntries)
+        • Time Range: \(timeRange)
+        • Vehicle Time: \(vehicleEntries) entries (\(String(format: "%.1f", Double(vehicleEntries) / Double(totalEntries) * 100))%)
+        • Walking Time: \(walkingEntries) entries (\(String(format: "%.1f", Double(walkingEntries) / Double(totalEntries) * 100))%)
+        • Stationary Time: \(stationaryEntries) entries (\(String(format: "%.1f", Double(stationaryEntries) / Double(totalEntries) * 100))%)
+        • Average Speed: \(String(format: "%.1f", avgSpeed)) m/s
+        • Max Speed: \(String(format: "%.1f", maxSpeed)) m/s
+        """
+    }
+    
+    /// Returns the number of logged entries
+    public var loggedEntriesCount: Int {
+        return motionLogs.count
+    }
+}
+
+// MARK: - Motion Logging Data Structures
+
+public struct MotionLogEntry: Codable {
+    public let timestamp: Date
+    public let vehicleState: VehicleState
+    public let speed: Double
+    public let heading: Double
+    public let acceleration: Double
+    public let accelerationX: Double
+    public let accelerationY: Double
+    public let accelerationZ: Double
+    public let userAccelerationX: Double
+    public let userAccelerationY: Double
+    public let userAccelerationZ: Double
+    public let trafficCondition: TrafficCondition
+    public let location: String? // Optional location context
+    
+    public init(
+        vehicleState: VehicleState,
+        speed: Double,
+        heading: Double,
+        acceleration: Double,
+        accelerationX: Double,
+        accelerationY: Double,
+        accelerationZ: Double,
+        userAccelerationX: Double,
+        userAccelerationY: Double,
+        userAccelerationZ: Double,
+        trafficCondition: TrafficCondition,
+        location: String? = nil
+    ) {
+        self.timestamp = Date()
+        self.vehicleState = vehicleState
+        self.speed = speed
+        self.heading = heading
+        self.acceleration = acceleration
+        self.accelerationX = accelerationX
+        self.accelerationY = accelerationY
+        self.accelerationZ = accelerationZ
+        self.userAccelerationX = userAccelerationX
+        self.userAccelerationY = userAccelerationY
+        self.userAccelerationZ = userAccelerationZ
+        self.trafficCondition = trafficCondition
+        self.location = location
+    }
+}
+
+public struct MotionLogExport: Codable {
+    public let exportDate: Date
+    public let deviceInfo: String
+    public let totalEntries: Int
+    public let timeRange: String
+    public let entries: [MotionLogEntry]
+    
+    public init(entries: [MotionLogEntry], deviceInfo: String) {
+        self.exportDate = Date()
+        self.deviceInfo = deviceInfo
+        self.totalEntries = entries.count
+        self.entries = entries
+        
+        if let firstEntry = entries.first,
+           let lastEntry = entries.last {
+            let formatter = DateFormatter()
+            formatter.dateStyle = .short
+            formatter.timeStyle = .short
+            self.timeRange = "\(formatter.string(from: firstEntry.timestamp)) - \(formatter.string(from: lastEntry.timestamp))"
+        } else {
+            self.timeRange = "No data"
         }
     }
 }

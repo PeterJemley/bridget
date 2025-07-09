@@ -5,10 +5,12 @@ import BridgetSharedUI
 public struct DashboardView: View {
     public let events: [DrawbridgeEvent]
     public let bridgeInfo: [DrawbridgeInfo]
+    public let motionService: MotionDetectionService?
     
-    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo]) {
+    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo], motionService: MotionDetectionService? = nil) {
         self.events = events
         self.bridgeInfo = bridgeInfo
+        self.motionService = motionService
     }
     
     public var body: some View {
@@ -67,6 +69,11 @@ public struct DashboardView: View {
                     
                     StatusOverviewCard(events: events, bridgeInfo: bridgeInfo)
                     
+                    // Motion Detection Status Card
+                    if let motionService = motionService {
+                        MotionStatusCard(motionService: motionService)
+                    }
+                    
                     LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
                     RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)
@@ -101,5 +108,5 @@ public struct DashboardView: View {
 }
 
 #Preview {
-    DashboardView(events: [], bridgeInfo: [])
+    DashboardView(events: [], bridgeInfo: [], motionService: nil)
 }

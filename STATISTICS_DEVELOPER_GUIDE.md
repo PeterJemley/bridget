@@ -587,4 +587,4 @@ TabView {
 ```
 
 - Use `TrafficAwareRoutingService` for route planning and traffic analysis
-- Use `MotionDetectionService` for real-time traffic sensing and context 
+- Use `MotionDetectionService` for real-time traffic sensing and context with configurable polling (1-20 Hz) 

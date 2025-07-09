@@ -7,6 +7,7 @@
 ## 📋 **Version History**
 - **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, BridgeCongestionMonitor, CongestionCorrelation models
 - **v1.0.0** (July 7, 2025): Initial background agents documentation
+- **v1.1.0** (July 8, 2025): Enhanced with motion detection integration and configurable polling
 
 ## Overview
 

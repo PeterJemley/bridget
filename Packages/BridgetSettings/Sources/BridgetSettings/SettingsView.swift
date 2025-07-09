@@ -19,6 +19,7 @@ public struct SettingsView: View {
     @AppStorage("compactMode") private var compactMode = false
     
     @State private var showDebugView = false
+    @State private var showAPIDocumentationView = false
     @State private var neuralEngineInfo: (generation: String, cores: Int, tops: Double, complexity: String)?
     
     public init() {}
@@ -81,6 +82,11 @@ public struct SettingsView: View {
                         }
                         .foregroundColor(.blue)
                         
+                        Button("API Documentation Generator") {
+                            showAPIDocumentationView = true
+                        }
+                        .foregroundColor(.green)
+                        
                         Text("Access raw data, API status, and debugging tools")
                             .font(.caption)
                             .foregroundColor(.secondary)
@@ -117,6 +123,9 @@ public struct SettingsView: View {
         }
         .sheet(isPresented: $showDebugView) {
             DebugView()
+        }
+        .sheet(isPresented: $showAPIDocumentationView) {
+            APIDocumentationView()
         }
     }
     

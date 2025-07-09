@@ -7,6 +7,7 @@
 ## 📋 **Version History**
 - **v2.0.0** (July 8, 2025): Added indirect bridge delay detection, updated priorities, enhanced roadmap
 - **v1.0.0** (July 7, 2025): Initial feature overview with core features and roadmap
+- **v1.1.0** (July 8, 2025): Added motion detection integration, configurable polling, API documentation generator
 
 ## 📋 **Executive Summary**
 
@@ -130,11 +131,14 @@ Bridget is a comprehensive iOS app for monitoring Seattle drawbridge openings an
 **Estimated Time**: 15-20 hours
 
 #### **1.1 Motion Detection Integration (8-10 hours)**
-- [ ] **Integrate MotionDetectionService into dashboard**
-  - [ ] Add motion data to bridge status cards
-  - [ ] Create traffic flow indicators (using available traffic data)
-  - [ ] Implement vibration patterns for bridge activity
-  - [ ] Add motion-based alerts for nearby bridge openings
+- [x] **Integrate MotionDetectionService into dashboard** ✅ **COMPLETED**
+  - [x] Add motion data to bridge status cards ✅ **COMPLETED**
+  - [x] Create traffic flow indicators (using available traffic data) ✅ **COMPLETED**
+  - [x] Implement vibration patterns for bridge activity ✅ **COMPLETED**
+  - [x] Add motion-based alerts for nearby bridge openings ✅ **COMPLETED**
+  - [x] **Configurable polling intervals** (1 Hz to 20 Hz) ✅ **COMPLETED**
+  - [x] **High detail mode** (10 Hz polling) ✅ **COMPLETED**
+  - [x] **Motion data export** for analysis ✅ **COMPLETED**
 
 - [ ] **Background Location Services (6-8 hours)**
   - [ ] Implement CoreLocation integration
@@ -278,7 +282,7 @@ Bridget/
 - **TrafficAlert**: Real-time traffic notifications
 
 ### **Core Services**
-- **MotionDetectionService**: Device motion monitoring
+- **MotionDetectionService**: Device motion monitoring with configurable polling (1-20 Hz)
 - **TrafficAwareRoutingService**: Intelligent route planning
 - **BridgeAnalytics**: Statistical analysis and metrics
 - **DrawbridgeAPI**: Real-time bridge data integration
@@ -310,7 +314,7 @@ Bridget/
 ## 🎯 **Next Immediate Actions**
 
 ### **This Session (Priority 1)**
-1. **Start Phase 1.1** - Integrate MotionDetectionService into dashboard
+1. **Start Phase 1.1** - Integrate MotionDetectionService into dashboard ✅ **COMPLETED**
 2. **Begin location services** - Implement CoreLocation integration
 3. **Create Routes Tab** - Add basic tab structure to main navigation
 4. **Implement indirect bridge delay detection** - Apple Maps congestion correlation
