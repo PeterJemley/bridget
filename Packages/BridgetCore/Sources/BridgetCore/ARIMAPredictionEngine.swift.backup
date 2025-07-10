@@ -8,95 +8,9 @@
 import Foundation
 import SwiftData
 
-// MARK: - PHASE 3: ARIMA-Style Prediction Engine
+// MARK: - PHASE 3: ARIMA-Style Prediction Engine (UTILITY FUNCTIONS ONLY)
 // Autoregressive Integrated Moving Average modeling for 95%+ prediction accuracy
-
-@Model
-public final class ARIMAModel {
-    @Attribute(.unique) public var id: String
-    
-    public var entityID: Int
-    public var entityName: String
-    public var pValue: Int // Autoregressive order (past observations to use)
-    public var dValue: Int // Degree of differencing (for stationarity)
-    public var qValue: Int // Moving average order (past errors to use)
-    
-    // Model parameters
-    public var arCoefficients: [Double] = [] // Autoregressive coefficients φ₁, φ₂, ..., φₚ
-    public var maCoefficients: [Double] = [] // Moving average coefficients θ₁, θ₂, ..., θq
-    public var intercept: Double = 0.0
-    public var variance: Double = 0.0
-    
-    // Model performance metrics
-    public var aic: Double = 0.0 // Akaike Information Criterion
-    public var bic: Double = 0.0 // Bayesian Information Criterion  
-    public var rmse: Double = 0.0 // Root Mean Square Error
-    public var mape: Double = 0.0 // Mean Absolute Percentage Error
-    public var accuracy: Double = 0.0 // Overall model accuracy (0.0-1.0)
-    
-    // Stationarity test results
-    public var isStationary: Bool = false
-    public var adfTestStatistic: Double = 0.0 // Augmented Dickey-Fuller test
-    public var pValueStationarity: Double = 1.0
-    
-    // Time series characteristics
-    public var trend: String = "none" // "none", "linear", "quadratic"
-    public var seasonality: String = "none" // "none", "additive", "multiplicative"
-    public var cyclicalPeriod: Int = 24 // Hours for cycle detection
-    
-    public var lastTrained: Date
-    public var trainingDataSize: Int = 0
-    
-    public init(
-        entityID: Int,
-        entityName: String,
-        pValue: Int = 3,
-        dValue: Int = 1,
-        qValue: Int = 2
-    ) {
-        self.id = "arima-\(entityID)-\(pValue)-\(dValue)-\(qValue)"
-        self.entityID = entityID
-        self.entityName = entityName
-        self.pValue = pValue
-        self.dValue = dValue
-        self.qValue = qValue
-        self.lastTrained = Date()
-    }
-}
-
-@Model 
-public final class TimeSeriesPoint {
-    @Attribute(.unique) public var id: String
-    
-    public var entityID: Int
-    public var timestamp: Date
-    public var value: Double // Opening count or duration
-    public var differenced: Double = 0.0 // After differencing
-    public var predicted: Double = 0.0 // Model prediction
-    public var residual: Double = 0.0 // Actual - Predicted
-    public var hour: Int
-    public var dayOfWeek: Int
-    public var isWeekend: Bool
-    public var isSummer: Bool
-    
-    public init(
-        entityID: Int,
-        timestamp: Date,
-        value: Double
-    ) {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents([.hour, .weekday, .month], from: timestamp)
-        
-        self.id = "\(entityID)-\(Int(timestamp.timeIntervalSince1970))"
-        self.entityID = entityID
-        self.timestamp = timestamp
-        self.value = value
-        self.hour = components.hour ?? 0
-        self.dayOfWeek = components.weekday ?? 1
-        self.isWeekend = (components.weekday == 1 || components.weekday == 7)
-        self.isSummer = ((components.month ?? 1) >= 5 && (components.month ?? 1) <= 9)
-    }
-}
+// NOTE: @Model classes removed - using NeuralEngineARIMA.swift for active implementation
 
 public struct ARIMAPredictionEngine {
     
