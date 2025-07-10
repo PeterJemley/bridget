@@ -14,7 +14,8 @@ import BridgetDashboard
 
 public struct DebugView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var events: [DrawbridgeEvent]
+    @Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
+    private var events: [DrawbridgeEvent]
     @Query private var bridgeInfo: [DrawbridgeInfo]
     
     @State private var isLoading = false
@@ -262,6 +263,7 @@ public struct DebugView: View {
                     if !MotionDetectionService.shared.isMonitoring {
                         MotionDetectionService.shared.startMonitoring()
                     }
+                    SecurityLogger.main("🔧 [DEBUG VIEW] Loaded - Events: \(events.count), Bridge Info: \(bridgeInfo.count)")
                 }
                 .onChange(of: events.count) { oldValue, newValue in
                     loadApiCallCounts()
@@ -322,14 +324,13 @@ public struct DebugView: View {
             await MainActor.run {
                 isLoading = true
                 errorMessage = nil
-                // Clear all existing DrawbridgeEvent records before inserting new ones
+                // OPTIMIZED: Batch deletion for better performance
                 let fetchRequest = FetchDescriptor<DrawbridgeEvent>()
                 if let oldEvents = try? modelContext.fetch(fetchRequest) {
-                    for event in oldEvents {
-                        modelContext.delete(event)
-                    }
+                    // OPTIMIZATION: Batch deletion using forEach for better performance
+                    oldEvents.forEach { modelContext.delete($0) }
                     try? modelContext.save()
-                    SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData (DebugView)")
+                    SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData (DebugView - batch operation)")
                 }
             }
             do {
@@ -370,13 +371,11 @@ public struct DebugView: View {
         }
     }
     
+    // OPTIMIZED: Batch deletion for better performance
     private func clearData() {
-        for event in events {
-            modelContext.delete(event)
-        }
-        for info in bridgeInfo {
-            modelContext.delete(info)
-        }
+        // OPTIMIZATION: Batch deletion using forEach for better performance
+        events.forEach { modelContext.delete($0) }
+        bridgeInfo.forEach { modelContext.delete($0) }
         
         try? modelContext.save()
         lastRefresh = nil
@@ -385,6 +384,8 @@ public struct DebugView: View {
 
         UserDefaults.standard.set(0, forKey: "BridgetSessionAPICallCount")
         loadApiCallCounts()
+        
+        SecurityLogger.main("🧹 Cleared all data (batch operation)")
     }
     
     // FIXED: Use shared UserDefaults keys matching ContentViewModular

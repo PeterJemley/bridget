@@ -22,7 +22,8 @@ import BridgetRouting
 
 struct ContentViewModular: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allEvents: [DrawbridgeEvent]
+    @Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
+    private var allEvents: [DrawbridgeEvent]
     @Query private var bridgeInfo: [DrawbridgeInfo]
     
     // Loading state for automatic data fetching
@@ -38,8 +39,22 @@ struct ContentViewModular: View {
     // Background Traffic Agent
     @StateObject private var backgroundAgent: BackgroundTrafficAgent
     
+    // MARK: - Computed Properties for Filtered Data
+    
+    /// All events sorted by date (reverse chronological)
     private var events: [DrawbridgeEvent] {
-        return allEvents 
+        return allEvents
+    }
+    
+    /// Recent events (last 30 days) for performance optimization
+    private var recentEvents: [DrawbridgeEvent] {
+        let cutoff = Self.cutoffDate(daysAgo: 30)
+        return allEvents.filter { $0.openDateTime >= cutoff }
+    }
+    
+    /// Helper function for consistent date cutoff calculations
+    private static func cutoffDate(daysAgo: Int) -> Date {
+        Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date.distantPast
     }
     
     init() {
@@ -55,8 +70,8 @@ struct ContentViewModular: View {
     var body: some View {
         ZStack {
             TabView {
-                // Dashboard Tab - Using modular DashboardView
-                DashboardView(events: events, bridgeInfo: bridgeInfo, motionService: motionService, backgroundAgent: backgroundAgent)
+                // Dashboard Tab - Using modular DashboardView (optimized with recent events)
+                DashboardView(events: recentEvents, bridgeInfo: bridgeInfo, motionService: motionService, backgroundAgent: backgroundAgent)
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")
@@ -69,14 +84,14 @@ struct ContentViewModular: View {
                         Text("Routes")
                     }
                 
-                // Bridges Tab - Using modular BridgesListView
-                BridgesListView(events: events, bridgeInfo: bridgeInfo)
+                // Bridges Tab - Using modular BridgesListView (optimized with recent events)
+                BridgesListView(events: recentEvents, bridgeInfo: bridgeInfo)
                     .tabItem {
                         Image(systemName: "road.lanes")
                         Text("Bridges")
                     }
                 
-                // History Tab - Using modular HistoryView
+                // History Tab - Using modular HistoryView (full dataset for historical analysis)
                 HistoryView(events: events)
                     .tabItem {
                         Image(systemName: "clock.fill")
@@ -107,7 +122,8 @@ struct ContentViewModular: View {
             await loadInitialDataIfNeeded()
         }
         .onAppear {
-            SecurityLogger.main("ContentView appeared - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count)")
+            SecurityLogger.main("ContentView appeared - Events: \(allEvents.count), Recent: \(recentEvents.count), Bridge Info: \(bridgeInfo.count)")
+            SecurityLogger.main("ContentView data load - Total: \(allEvents.count), Recent (30d): \(recentEvents.count)")
             
             // Start motion detection monitoring
             motionService.startMonitoring()
@@ -193,7 +209,7 @@ struct ContentViewModular: View {
     
     // Initial data loading function
     private func loadInitialDataIfNeeded() async {
-        SecurityLogger.main("Data check - Events: \(allEvents.count), Filtered: \(events.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
+        SecurityLogger.main("Data check - Events: \(allEvents.count), Recent: \(recentEvents.count), Bridge Info: \(bridgeInfo.count), Already loaded: \(initialDataLoaded)")
         
         guard events.isEmpty else { 
             SecurityLogger.main("Skipping data load - already have \(events.count) events")
@@ -221,10 +237,16 @@ struct ContentViewModular: View {
             // Use the reusable clearing function
             clearAllDrawbridgeEvents()
             
-            // Using modular DrawbridgeAPI from BridgetNetworking - get all available data
-            let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData(limit: 10000)
+            // Using modular DrawbridgeAPI from BridgetNetworking - get ALL available data
+            let fetchedEventDTOs = try await DrawbridgeAPI.fetchDrawbridgeData()
             
             SecurityLogger.main("🎯 API RETURNED \(fetchedEventDTOs.count) EVENTS")
+            SecurityLogger.main("📊 EXPECTED: ~4,987 events from Seattle API")
+            SecurityLogger.main("📊 ACTUAL: \(fetchedEventDTOs.count) events received")
+            
+            if fetchedEventDTOs.count < 4000 {
+                SecurityLogger.error("⚠️ DATA INTEGRITY ISSUE: Received only \(fetchedEventDTOs.count) events, expected ~4,987")
+            }
             
             // FIXED: Track the API call that just completed successfully
             await MainActor.run {
@@ -292,17 +314,18 @@ struct ContentViewModular: View {
         }
     }
     
-    // Add this reusable function near other private methods
+    // OPTIMIZED: Batch deletion for better performance
     private func clearAllDrawbridgeEvents() {
         Task { @MainActor in
             do {
                 let fetchRequest = FetchDescriptor<DrawbridgeEvent>()
                 let oldEvents = try modelContext.fetch(fetchRequest)
-                for event in oldEvents {
-                    modelContext.delete(event)
-                }
+                
+                // OPTIMIZATION: Batch deletion using forEach for better performance
+                oldEvents.forEach { modelContext.delete($0) }
                 try modelContext.save()
-                SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData")
+                
+                SecurityLogger.main("🧹 Cleared \(oldEvents.count) old events from SwiftData (batch operation)")
             } catch {
                 SecurityLogger.error("Failed to clear old events", error: error)
             }

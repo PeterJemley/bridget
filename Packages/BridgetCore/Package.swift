@@ -22,6 +22,9 @@ let package = Package(
         .target(
             name: "BridgetCore",
             dependencies: [],
+            exclude: [
+                "iOS"
+            ],
             swiftSettings: [
                 .enableUpcomingFeature("BareSlashRegexLiterals")
             ]

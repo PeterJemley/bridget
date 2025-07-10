@@ -28,6 +28,7 @@ public struct StatusOverviewCard: View {
             
             LazyVGrid(columns: [
                 GridItem(.flexible(), spacing: 12),
+                GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12)
             ], spacing: 16) {
                 StatusCard(
@@ -40,6 +41,12 @@ public struct StatusOverviewCard: View {
                     title: "Today's Events",
                     value: "\(todaysEventsCount)",
                     color: .purple
+                )
+                
+                StatusCard(
+                    title: "This Week's Events",
+                    value: "\(thisWeeksEventsCount)",
+                    color: .orange
                 )
                 
                 StatusCard(
@@ -68,13 +75,29 @@ public struct StatusOverviewCard: View {
         DrawbridgeEvent.eventsToday(events).count
     }
     
+    private var thisWeeksEventsCount: Int {
+        let calendar = Calendar.current
+        let today = Date()
+        let weekAgo = calendar.date(byAdding: .day, value: -7, to: today) ?? today
+        
+        return events.filter { event in
+            event.openDateTime >= weekAgo && event.openDateTime <= today
+        }.count
+    }
+    
     private var totalEventsTitle: String {
         guard let oldest = events.map(\.openDateTime).min(),
               let newest = events.map(\.openDateTime).max() else {
-            return "Total Events"
+            return "Recent Events"
         }
         
-        return "Total Events"
+        // Calculate the actual date range for clarity
+        let daysDifference = Calendar.current.dateComponents([.day], from: oldest, to: newest).day ?? 0
+        if daysDifference <= 30 {
+            return "Recent Events (\(daysDifference) days)"
+        } else {
+            return "Recent Events (30 days)"
+        }
     }
     
     private var totalEventsValue: String {

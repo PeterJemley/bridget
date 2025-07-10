@@ -283,3 +283,66 @@ The main areas for improvement are:
 3. **Enhanced functionality** through better use of SwiftData features
 
 Overall compliance score: **85/100** - Good foundation with room for optimization. 
+
+## Lessons Learned: SwiftData Predicate Patterns
+
+### Dynamic Date Filtering in SwiftData
+- SwiftData's @Query macro does **not** support dynamic date math (e.g., Calendar.current.date(byAdding:...) inside a predicate).
+- Only static values and model properties can be used in @Query predicates.
+- **Pattern for dynamic date filtering:**
+  1. Use @Query to fetch a superset of data (e.g., all events, sorted by date).
+  2. Use a centralized helper (e.g., `cutoffDate(daysAgo:)`) to compute the cutoff date in code.
+  3. Filter the fetched data in-memory using computed properties or a view model.
+- This pattern ensures correctness, avoids build errors, and makes future changes easy and consistent.
+
+### Example:
+```swift
+@Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
+private var allEvents: [DrawbridgeEvent]
+
+private static func cutoffDate(daysAgo: Int) -> Date {
+    Calendar.current.date(byAdding: .day, value: -daysAgo, to: Date()) ?? Date.distantPast
+}
+
+private var recentEvents: [DrawbridgeEvent] {
+    let cutoff = Self.cutoffDate(daysAgo: 90)
+    return allEvents.filter { $0.openDateTime >= cutoff }
+}
+```
+
+### Recommendation
+- Always audit model properties before writing a predicate.
+- Never use runtime date math inside a SwiftData predicate.
+- Document this pattern in code and in team documentation for future maintainers. 
+
+## @Bindable Usage Review
+
+### Correct Usage Pattern
+- `@Bindable` is a property wrapper for use in SwiftUI views, not on model classes.
+- Use `@Bindable` only in views where the user can edit model properties directly (e.g., forms, text fields, toggles).
+- For read-only or computed data, `@Bindable` is not needed.
+
+#### Example (for future editable views):
+```swift
+struct EditEventView: View {
+    @Bindable var event: DrawbridgeEvent
+
+    var body: some View {
+        Form {
+            TextField("Name", text: $event.entityName)
+            DatePicker("Open Date", selection: $event.openDateTime)
+            // ... other editable fields
+        }
+        // No need to call save() manually; changes are persisted automatically
+    }
+}
+```
+
+### Current State
+- No current SwiftUI views require `@Bindable` as all model editing is handled via view models or direct property access, not via two-way binding in the view.
+- If/when editable views are added, use the above pattern for automatic persistence.
+
+### Action Items
+- Remove any incorrect `@Bindable` usage from model classes (done).
+- Use `@Bindable` in future editable views as needed.
+- Document this pattern in team documentation and code comments for future maintainers. 

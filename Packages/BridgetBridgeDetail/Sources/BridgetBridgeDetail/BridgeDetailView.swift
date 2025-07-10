@@ -106,7 +106,8 @@ public class BridgeDetailViewModel: ObservableObject {
 
 public struct BridgeDetailView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var allEvents: [DrawbridgeEvent]
+    @Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
+    private var allEvents: [DrawbridgeEvent]
     @Query private var cascadeEvents: [CascadeEvent]
     
     public let bridgeEvent: DrawbridgeEvent
@@ -131,6 +132,7 @@ public struct BridgeDetailView: View {
             .navigationBarTitleDisplayMode(.large)
             .onAppear {
                 print("🌉 [BRIDGE DETAIL] Appeared for \(bridgeInfo.entityName)")
+                print("📊 [BRIDGE DETAIL] Total events: \(allEvents.count), Bridge-specific: \(bridgeSpecificEvents.count)")
                 viewModel.checkDataAvailability(allEvents: allEvents)
             }
             .onChange(of: allEvents.count) { _, _ in
@@ -245,8 +247,8 @@ public struct BridgeDetailView: View {
     }
     
     private var bridgeSpecificEvents: [DrawbridgeEvent] {
+        // Data is already sorted by openDateTime in reverse order from @Query
         allEvents.filter { $0.entityID == bridgeEvent.entityID }
-            .sorted { $0.openDateTime > $1.openDateTime }
     }
     
     private var filteredEvents: [DrawbridgeEvent] {
