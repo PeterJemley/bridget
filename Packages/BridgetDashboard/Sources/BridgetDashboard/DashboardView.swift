@@ -73,7 +73,7 @@ public struct DashboardView: View {
                     
                     LastKnownStatusSection(events: lastKnownStatusEvents, bridgeInfo: bridgeInfo)
                     
-                    RecentActivitySection(events: recentEvents, bridgeInfo: bridgeInfo)
+                    RecentActivityToggleView(events: recentEvents, bridgeInfo: bridgeInfo)
                 }
                 .padding(16)
             }

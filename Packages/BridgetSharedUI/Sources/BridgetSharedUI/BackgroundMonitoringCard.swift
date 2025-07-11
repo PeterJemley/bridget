@@ -134,14 +134,22 @@ public struct BackgroundMonitoringCard: View {
                         }
                         .padding(.vertical, 4)
                         .padding(.horizontal, 8)
+#if os(iOS)
                         .background(Color(.systemGray6))
+#else
+                        .background(Color(.controlBackgroundColor))
+#endif
                         .cornerRadius(6)
                     }
                 }
             }
         }
         .padding()
+#if os(iOS)
         .background(Color(.systemBackground))
+#else
+        .background(Color(.windowBackgroundColor))
+#endif
         .cornerRadius(12)
         .shadow(radius: 2)
         .sheet(isPresented: $showingAlerts) {
@@ -198,16 +206,18 @@ struct BackgroundAlertsView: View {
                 }
             }
             .navigationTitle("Background Alerts")
+#if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+#endif
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Clear All") {
                         backgroundAgent.clearAlerts()
                     }
                     .disabled(backgroundAgent.backgroundAlerts.isEmpty)
                 }
                 
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .secondaryAction) {
                     Button("Done") {
                         dismiss()
                     }

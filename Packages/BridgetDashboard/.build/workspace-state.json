@@ -1,0 +1,55 @@
+{
+  "object" : {
+    "artifacts" : [
+
+    ],
+    "dependencies" : [
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "bridgetbridgedetail",
+          "kind" : "fileSystem",
+          "location" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail",
+          "name" : "BridgetBridgeDetail"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetBridgeDetail"
+        },
+        "subpath" : "bridgetbridgedetail"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "bridgetcore",
+          "kind" : "fileSystem",
+          "location" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore",
+          "name" : "BridgetCore"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore"
+        },
+        "subpath" : "bridgetcore"
+      },
+      {
+        "basedOn" : null,
+        "packageRef" : {
+          "identity" : "bridgetsharedui",
+          "kind" : "fileSystem",
+          "location" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI",
+          "name" : "BridgetSharedUI"
+        },
+        "state" : {
+          "name" : "fileSystem",
+          "path" : "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI"
+        },
+        "subpath" : "bridgetsharedui"
+      }
+    ],
+    "prebuilts" : [
+
+    ]
+  },
+  "version" : 7
+}

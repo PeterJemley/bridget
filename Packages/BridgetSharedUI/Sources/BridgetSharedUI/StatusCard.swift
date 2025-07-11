@@ -35,7 +35,11 @@ public struct StatusCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(16)
+#if os(iOS)
         .background(Color(.systemBackground))
+#else
+        .background(Color(.windowBackgroundColor))
+#endif
         .cornerRadius(12)
         .shadow(color: Color.black.opacity(0.05), radius: 2, x: 0, y: 1)
     }

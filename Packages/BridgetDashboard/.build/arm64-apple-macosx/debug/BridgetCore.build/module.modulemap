@@ -1,0 +1,4 @@
+module BridgetCore {
+    header "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgetCore-Swift.h"
+    requires objc
+}

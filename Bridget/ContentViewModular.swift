@@ -20,6 +20,7 @@ import BridgetStatistics
 import BridgetSettings
 import BridgetRouting
 
+#if os(iOS)
 struct ContentViewModular: View {
     @Environment(\.modelContext) private var modelContext
     @Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
@@ -402,3 +403,4 @@ struct ContentViewModular_Previews: PreviewProvider {
             .modelContainer(for: [DrawbridgeEvent.self, DrawbridgeInfo.self], inMemory: true)
     }
 }
+#endif

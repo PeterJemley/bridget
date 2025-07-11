@@ -25,7 +25,11 @@ public struct FilterButton: View {
                 .fontWeight(.medium)
                 .padding(.horizontal, 12)
                 .padding(.vertical, 8)
+#if os(iOS)
                 .background(isSelected ? Color.blue : Color(.systemGray5))
+#else
+                .background(isSelected ? Color.blue : Color(.controlBackgroundColor))
+#endif
                 .foregroundColor(isSelected ? .white : .primary)
                 .cornerRadius(8)
         }

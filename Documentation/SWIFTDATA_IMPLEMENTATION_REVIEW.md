@@ -346,3 +346,15 @@ struct EditEventView: View {
 - Remove any incorrect `@Bindable` usage from model classes (done).
 - Use `@Bindable` in future editable views as needed.
 - Document this pattern in team documentation and code comments for future maintainers. 
+
+---
+
+## July 2025: Platform-Specific SwiftData & Xcode Build Issues
+
+- When using platform-specific types (e.g., MotionDetectionService, BackgroundTrafficAgent) in modular SwiftData code, always:
+  - Use #if os(iOS) guards for iOS-only code.
+  - Ensure all files are included in the correct SwiftPM/Xcode targets.
+  - Mark shared types as public for cross-module visibility.
+- **Xcode may cache stale build/index state after major refactors.**
+  - If you see 'Cannot find type' or protocol errors in Xcode but not in command-line builds, use 'Clean Build Folder' and restart Xcode.
+- This is essential for reliable SwiftData and modularization workflows. 

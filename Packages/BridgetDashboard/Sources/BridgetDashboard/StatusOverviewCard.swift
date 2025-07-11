@@ -31,33 +31,38 @@ public struct StatusOverviewCard: View {
                 GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12)
             ], spacing: 16) {
-                StatusCard(
+                TrendSummaryCard(
                     title: "Bridges Monitored",
                     value: "\(uniqueBridgeCount)",
+                    trend: bridgeCountTrend,
                     color: .blue
                 )
                 
-                StatusCard(
+                TrendSummaryCard(
                     title: "Today's Events",
                     value: "\(todaysEventsCount)",
+                    trend: todaysEventsTrend,
                     color: .purple
                 )
                 
-                StatusCard(
+                TrendSummaryCard(
                     title: "This Week's Events",
                     value: "\(thisWeeksEventsCount)",
+                    trend: thisWeeksEventsTrend,
                     color: .orange
                 )
                 
-                StatusCard(
+                TrendSummaryCard(
                     title: totalEventsTitle,
                     value: totalEventsValue,
+                    trend: totalEventsTrend,
                     color: .gray
                 )
                 
-                StatusCard(
+                TrendSummaryCard(
                     title: "Data Range",
                     value: dataRangeText,
+                    trend: dataRangeTrend,
                     color: .green
                 )
             }
@@ -112,6 +117,100 @@ public struct StatusOverviewCard: View {
         
         let daysDifference = Calendar.current.dateComponents([.day], from: oldest, to: newest).day ?? 0
         return "\(daysDifference) days"
+    }
+    
+    // MARK: - Trend Calculations
+    
+    private var bridgeCountTrend: TrendSummary? {
+        guard !events.isEmpty else { return nil }
+        return TrendCalculator.calculateBridgeCountTrend(from: events, days: 7)
+    }
+    
+    private var todaysEventsTrend: TrendSummary? {
+        guard !events.isEmpty else { return nil }
+        
+        let todaysEvents = TrendCalculator.eventsForToday(events)
+        let yesterdaysEvents = events.filter { event in
+            let calendar = Calendar.current
+            let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+            return calendar.isDate(event.openDateTime, inSameDayAs: yesterday)
+        }
+        
+        let dataPoints = TrendCalculator.calculateDailyTrend(from: events, days: 7)
+        
+        return TrendCalculator.calculateTrendSummary(
+            currentEvents: todaysEvents,
+            previousEvents: yesterdaysEvents,
+            dataPoints: dataPoints
+        )
+    }
+    
+    private var thisWeeksEventsTrend: TrendSummary? {
+        guard !events.isEmpty else { return nil }
+        
+        let thisWeeksEvents = TrendCalculator.eventsForThisWeek(events)
+        let lastWeeksEvents = TrendCalculator.eventsForLastWeek(events)
+        
+        let dataPoints = TrendCalculator.calculateDailyTrend(from: events, days: 14)
+        
+        return TrendCalculator.calculateTrendSummary(
+            currentEvents: thisWeeksEvents,
+            previousEvents: lastWeeksEvents,
+            dataPoints: dataPoints
+        )
+    }
+    
+    private var totalEventsTrend: TrendSummary? {
+        guard !events.isEmpty else { return nil }
+        
+        let recentEvents = TrendCalculator.eventsForPeriod(events, days: 7)
+        let previousEvents = TrendCalculator.eventsForPeriod(events, days: 14).filter { event in
+            !recentEvents.contains { $0.id == event.id }
+        }
+        
+        let dataPoints = TrendCalculator.calculateDailyTrend(from: events, days: 30)
+        
+        return TrendCalculator.calculateTrendSummary(
+            currentEvents: recentEvents,
+            previousEvents: previousEvents,
+            dataPoints: dataPoints
+        )
+    }
+    
+    private var dataRangeTrend: TrendSummary? {
+        guard !events.isEmpty else { return nil }
+        
+        let dataPoints = TrendCalculator.calculateDataRangeTrend(from: events)
+        guard !dataPoints.isEmpty else { return nil }
+        
+        // For data range, we show the trend of events per day over the data range
+        let recentDataPoints = dataPoints.suffix(7)
+        let previousDataPoints = dataPoints.dropLast(7).suffix(7)
+        
+        let recentCount = recentDataPoints.map(\.count).reduce(0, +)
+        let previousCount = previousDataPoints.map(\.count).reduce(0, +)
+        
+        let change = recentCount - previousCount
+        let changePercentage = previousCount > 0 ? 
+            (Double(change) / Double(previousCount)) * 100.0 : 0.0
+        
+        let trendDirection: TrendDirection
+        if change > 0 {
+            trendDirection = .up
+        } else if change < 0 {
+            trendDirection = .down
+        } else {
+            trendDirection = .stable
+        }
+        
+        return TrendSummary(
+            currentValue: recentCount,
+            previousValue: previousCount,
+            change: change,
+            changePercentage: changePercentage,
+            trendDirection: trendDirection,
+            dataPoints: dataPoints
+        )
     }
 }
 

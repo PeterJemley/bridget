@@ -55,7 +55,11 @@ public struct BridgeHeaderSection: View {
             }
         }
         .padding()
+#if os(iOS)
         .background(Color(.systemGray6))
+#else
+        .background(Color(.controlBackgroundColor))
+#endif
         .cornerRadius(12)
     }
     

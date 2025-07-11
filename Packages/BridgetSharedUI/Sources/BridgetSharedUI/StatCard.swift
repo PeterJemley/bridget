@@ -43,7 +43,11 @@ public struct StatCard: View {
         }
         .frame(minHeight: 80)
         .padding()
+#if os(iOS)
         .background(Color(.systemBackground))
+#else
+        .background(Color(.windowBackgroundColor))
+#endif
         .cornerRadius(8)
     }
 }

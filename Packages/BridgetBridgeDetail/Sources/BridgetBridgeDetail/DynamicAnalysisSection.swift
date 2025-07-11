@@ -341,7 +341,11 @@ public struct DynamicAnalysisSection: View {
                 }
             }
             .padding()
+#if os(iOS)
             .background(Color(.systemGray6))
+#else
+            .background(Color(.controlBackgroundColor))
+#endif
             .cornerRadius(12)
         }
         .onAppear {
@@ -712,7 +716,11 @@ public struct DynamicAnalysisSection: View {
                             .italic()
                     }
                     .padding()
+#if os(iOS)
                     .background(Color(.systemBackground))
+#else
+                    .background(Color(.windowBackgroundColor))
+#endif
                     .cornerRadius(8)
                 } else {
                     Text("Generating prediction...")
@@ -803,7 +811,11 @@ public struct DynamicAnalysisSection: View {
                     }
                 }
                 .padding()
+#if os(iOS)
                 .background(Color(.systemBackground))
+#else
+                .background(Color(.windowBackgroundColor))
+#endif
                 .cornerRadius(8)
             } else {
                 Text("Need at least 5 events for impact analysis")
@@ -874,7 +886,11 @@ public struct DynamicAnalysisSection: View {
                         }
                     }
                     .padding(8)
+#if os(iOS)
                     .background(Color(.systemBackground))
+#else
+                    .background(Color(.windowBackgroundColor))
+#endif
                     .cornerRadius(6)
                 }
             }

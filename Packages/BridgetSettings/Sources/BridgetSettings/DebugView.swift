@@ -9,13 +9,11 @@ import SwiftUI
 import SwiftData
 import BridgetCore
 import BridgetNetworking
-import MapKit
 import BridgetDashboard
 
 public struct DebugView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query(sort: \DrawbridgeEvent.openDateTime, order: .reverse)
-    private var events: [DrawbridgeEvent]
+    @Query private var events: [DrawbridgeEvent]
     @Query private var bridgeInfo: [DrawbridgeInfo]
     
     @State private var isLoading = false
@@ -23,9 +21,11 @@ public struct DebugView: View {
     @State private var lastRefresh: Date?
     @State private var sessionApiCalls = 0
     @State private var totalApiCalls = 0
-    @State private var motionService = MotionDetectionService()
     @State private var showingMotionSummary = false
     @State private var motionSummaryText = ""
+    
+    // Motion service instance
+    private let motionService = MotionDetectionService.shared
     
     @AppStorage("showMotionDebug") private var showMotionDebug = false
     
@@ -33,220 +33,21 @@ public struct DebugView: View {
     
     public var body: some View {
         VStack(spacing: 16) {
-            DebugDashboardSection(motionService: MotionDetectionService.shared, backgroundAgent: BackgroundTrafficAgent(trafficService: TrafficAwareRoutingService(), motionService: MotionDetectionService.shared))
+            DebugDashboardSection(
+                motionService: motionService, 
+                backgroundAgent: BackgroundTrafficAgent(
+                    trafficService: TrafficAwareRoutingService(), 
+                    motionService: motionService
+                )
+            )
+            
             NavigationView {
                 List {
-                    Section("API Status") {
-                        HStack {
-                            Text("Connection Status")
-                            Spacer()
-                            Circle()
-                                .fill(connectionStatusColor)
-                                .frame(width: 12, height: 12)
-                            Text(connectionStatusText)
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        if let lastRefresh = lastRefresh {
-                            HStack {
-                                Text("Last API Fetch")
-                                Spacer()
-                                Text(lastRefresh.formatted(.dateTime))
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                        
-                        // FIXED: Show session API calls (resets on app launch)
-                        HStack {
-                            Text("API Calls Made")
-                            Spacer()
-                            Text("\(sessionApiCalls)")
-                                .foregroundColor(.secondary)
-                        }
-
-                        HStack {
-                            Text("Total API Calls")
-                            Spacer()
-                            Text("\(totalApiCalls)")
-                                .foregroundColor(.secondary)
-                        }
-
-                        HStack {
-                            Text("Data Source")
-                            Spacer()
-                            Text("Seattle Open Data API")
-                                .foregroundColor(.green)
-                        }
-                        
-                        if let errorMessage = errorMessage {
-                            Text("Error: \(errorMessage)")
-                                .foregroundColor(.red)
-                                .font(.caption)
-                        }
-                    }
-                    
-                    Section("Data Store Statistics") {
-                        HStack {
-                            Text("Total Events")
-                            Spacer()
-                            Text("\(events.count)")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Text("Unique Bridges")
-                            Spacer()
-                            Text("\(uniqueBridgeCount)")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Text("Bridge Info Records")
-                            Spacer()
-                            Text("\(bridgeInfo.count)")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        if !events.isEmpty {
-                            HStack {
-                                Text("Currently Open")
-                                Spacer()
-                                Text("\(currentlyOpenCount)")
-                                    .foregroundColor(currentlyOpenCount > 0 ? .orange : .green)
-                            }
-                            
-                            HStack {
-                                Text("Today's Events")
-                                Spacer()
-                                Text("\(todaysEvents.count)")
-                                    .foregroundColor(.secondary)
-                            }
-                        }
-                    }
-                    
-                    Section("Actions") {
-                        Button(action: fetchData) {
-                            HStack {
-                                Image(systemName: "arrow.clockwise")
-                                Text("Fetch Latest Data")
-                            }
-                        }
-                        .disabled(isLoading)
-                        
-                        Button(action: clearData) {
-                            HStack {
-                                Image(systemName: "trash")
-                                Text("Clear All Data")
-                            }
-                        }
-                        .foregroundColor(.red)
-                        .disabled(events.isEmpty && bridgeInfo.isEmpty)
-                        
-                        // TODO: Remove before App Store submission - Traffic Routing Example
-                        Button(action: runTrafficRoutingExample) {
-                            HStack {
-                                Image(systemName: "car.fill")
-                                Text("Run UW → Space Needle Route Example")
-                            }
-                        }
-                        .foregroundColor(.blue)
-                    }
-                    
-                    Section("Motion Data") {
-                        HStack {
-                            Text("Logged Entries")
-                            Spacer()
-                            Text("\(motionService.loggedEntriesCount)")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Text("Polling Rate")
-                            Spacer()
-                            Text("\(String(format: "%.1f", motionService.currentPollingRate)) Hz")
-                                .foregroundColor(.secondary)
-                        }
-                        
-                        HStack {
-                            Text("High Detail Mode")
-                            Spacer()
-                            Toggle("", isOn: Binding(
-                                get: { motionService.isHighDetailMode },
-                                set: { motionService.setHighDetailMode($0) }
-                            ))
-                        }
-                        
-                        Button(action: exportMotionData) {
-                            HStack {
-                                Image(systemName: "square.and.arrow.up")
-                                Text("Export Motion Data")
-                            }
-                        }
-                        .disabled(motionService.loggedEntriesCount == 0)
-                        
-                        Button(action: clearMotionData) {
-                            HStack {
-                                Image(systemName: "trash")
-                                Text("Clear Motion Logs")
-                            }
-                        }
-                        .foregroundColor(.red)
-                        .disabled(motionService.loggedEntriesCount == 0)
-                        
-                        if motionService.loggedEntriesCount > 0 {
-                            Button(action: showMotionSummary) {
-                                HStack {
-                                    Image(systemName: "chart.bar")
-                                    Text("Show Motion Summary")
-                                }
-                            }
-                            .foregroundColor(.blue)
-                        }
-                    }
-                    
-                    Section("Motion Configuration") {
-                        VStack(alignment: .leading, spacing: 10) {
-                            Text("Polling Interval")
-                                .font(.headline)
-                            
-                            HStack {
-                                Text("Current:")
-                                Spacer()
-                                Text("\(String(format: "%.2f", motionService.pollingInterval))s")
-                                    .foregroundColor(.secondary)
-                            }
-                            
-                            VStack(spacing: 8) {
-                                Button("1 Hz (1.0s) - Battery Efficient") {
-                                    motionService.setPollingInterval(1.0)
-                                }
-                                .buttonStyle(.bordered)
-                                .disabled(motionService.pollingInterval == 1.0)
-                                
-                                Button("5 Hz (0.2s) - Balanced") {
-                                    motionService.setPollingInterval(0.2)
-                                }
-                                .buttonStyle(.bordered)
-                                .disabled(motionService.pollingInterval == 0.2)
-                                
-                                Button("10 Hz (0.1s) - High Detail") {
-                                    motionService.setPollingInterval(0.1)
-                                }
-                                .buttonStyle(.bordered)
-                                .disabled(motionService.pollingInterval == 0.1)
-                                
-                                Button("20 Hz (0.05s) - Maximum") {
-                                    motionService.setPollingInterval(0.05)
-                                }
-                                .buttonStyle(.bordered)
-                                .disabled(motionService.pollingInterval == 0.05)
-                            }
-                            
-                            Text("Higher rates use more battery and generate more data")
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                    }
+                    apiStatusSection
+                    dataStoreSection
+                    actionsSection
+                    motionDataSection
+                    motionConfigurationSection
                 }
                 .navigationTitle("Debug Console")
                 .toolbar {
@@ -259,9 +60,9 @@ public struct DebugView: View {
                 }
                 .onAppear {
                     loadApiCallCounts()
-                    MotionDetectionService.shared.showMotionDebug = showMotionDebug
-                    if !MotionDetectionService.shared.isMonitoring {
-                        MotionDetectionService.shared.startMonitoring()
+                    motionService.showMotionDebug = showMotionDebug
+                    if !motionService.isMonitoring {
+                        motionService.startMonitoring()
                     }
                     SecurityLogger.main("🔧 [DEBUG VIEW] Loaded - Events: \(events.count), Bridge Info: \(bridgeInfo.count)")
                 }
@@ -269,27 +70,252 @@ public struct DebugView: View {
                     loadApiCallCounts()
                 }
                 .sheet(isPresented: $showingMotionSummary) {
-                    NavigationView {
-                        ScrollView {
-                            Text(motionSummaryText)
-                                .font(.system(.body, design: .monospaced))
-                                .padding()
-                        }
-                        .navigationTitle("Motion Summary")
-                        .navigationBarTitleDisplayMode(.inline)
-                        .toolbar {
-                            ToolbarItem(placement: .navigationBarTrailing) {
-                                Button("Done") {
-                                    showingMotionSummary = false
-                                }
-                            }
-                        }
-                    }
+                    motionSummarySheet
                 }
             }
         }
     }
     
+    // MARK: - View Components
+    
+    private var apiStatusSection: some View {
+        Section("API Status") {
+            HStack {
+                Text("Connection Status")
+                Spacer()
+                Circle()
+                    .fill(connectionStatusColor)
+                    .frame(width: 12, height: 12)
+                Text(connectionStatusText)
+                    .foregroundColor(.secondary)
+            }
+            
+            if let lastRefresh = lastRefresh {
+                HStack {
+                    Text("Last API Fetch")
+                    Spacer()
+                    Text(lastRefresh.formatted(.dateTime))
+                        .foregroundColor(.secondary)
+                }
+            }
+            
+            HStack {
+                Text("API Calls Made")
+                Spacer()
+                Text("\(sessionApiCalls)")
+                    .foregroundColor(.secondary)
+            }
+
+            HStack {
+                Text("Total API Calls")
+                Spacer()
+                Text("\(totalApiCalls)")
+                    .foregroundColor(.secondary)
+            }
+
+            HStack {
+                Text("Data Source")
+                Spacer()
+                Text("Seattle Open Data API")
+                    .foregroundColor(.green)
+            }
+            
+            if let errorMessage = errorMessage {
+                Text("Error: \(errorMessage)")
+                    .foregroundColor(.red)
+                    .font(.caption)
+            }
+        }
+    }
+    
+    private var dataStoreSection: some View {
+        Section("Data Store Statistics") {
+            HStack {
+                Text("Total Events")
+                Spacer()
+                Text("\(events.count)")
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack {
+                Text("Unique Bridges")
+                Spacer()
+                Text("\(uniqueBridgeCount)")
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack {
+                Text("Bridge Info Records")
+                Spacer()
+                Text("\(bridgeInfo.count)")
+                    .foregroundColor(.secondary)
+            }
+            
+            if !events.isEmpty {
+                HStack {
+                    Text("Currently Open")
+                    Spacer()
+                    Text("\(currentlyOpenCount)")
+                        .foregroundColor(currentlyOpenCount > 0 ? .orange : .green)
+                }
+                
+                HStack {
+                    Text("Today's Events")
+                    Spacer()
+                    Text("\(todaysEvents.count)")
+                        .foregroundColor(.secondary)
+                }
+            }
+        }
+    }
+    
+    private var actionsSection: some View {
+        Section("Actions") {
+            Button(action: fetchData) {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text("Fetch Latest Data")
+                }
+            }
+            .disabled(isLoading)
+            
+            Button(action: clearData) {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Clear All Data")
+                }
+            }
+            .foregroundColor(.red)
+            .disabled(events.isEmpty && bridgeInfo.isEmpty)
+            
+            Button(action: runTrafficRoutingExample) {
+                HStack {
+                    Image(systemName: "car.fill")
+                    Text("Run UW → Space Needle Route Example")
+                }
+            }
+            .foregroundColor(.blue)
+        }
+    }
+    
+    private var motionDataSection: some View {
+        Section("Motion Data") {
+            HStack {
+                Text("Logged Entries")
+                Spacer()
+                Text("\(motionService.loggedEntriesCount)")
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack {
+                Text("Polling Rate")
+                Spacer()
+                Text("\(String(format: "%.1f", motionService.currentPollingRate)) Hz")
+                    .foregroundColor(.secondary)
+            }
+            
+            HStack {
+                Text("High Detail Mode")
+                Spacer()
+                Toggle("", isOn: Binding(
+                    get: { motionService.isHighDetailMode },
+                    set: { motionService.setHighDetailMode($0) }
+                ))
+            }
+            
+            Button(action: exportMotionData) {
+                HStack {
+                    Image(systemName: "square.and.arrow.up")
+                    Text("Export Motion Data")
+                }
+            }
+            .disabled(motionService.loggedEntriesCount == 0)
+            
+            Button(action: clearMotionData) {
+                HStack {
+                    Image(systemName: "trash")
+                    Text("Clear Motion Logs")
+                }
+            }
+            .foregroundColor(.red)
+            .disabled(motionService.loggedEntriesCount == 0)
+            
+            if motionService.loggedEntriesCount > 0 {
+                Button(action: showMotionSummary) {
+                    HStack {
+                        Image(systemName: "chart.bar")
+                        Text("Show Motion Summary")
+                    }
+                }
+                .foregroundColor(.blue)
+            }
+        }
+    }
+    
+    private var motionConfigurationSection: some View {
+        Section("Motion Configuration") {
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Polling Interval")
+                    .font(.headline)
+                
+                HStack {
+                    Text("Current:")
+                    Spacer()
+                    Text("\(String(format: "%.2f", motionService.pollingInterval))s")
+                        .foregroundColor(.secondary)
+                }
+                
+                VStack(spacing: 8) {
+                    Button("1 Hz (1.0s) - Battery Efficient") {
+                        motionService.setPollingInterval(1.0)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(motionService.pollingInterval == 1.0)
+                    
+                    Button("5 Hz (0.2s) - Balanced") {
+                        motionService.setPollingInterval(0.2)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(motionService.pollingInterval == 0.2)
+                    
+                    Button("10 Hz (0.1s) - High Detail") {
+                        motionService.setPollingInterval(0.1)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(motionService.pollingInterval == 0.1)
+                    
+                    Button("20 Hz (0.05s) - Maximum") {
+                        motionService.setPollingInterval(0.05)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(motionService.pollingInterval == 0.05)
+                }
+                
+                Text("Higher rates use more battery and generate more data")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+    
+    private var motionSummarySheet: some View {
+        NavigationView {
+            ScrollView {
+                Text(motionSummaryText)
+                    .font(.system(.body, design: .monospaced))
+                    .padding()
+            }
+            .navigationTitle("Motion Summary")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("Done") {
+                        showingMotionSummary = false
+                    }
+                }
+            }
+        }
+    }
     
     // MARK: - Computed Properties
     private var connectionStatusColor: Color {

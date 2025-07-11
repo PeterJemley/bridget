@@ -1,0 +1,131 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/APIDocumentationAgent.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/APIDocumentationAgent.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/APIDocumentationAgent.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/APIDocumentationAgent~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/APIDocumentationAgent.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/ARIMAPredictionEngine.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/ARIMAPredictionEngine.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/AppSettings.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/AppSettings.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/AppSettings.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/AppSettings~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/AppSettings.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BackgroundTrafficAgent.iOS.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.iOS.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.iOS.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.iOS~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.iOS.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BackgroundTrafficAgent.macOS.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.macOS.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.macOS.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.macOS~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.macOS.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BackgroundTrafficAgent.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgent.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BackgroundTrafficAgentProtocol.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgentProtocol.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgentProtocol.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgentProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BackgroundTrafficAgentProtocol.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/BridgeAnalytics.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/BridgeAnalytics.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DTOs.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DTOs.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DTOs.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DTOs~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DTOs.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeEvent.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeEvent.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/DrawbridgeInfo.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/DrawbridgeInfo.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/MotionDetectionService.iOS.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.iOS.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.iOS.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.iOS~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.iOS.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/MotionDetectionService.macOS.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.macOS.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.macOS.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.macOS~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.macOS.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/MotionDetectionService.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionService.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/MotionDetectionServiceProtocol.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionServiceProtocol.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionServiceProtocol.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionServiceProtocol~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionDetectionServiceProtocol.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/MotionModels.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionModels.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionModels.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionModels~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/MotionModels.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/NeuralEngineARIMA.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/NeuralEngineARIMA.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/TrafficAwareRoutingService.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficAwareRoutingService.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficAwareRoutingService.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficAwareRoutingService~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficAwareRoutingService.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/TrafficRoutingExample.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficRoutingExample.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficRoutingExample.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficRoutingExample~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrafficRoutingExample.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/TrendData.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrendData.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrendData.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrendData~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/TrendData.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/Sources/BridgetCore/Utilities.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetCore.build/Utilities.swiftdeps"
+  }
+}

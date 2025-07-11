@@ -129,10 +129,14 @@ public struct BridgeDetailView: View {
                 }
             }
             .navigationTitle(bridgeInfo.entityName)
+#if os(iOS)
             .navigationBarTitleDisplayMode(.large)
+#endif
             .onAppear {
                 print("🌉 [BRIDGE DETAIL] Appeared for \(bridgeInfo.entityName)")
                 print("📊 [BRIDGE DETAIL] Total events: \(allEvents.count), Bridge-specific: \(bridgeSpecificEvents.count)")
+                print("🔍 [BRIDGE DETAIL] ModelContext available: \(modelContext != nil)")
+                print("🔍 [BRIDGE DETAIL] BridgeEvent ID: \(bridgeEvent.entityID), Name: \(bridgeEvent.entityName)")
                 viewModel.checkDataAvailability(allEvents: allEvents)
             }
             .onChange(of: allEvents.count) { _, _ in
@@ -156,6 +160,23 @@ public struct BridgeDetailView: View {
             Text("Fetching events for \(bridgeInfo.entityName)")
                 .font(.caption)
                 .foregroundColor(.secondary)
+            
+            // Debug info
+            VStack(spacing: 4) {
+                Text("Debug Info:")
+                    .font(.caption2)
+                    .fontWeight(.medium)
+                Text("Total Events: \(allEvents.count)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("Bridge Events: \(bridgeSpecificEvents.count)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("ModelContext: \(modelContext != nil ? "Available" : "Missing")")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 8)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
@@ -166,39 +187,82 @@ public struct BridgeDetailView: View {
     private var bridgeDetailContent: some View {
         ScrollView {
             VStack(spacing: 16) {
-                BridgeHeaderSection(
-                    bridgeName: bridgeInfo.entityName,
-                    lastKnownEvent: lastKnownEvent,
-                    totalEvents: bridgeSpecificEvents.count
-                )
-                
-                FunctionalTimeFilterSection(
-                    selectedPeriod: $viewModel.selectedPeriod,
-                    bridgeEvents: filteredEvents
-                )
-                
-                BridgeStatsSection(
-                    events: filteredEvents,
-                    timePeriod: viewModel.selectedPeriod,
-                    analysisType: viewModel.selectedAnalysis
-                )
-                
-                AnalysisFilterSection(selectedAnalysis: $viewModel.selectedAnalysis)
-                ViewFilterSection(selectedView: $viewModel.selectedView)
-                
-                DynamicAnalysisSection(
-                    events: filteredEvents,
-                    analysisType: viewModel.selectedAnalysis,
-                    viewType: viewModel.selectedView,
-                    bridgeName: bridgeInfo.entityName
-                )
-                
-                if let errorMessage = viewModel.errorMessage {
-                    errorView(errorMessage)
+                // Check if we have data for this bridge
+                if bridgeSpecificEvents.isEmpty {
+                    noDataView
+                } else {
+                    BridgeHeaderSection(
+                        bridgeName: bridgeInfo.entityName,
+                        lastKnownEvent: lastKnownEvent,
+                        totalEvents: bridgeSpecificEvents.count
+                    )
+                    
+                    FunctionalTimeFilterSection(
+                        selectedPeriod: $viewModel.selectedPeriod,
+                        bridgeEvents: filteredEvents
+                    )
+                    
+                    BridgeStatsSection(
+                        events: filteredEvents,
+                        timePeriod: viewModel.selectedPeriod,
+                        analysisType: viewModel.selectedAnalysis
+                    )
+                    
+                    AnalysisFilterSection(selectedAnalysis: $viewModel.selectedAnalysis)
+                    ViewFilterSection(selectedView: $viewModel.selectedView)
+                    
+                    DynamicAnalysisSection(
+                        events: filteredEvents,
+                        analysisType: viewModel.selectedAnalysis,
+                        viewType: viewModel.selectedView,
+                        bridgeName: bridgeInfo.entityName
+                    )
+                    
+                    if let errorMessage = viewModel.errorMessage {
+                        errorView(errorMessage)
+                    }
                 }
             }
             .padding()
         }
+    }
+    
+    // MARK: - No Data View
+    
+    @ViewBuilder
+    private var noDataView: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "exclamationmark.triangle")
+                .font(.largeTitle)
+                .foregroundColor(.orange)
+            
+            Text("No Data Available")
+                .font(.headline)
+                .fontWeight(.medium)
+            
+            Text("No events found for \(bridgeInfo.entityName)")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+                .multilineTextAlignment(.center)
+            
+            VStack(spacing: 4) {
+                Text("Debug Information:")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                Text("Bridge ID: \(bridgeEvent.entityID)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("Total Events in Database: \(allEvents.count)")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                Text("ModelContext Available: \(modelContext != nil ? "Yes" : "No")")
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 8)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
     }
     
     // MARK: - Error View
@@ -232,7 +296,11 @@ public struct BridgeDetailView: View {
             .foregroundColor(.blue)
         }
         .padding()
+#if os(iOS)
         .background(Color(.systemGray6))
+#else
+        .background(Color(.controlBackgroundColor))
+#endif
         .cornerRadius(12)
     }
     

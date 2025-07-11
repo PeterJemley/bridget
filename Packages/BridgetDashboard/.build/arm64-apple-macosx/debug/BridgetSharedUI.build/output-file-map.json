@@ -1,0 +1,53 @@
+{
+  "": {
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/master.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/BackgroundMonitoringCard.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/BackgroundMonitoringCard.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/BackgroundMonitoringCard.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/BackgroundMonitoringCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/BackgroundMonitoringCard.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/FilterButton.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/FilterButton.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/FilterButton.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/FilterButton~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/FilterButton.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/InfoRow.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/InfoRow.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/InfoRow.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/InfoRow~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/InfoRow.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/LoadingDataOverlay.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/LoadingDataOverlay.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/LoadingDataOverlay.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/LoadingDataOverlay~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/LoadingDataOverlay.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/MotionStatusCard.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/MotionStatusCard.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/MotionStatusCard.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/MotionStatusCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/MotionStatusCard.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/SparklineChart.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/SparklineChart.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/SparklineChart.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/SparklineChart~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/SparklineChart.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/StatCard.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatCard.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatCard.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatCard.swiftdeps"
+  },
+  "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetSharedUI/Sources/BridgetSharedUI/StatusCard.swift": {
+    "dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatusCard.d",
+    "object": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatusCard.swift.o",
+    "swiftmodule": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatusCard~partial.swiftmodule",
+    "swift-dependencies": "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetDashboard/.build/arm64-apple-macosx/debug/BridgetSharedUI.build/StatusCard.swiftdeps"
+  }
+}

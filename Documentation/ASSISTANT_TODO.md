@@ -115,7 +115,16 @@
 
 ### **⚡ HIGH PRIORITY (Next 2 Weeks)**
 
-#### **2.1 Motion Detection Integration (6-8 hours)**
+#### **2.1 Dynamic Island Safe Area Implementation (2-3 hours)**
+- [ ] **Fix content obscured by dynamic island and status bar**
+  - [ ] Audit all views for proper safe area handling
+  - [ ] Implement `.safeAreaInset()` for dynamic island area
+  - [ ] Add proper padding around status bar and connectivity icons
+  - [ ] Test on iPhone 16 Pro simulator with dynamic island
+  - [ ] Ensure scrolling content doesn't get obscured
+  - [ ] Update all navigation views to respect safe areas
+
+#### **2.2 Motion Detection Integration (6-8 hours)**
 - [x] **Integrate MotionDetectionService into dashboard** ✅ **COMPLETED**
   - [ ] Add motion data to bridge status cards
   - [ ] Create traffic flow indicators
@@ -247,6 +256,22 @@ Estimated Time: 3-4 hours
 Dependencies: None
 Success Criteria: Can monitor bridge-specific congestion
 ```
+
+#### **Task 3: Dynamic Island Safe Area Implementation (2-3 hours)**
+```
+Priority: HIGH
+Estimated Time: 2-3 hours
+Dependencies: None
+Success Criteria: Content no longer obscured by dynamic island, connectivity icons, etc.
+```
+
+**Steps:**
+1. Audit all views for proper safe area handling
+2. Implement `.safeAreaInset()` for dynamic island area
+3. Add proper padding around status bar and connectivity icons
+4. Test on iPhone 16 Pro simulator with dynamic island
+5. Ensure scrolling content doesn't get obscured
+6. Update all navigation views to respect safe areas
 
 **Steps:**
 1. Create `BridgeCongestionMonitor.swift` in BridgetCore

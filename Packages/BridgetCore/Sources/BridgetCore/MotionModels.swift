@@ -115,27 +115,8 @@ public enum RiskLevel: String, CaseIterable, Codable {
     }
 }
 
-/// Vehicle detection state
-public enum VehicleState: String, CaseIterable, Codable {
-    case stationary = "Stationary"
-    case walking = "Walking"
-    case inVehicle = "In Vehicle"
-    case unknown = "Unknown"
-    
-    public var systemImage: String {
-        switch self {
-        case .stationary: return "figure.stand"
-        case .walking: return "figure.walk"
-        case .inVehicle: return "car.fill"
-        case .unknown: return "questionmark.circle"
-        }
-    }
-}
-
-// MARK: - Notification Names
+// MARK: - Additional Notification Names
 public extension Notification.Name {
-    static let userEnteredVehicle = Notification.Name("userEnteredVehicle")
-    static let userExitedVehicle = Notification.Name("userExitedVehicle")
     static let bridgePredictionUpdated = Notification.Name("bridgePredictionUpdated")
     static let routeRiskDetected = Notification.Name("routeRiskDetected")
 } 

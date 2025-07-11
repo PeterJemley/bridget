@@ -66,7 +66,11 @@ public struct BridgeStatsSection: View {
             }
         }
         .padding()
+#if os(iOS)
         .background(Color(.systemGray6))
+#else
+        .background(Color(.controlBackgroundColor))
+#endif
         .cornerRadius(12)
         .onAppear {
             calculatePredictions()
