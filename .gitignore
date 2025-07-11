@@ -4,3 +4,10 @@ build/
 *.xcworkspace
 *.xcuserdata
 
+# Ignore SwiftPM build artifacts
+**/.build/
+
+# Ignore build and test logs
+build.log
+test.log
+

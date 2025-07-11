@@ -12,10 +12,14 @@ import BridgetSharedUI
 public struct StatusOverviewCard: View {
     public let events: [DrawbridgeEvent]
     public let bridgeInfo: [DrawbridgeInfo]
+    public let onNavigateToRoutes: (() -> Void)?
     
-    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo]) {
+    @State private var showingStreakChampionModal = false
+    
+    public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo], onNavigateToRoutes: (() -> Void)? = nil) {
         self.events = events
         self.bridgeInfo = bridgeInfo
+        self.onNavigateToRoutes = onNavigateToRoutes
     }
     
     public var body: some View {
@@ -31,12 +35,64 @@ public struct StatusOverviewCard: View {
                 GridItem(.flexible(), spacing: 12),
                 GridItem(.flexible(), spacing: 12)
             ], spacing: 16) {
-                TrendSummaryCard(
-                    title: "Bridges Monitored",
-                    value: "\(uniqueBridgeCount)",
-                    trend: bridgeCountTrend,
-                    color: .blue
-                )
+                // Streak Champion Card
+                if let champion = StreakAnalytics.calculateWeeklyChampion(from: events) {
+                    Button(action: {
+                        showingStreakChampionModal = true
+                    }) {
+                        VStack(spacing: 8) {
+                            HStack(spacing: 6) {
+                                Image(systemName: "trophy.fill")
+                                    .font(.title2)
+                                    .foregroundColor(.yellow)
+                                Text("Weekly Champion")
+                                    .font(.caption)
+                                    .fontWeight(.medium)
+                                    .foregroundColor(.secondary)
+                            }
+                            Text(champion.bridgeName)
+                                .font(.headline)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                                .lineLimit(1)
+                                .minimumScaleFactor(0.7)
+                            Text("\(Int(champion.streakHours))h streak")
+                                .font(.title3)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(16)
+                        .background(Color.blue.opacity(0.1))
+                        .cornerRadius(12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                }
+                // Route Planning Button instead of Bridges Monitored
+                Button(action: {
+                    onNavigateToRoutes?()
+                }) {
+                    VStack(spacing: 8) {
+                        Image(systemName: "car.fill")
+                            .font(.title2)
+                            .foregroundColor(.blue)
+                        
+                        Text("Find My")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                            .foregroundColor(.secondary)
+                        
+                        Text("Best Route")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.blue)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(16)
+                    .background(Color.blue.opacity(0.1))
+                    .cornerRadius(12)
+                }
+                .buttonStyle(PlainButtonStyle())
                 
                 TrendSummaryCard(
                     title: "Today's Events",
@@ -70,6 +126,11 @@ public struct StatusOverviewCard: View {
         .padding(16)
         .background(Color(.systemGray6))
         .cornerRadius(16)
+        .sheet(isPresented: $showingStreakChampionModal) {
+            if let champion = StreakAnalytics.calculateWeeklyChampion(from: events) {
+                StreakChampionModalView(champion: champion, allEvents: events)
+            }
+        }
     }
     
     private var uniqueBridgeCount: Int {
@@ -212,6 +273,44 @@ public struct StatusOverviewCard: View {
             dataPoints: dataPoints
         )
     }
+}
+
+// MARK: - Streak Champion Calculation
+private struct StreakChampion {
+    let bridgeName: String
+    let streakHours: Int
+    let bridgeID: Int
+}
+
+private func calculateWeeklyStreakChampion(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo]) -> StreakChampion? {
+    let calendar = Calendar.current
+    let now = Date()
+    let weekAgo = calendar.date(byAdding: .day, value: -7, to: now) ?? now
+    let eventsLastWeek = events.filter { $0.openDateTime >= weekAgo && $0.openDateTime <= now }
+    let bridges = Set(eventsLastWeek.map { $0.entityID })
+    var champion: StreakChampion? = nil
+    
+    for bridgeID in bridges {
+        let bridgeEvents = eventsLastWeek.filter { $0.entityID == bridgeID }.sorted { $0.openDateTime < $1.openDateTime }
+        var lastClose = weekAgo
+        var maxStreak: TimeInterval = 0
+        for event in bridgeEvents {
+            let open = event.openDateTime
+            let close = event.closeDateTime ?? open
+            let streak = open.timeIntervalSince(lastClose)
+            if streak > maxStreak { maxStreak = streak }
+            lastClose = max(close, lastClose)
+        }
+        // Check streak from last event to now
+        let finalStreak = now.timeIntervalSince(lastClose)
+        if finalStreak > maxStreak { maxStreak = finalStreak }
+        let streakHours = Int(maxStreak / 3600)
+        let name = bridgeInfo.first(where: { $0.entityID == bridgeID })?.entityName ?? "Bridge #\(bridgeID)"
+        if champion == nil || streakHours > champion!.streakHours {
+            champion = StreakChampion(bridgeName: name, streakHours: streakHours, bridgeID: bridgeID)
+        }
+    }
+    return champion
 }
 
 #Preview {

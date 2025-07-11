@@ -34,13 +34,21 @@ public class BridgeDetailViewModel: ObservableObject {
     public func checkDataAvailability(allEvents: [DrawbridgeEvent]) {
         let bridgeSpecificEvents = allEvents.filter { $0.entityID == bridgeEvent.entityID }
         
+        SecurityLogger.main("🌉 [VIEWMODEL] Checking data availability for \(bridgeEvent.entityName)")
+        SecurityLogger.main("🌉 [VIEWMODEL] Total events: \(allEvents.count)")
+        SecurityLogger.main("🌉 [VIEWMODEL] Bridge-specific events: \(bridgeSpecificEvents.count)")
+        SecurityLogger.main("🌉 [VIEWMODEL] Current isDataReady: \(isDataReady)")
+        
         if !bridgeSpecificEvents.isEmpty {
+            SecurityLogger.main("🌉 [VIEWMODEL] ✅ Bridge has data - setting isDataReady = true")
             isDataReady = true
             stopDataCheckTimer()
         } else if allEvents.count > 0 {
+            SecurityLogger.main("🌉 [VIEWMODEL] ⚠️ No bridge-specific data but total events exist - setting isDataReady = true")
             isDataReady = true
             stopDataCheckTimer()
         } else {
+            SecurityLogger.main("🌉 [VIEWMODEL] ❌ No data available - starting timer")
             startDataCheckTimer()
         }
     }
@@ -117,6 +125,9 @@ public struct BridgeDetailView: View {
     public init(bridgeEvent: DrawbridgeEvent) {
         self.bridgeEvent = bridgeEvent
         self._viewModel = StateObject(wrappedValue: BridgeDetailViewModel(bridgeEvent: bridgeEvent))
+        SecurityLogger.main("🌉 [BRIDGE DETAIL] Initializing for \(bridgeEvent.entityName) (ID: \(bridgeEvent.entityID))")
+        SecurityLogger.main("🌉 [BRIDGE DETAIL] Event date: \(bridgeEvent.openDateTime.formatted())")
+        SecurityLogger.main("🌉 [BRIDGE DETAIL] Event coordinates: \(bridgeEvent.latitude), \(bridgeEvent.longitude)")
     }
     
     public var body: some View {
@@ -133,13 +144,15 @@ public struct BridgeDetailView: View {
             .navigationBarTitleDisplayMode(.large)
 #endif
             .onAppear {
-                print("🌉 [BRIDGE DETAIL] Appeared for \(bridgeInfo.entityName)")
-                print("📊 [BRIDGE DETAIL] Total events: \(allEvents.count), Bridge-specific: \(bridgeSpecificEvents.count)")
-                print("🔍 [BRIDGE DETAIL] ModelContext available: \(modelContext != nil)")
-                print("🔍 [BRIDGE DETAIL] BridgeEvent ID: \(bridgeEvent.entityID), Name: \(bridgeEvent.entityName)")
+                SecurityLogger.main("🌉 [BRIDGE DETAIL] Appeared for \(bridgeInfo.entityName)")
+                SecurityLogger.main("📊 [BRIDGE DETAIL] Total events: \(allEvents.count), Bridge-specific: \(bridgeSpecificEvents.count)")
+                SecurityLogger.main("🔍 [BRIDGE DETAIL] ModelContext available: \(modelContext != nil)")
+                SecurityLogger.main("🔍 [BRIDGE DETAIL] BridgeEvent ID: \(bridgeEvent.entityID), Name: \(bridgeEvent.entityName)")
+                SecurityLogger.main("🔍 [BRIDGE DETAIL] ViewModel isDataReady: \(viewModel.isDataReady)")
                 viewModel.checkDataAvailability(allEvents: allEvents)
             }
             .onChange(of: allEvents.count) { _, _ in
+                SecurityLogger.main("🌉 [BRIDGE DETAIL] Events count changed: \(allEvents.count)")
                 viewModel.checkDataAvailability(allEvents: allEvents)
             }
         }

@@ -23,11 +23,12 @@ public struct RecentActivityToggleView: View {
     }
     
     public var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
+        VStack(spacing: 12) {
             // Header with toggle
             HStack {
-                Text("Recent Historical Activity")
+                Text("Latest API Data")
                     .font(.headline)
+                    .fontWeight(.semibold)
                 
                 Spacer()
                 
@@ -82,6 +83,77 @@ public struct RecentActivityToggleView: View {
         .padding()
         .background(Color(.systemGray6))
         .cornerRadius(12)
+        .onAppear {
+            SecurityLogger.main("📱 [RECENT ACTIVITY] RecentActivityToggleView appeared")
+            SecurityLogger.main("📱 [RECENT ACTIVITY] Total events: \(events.count)")
+            SecurityLogger.main("📱 [RECENT ACTIVITY] Total bridge info: \(bridgeInfo.count)")
+            SecurityLogger.main("📱 [RECENT ACTIVITY] Current view mode: \(viewMode)")
+            
+            // COMPREHENSIVE DATA AUDIT FOR LIST VIEW
+            SecurityLogger.main("📱 [RECENT ACTIVITY] ===== COMPREHENSIVE DATA AUDIT =====")
+            
+            // 1. All bridge info records
+            SecurityLogger.main("📱 [RECENT ACTIVITY] ALL BRIDGE INFO RECORDS:")
+            for bridge in bridgeInfo.sorted(by: { $0.entityName < $1.entityName }) {
+                SecurityLogger.main("    • \(bridge.entityName) (ID: \(bridge.entityID)) - Coords: (\(bridge.latitude), \(bridge.longitude))")
+            }
+            
+            // 2. All events by entity name and ID
+            SecurityLogger.main("📱 [RECENT ACTIVITY] ALL EVENTS BY ENTITY:")
+            let eventsByName = Dictionary(grouping: events, by: \.entityName)
+            let eventsByID = Dictionary(grouping: events, by: \.entityID)
+            
+            for (bridgeName, bridgeEvents) in eventsByName.sorted(by: { $0.key < $1.key }) {
+                let uniqueIDs = Set(bridgeEvents.map { $0.entityID })
+                SecurityLogger.main("    • \(bridgeName): \(bridgeEvents.count) events, IDs: \(uniqueIDs)")
+                
+                // Special investigation for Lower Spokane St
+                if bridgeName.contains("Lower Spokane") {
+                    SecurityLogger.main("📱 [RECENT ACTIVITY] 🔍 LOWER SPOKANE ST DETAILED ANALYSIS:")
+                    for event in bridgeEvents.sorted(by: { $0.openDateTime > $1.openDateTime }) {
+                        SecurityLogger.main("        - Event ID: \(event.id), Entity ID: \(event.entityID), Date: \(event.openDateTime.formatted())")
+                    }
+                }
+            }
+            
+            // 3. Check for duplicate entity names in bridgeInfo
+            SecurityLogger.main("📱 [RECENT ACTIVITY] ===== DUPLICATE DETECTION =====")
+            let bridgeNames = bridgeInfo.map { $0.entityName }
+            let uniqueBridgeNames = Set(bridgeNames)
+            if bridgeNames.count != uniqueBridgeNames.count {
+                SecurityLogger.main("📱 [RECENT ACTIVITY] ⚠️ DUPLICATE BRIDGE NAMES IN BRIDGEINFO:")
+                let duplicates = bridgeNames.filter { name in bridgeNames.filter { $0 == name }.count > 1 }
+                SecurityLogger.main("📱 [RECENT ACTIVITY] Duplicate names: \(Set(duplicates))")
+            }
+            
+            // 4. Check for duplicate entity IDs in bridgeInfo
+            let bridgeIDs = bridgeInfo.map { $0.entityID }
+            let uniqueBridgeIDs = Set(bridgeIDs)
+            if bridgeIDs.count != uniqueBridgeIDs.count {
+                SecurityLogger.main("📱 [RECENT ACTIVITY] ⚠️ DUPLICATE BRIDGE IDs IN BRIDGEINFO:")
+                let duplicateIDs = bridgeIDs.filter { id in bridgeIDs.filter { $0 == id }.count > 1 }
+                SecurityLogger.main("📱 [RECENT ACTIVITY] Duplicate IDs: \(Set(duplicateIDs))")
+            }
+            
+            // 5. South Park bridge search in events
+            SecurityLogger.main("📱 [RECENT ACTIVITY] ===== SOUTH PARK BRIDGE SEARCH IN EVENTS =====")
+            let southParkEvents = events.filter { $0.entityName.localizedCaseInsensitiveContains("South Park") }
+            if !southParkEvents.isEmpty {
+                SecurityLogger.main("📱 [RECENT ACTIVITY] 🔍 FOUND SOUTH PARK EVENTS:")
+                for event in southParkEvents {
+                    SecurityLogger.main("    • Event ID: \(event.id), Entity ID: \(event.entityID), Date: \(event.openDateTime.formatted())")
+                }
+            } else {
+                SecurityLogger.main("📱 [RECENT ACTIVITY] No South Park events found in database")
+            }
+            
+            // Original logging
+            let bridgeGroups = Dictionary(grouping: events, by: \.entityName)
+            SecurityLogger.main("📱 [RECENT ACTIVITY] BRIDGE BREAKDOWN:")
+            for (bridgeName, bridgeEvents) in bridgeGroups.sorted(by: { $0.value.count > $1.value.count }) {
+                SecurityLogger.main("    • \(bridgeName): \(bridgeEvents.count) events")
+            }
+        }
     }
 }
 
@@ -91,12 +163,76 @@ private struct RecentActivityListView: View {
     let events: [DrawbridgeEvent]
     let bridgeInfo: [DrawbridgeInfo]
     
-    var body: some View {
-        let recentEvents = events.filter { event in
-            let hoursSinceOpening = Date().timeIntervalSince(event.openDateTime) / 3600
-            return hoursSinceOpening <= 24
+    private var recentEvents: [DrawbridgeEvent] {
+        let oneDayAgo = Calendar.current.date(byAdding: .day, value: -1, to: Date()) ?? Date()
+        let filtered = events
+            .filter { $0.openDateTime >= oneDayAgo }
+            .sorted { $0.openDateTime > $1.openDateTime }
+        
+        SecurityLogger.main("📋 [LIST] Filtering events: \(events.count) total → \(filtered.count) recent (last 24h)")
+        
+        // Group events by bridge (entityID) and select the most recent event for each bridge
+        let bridgeGroups = Dictionary(grouping: filtered, by: \.entityID)
+        let uniqueBridges = bridgeGroups.compactMap { (entityID, events) -> DrawbridgeEvent? in
+            // Get the most recent event for each bridge
+            return events.max(by: { $0.openDateTime < $1.openDateTime })
         }.sorted { $0.openDateTime > $1.openDateTime }
         
+        SecurityLogger.main("📋 [LIST] Grouped events by bridge: \(filtered.count) events → \(uniqueBridges.count) unique bridges")
+        
+        // Additional deduplication check by entity name to handle any edge cases
+        var finalBridges: [DrawbridgeEvent] = []
+        var seenBridgeNames = Set<String>()
+        
+        for bridge in uniqueBridges {
+            if !seenBridgeNames.contains(bridge.entityName) {
+                finalBridges.append(bridge)
+                seenBridgeNames.insert(bridge.entityName)
+            } else {
+                SecurityLogger.main("📋 [LIST] ⚠️ Skipping duplicate bridge name: \(bridge.entityName)")
+            }
+        }
+        
+        SecurityLogger.main("📋 [LIST] Final deduplicated bridges: \(finalBridges.count)")
+        return finalBridges
+        
+        // Debug: Log all bridges being displayed in list
+        SecurityLogger.main("📋 [LIST] BRIDGES FOR LIST VIEW:")
+        for (index, event) in uniqueBridges.enumerated() {
+            SecurityLogger.main("    \(index + 1). \(event.entityName) (ID: \(event.entityID)) - \(event.openDateTime.formatted())")
+            
+            // Special investigation for Lower Spokane St
+            if event.entityName.contains("Lower Spokane") {
+                SecurityLogger.main("📋 [LIST] 🔍 LOWER SPOKANE ST FOUND:")
+                SecurityLogger.main("    • Index: \(index + 1)")
+                SecurityLogger.main("    • Entity ID: \(event.entityID)")
+                SecurityLogger.main("    • Entity Name: \(event.entityName)")
+                SecurityLogger.main("    • Date: \(event.openDateTime.formatted())")
+            }
+        }
+        
+        // Check for any duplicate entity names (should be none now)
+        let entityNames = uniqueBridges.map { $0.entityName }
+        let uniqueNames = Set(entityNames)
+        if entityNames.count != uniqueNames.count {
+            SecurityLogger.main("📋 [LIST] ⚠️ Duplicate entity names detected!")
+            let duplicates = entityNames.filter { name in entityNames.filter { $0 == name }.count > 1 }
+            SecurityLogger.main("📋 [LIST] Duplicate names: \(Set(duplicates))")
+        }
+        
+        // Check for any duplicate entity IDs (should be none now)
+        let entityIDs = uniqueBridges.map { $0.entityID }
+        let uniqueIDs = Set(entityIDs)
+        if entityIDs.count != uniqueIDs.count {
+            SecurityLogger.main("📋 [LIST] ⚠️ Duplicate entity IDs detected!")
+            let duplicateIDs = entityIDs.filter { id in entityIDs.filter { $0 == id }.count > 1 }
+            SecurityLogger.main("📋 [LIST] Duplicate IDs: \(Set(duplicateIDs))")
+        }
+        
+        return uniqueBridges
+    }
+    
+    var body: some View {
         if recentEvents.isEmpty {
             VStack(spacing: 8) {
                 Image(systemName: "clock")

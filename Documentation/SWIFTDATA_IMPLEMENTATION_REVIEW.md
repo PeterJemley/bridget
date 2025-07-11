@@ -268,10 +268,11 @@ public final class DrawbridgeEvent {
 - [ ] Fetch descriptors for complex queries
 
 ### 🔄 Recommended Next Steps
-1. **Immediate:** Clean up backup models
-2. **Short-term:** Add @Query predicates and @Bindable
-3. **Medium-term:** Implement batch operations and validation
-4. **Long-term:** Add relationships and soft deletes
+1. **CRITICAL:** Fix map view blank sheets issue when clicking on bridges
+2. **Immediate:** Clean up backup models
+3. **Short-term:** Add @Query predicates and @Bindable
+4. **Medium-term:** Implement batch operations and validation
+5. **Long-term:** Add relationships and soft deletes
 
 ## Conclusion
 
@@ -283,6 +284,61 @@ The main areas for improvement are:
 3. **Enhanced functionality** through better use of SwiftData features
 
 Overall compliance score: **85/100** - Good foundation with room for optimization. 
+
+## 🚨 CRITICAL ISSUE: Map View Blank Sheets
+
+### Problem Description
+- **Issue:** Clicking on bridges in the map view shows blank sheets instead of bridge details
+- **Scope:** Only 3 bridges are currently displayed on the map
+- **Impact:** Core user functionality is broken - users cannot access bridge information from the map
+
+### Investigation Required
+1. **Map Data Source:** Verify why only 3 bridges are loading on the map
+2. **Sheet Presentation:** Debug why bridge detail sheets are blank
+3. **Navigation Flow:** Check if the issue is in the sheet presentation or the detail view itself
+
+### Proactive Stepwise Plan
+
+#### Phase 1: Data Investigation
+1. **Check Bridge Data Loading**
+   - Verify `DrawbridgeInfo` data is being fetched correctly
+   - Check if there are filtering issues limiting bridge display
+   - Confirm all bridges have proper coordinates for map placement
+
+2. **Debug Map View Implementation**
+   - Review map annotation creation logic
+   - Verify bridge selection handling
+   - Check if coordinate data is valid for all bridges
+
+#### Phase 2: Sheet Presentation Debug
+1. **Test Sheet Presentation**
+   - Verify `BridgeDetailView` loads correctly when presented directly
+   - Check if the issue is in the sheet presentation or the view content
+   - Test with hardcoded bridge data to isolate the problem
+
+2. **Navigation State Management**
+   - Review how selected bridge data is passed to the sheet
+   - Check for state management issues in the map view
+   - Verify proper data binding between map selection and sheet content
+
+#### Phase 3: Implementation Fix
+1. **Fix Data Loading Issues**
+   - Resolve any filtering or query problems
+   - Ensure all bridges are properly loaded and displayed
+
+2. **Fix Sheet Presentation**
+   - Correct the sheet presentation logic
+   - Ensure proper data passing to `BridgeDetailView`
+   - Add error handling and loading states
+
+### Success Criteria
+- [ ] All bridges display on the map (not just 3)
+- [ ] Clicking any bridge opens a properly populated detail sheet
+- [ ] Bridge detail information is accurate and complete
+- [ ] No blank sheets or crashes when interacting with map
+
+### Priority: **CRITICAL**
+This issue blocks core user functionality and should be addressed immediately before any other improvements.
 
 ## Lessons Learned: SwiftData Predicate Patterns
 

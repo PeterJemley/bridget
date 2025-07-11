@@ -34,6 +34,10 @@ struct ContentViewModular: View {
     @State private var bridgeInfoSyncInProgress = false
     @State private var lastRefreshDate: Date?
     
+    // Navigation state
+    @State private var selectedTab = 0
+    @State private var showingRoutesView = false
+    
     // Motion Detection Service
     @StateObject private var motionService = MotionDetectionService()
     
@@ -70,20 +74,16 @@ struct ContentViewModular: View {
     
     var body: some View {
         ZStack {
-            TabView {
+            TabView(selection: $selectedTab) {
                 // Dashboard Tab - Using modular DashboardView (optimized with recent events)
-                DashboardView(events: recentEvents, bridgeInfo: bridgeInfo, motionService: motionService, backgroundAgent: backgroundAgent)
+                DashboardView(events: recentEvents, bridgeInfo: bridgeInfo, motionService: motionService, backgroundAgent: backgroundAgent, onNavigateToRoutes: {
+                    showingRoutesView = true
+                })
                     .tabItem {
                         Image(systemName: "house.fill")
                         Text("Dashboard")
                     }
-                
-                // Routes Tab - Using modular RoutingView
-                RoutingView()
-                    .tabItem {
-                        Image(systemName: "car.fill")
-                        Text("Routes")
-                    }
+                    .tag(0)
                 
                 // Bridges Tab - Using modular BridgesListView (optimized with recent events)
                 BridgesListView(events: recentEvents, bridgeInfo: bridgeInfo)
@@ -91,6 +91,7 @@ struct ContentViewModular: View {
                         Image(systemName: "road.lanes")
                         Text("Bridges")
                     }
+                    .tag(1)
                 
                 // History Tab - Using modular HistoryView (full dataset for historical analysis)
                 HistoryView(events: events)
@@ -98,6 +99,7 @@ struct ContentViewModular: View {
                         Image(systemName: "clock.fill")
                         Text("History")
                     }
+                    .tag(2)
                 
                 // Statistics Tab - Using modular StatisticsView
                 StatisticsView()
@@ -105,6 +107,7 @@ struct ContentViewModular: View {
                         Image(systemName: "chart.bar.fill")
                         Text("Statistics")
                     }
+                    .tag(3)
                 
                 // Settings Tab - Using modular SettingsView
                 SettingsView()
@@ -112,11 +115,26 @@ struct ContentViewModular: View {
                         Image(systemName: "gear")
                         Text("Settings")
                     }
+                    .tag(4)
             }
             
             // Loading overlay for initial data fetch
             if isLoadingInitialData {
                 LoadingDataOverlay()
+            }
+        }
+        .sheet(isPresented: $showingRoutesView) {
+            NavigationView {
+                RoutingView()
+                    .navigationTitle("Routes")
+                    .navigationBarTitleDisplayMode(.large)
+                    .toolbar {
+                        ToolbarItem(placement: .navigationBarTrailing) {
+                            Button("Done") {
+                                showingRoutesView = false
+                            }
+                        }
+                    }
             }
         }
         .task {

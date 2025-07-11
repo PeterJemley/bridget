@@ -558,7 +558,7 @@ public struct BridgeStatsSection: View {
         switch analysisType {
         case .patterns: return "timer"
         case .cascade: return "arrow.triangle.branch"
-        case .predictions: return "crystal.ball"
+        case .predictions: return "sparkles"
         case .impact: return "exclamationmark.triangle.fill"
         }
     }
