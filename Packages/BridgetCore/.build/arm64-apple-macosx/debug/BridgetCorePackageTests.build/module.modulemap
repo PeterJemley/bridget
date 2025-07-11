@@ -1,4 +1,0 @@
-module BridgetCorePackageTests {
-    header "/Users/peterjemley/Documents/Developer/Bridget/Bridget/Packages/BridgetCore/.build/arm64-apple-macosx/debug/BridgetCorePackageTests.build/BridgetCorePackageTests-Swift.h"
-    requires objc
-}
