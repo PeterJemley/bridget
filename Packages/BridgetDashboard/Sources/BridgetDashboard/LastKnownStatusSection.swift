@@ -6,12 +6,15 @@
 //
 
 import SwiftUI
+import SwiftData
 import BridgetCore
 import BridgetBridgeDetail
 
 public struct LastKnownStatusSection: View {
     public let events: [DrawbridgeEvent]
     public let bridgeInfo: [DrawbridgeInfo]
+    
+    @Environment(\.modelContext) private var modelContext
     
     public init(events: [DrawbridgeEvent], bridgeInfo: [DrawbridgeInfo]) {
         self.events = events
@@ -42,7 +45,7 @@ public struct LastKnownStatusSection: View {
                 ForEach(recentlyActiveBridges.prefix(3), id: \.entityID) { bridgeInfo in
                     NavigationLink(destination: BridgeDetailView(
                         bridgeEvent: getMostRecentEvent(for: bridgeInfo.entityID)
-                    )) {
+                    ).environment(\.modelContext, modelContext)) {
                         BridgeHistoricalStatusRow(event: getMostRecentEvent(for: bridgeInfo.entityID))
                     }
                     .buttonStyle(PlainButtonStyle())
