@@ -1,387 +1,196 @@
-# 📚 Bridget Documentation Index
+# Bridget Documentation Index
 
-## 📋 **Overview**
+## 📋 Executive Summary
 
-This index provides a comprehensive overview of all documentation in the Bridget project, organized by purpose and audience. Each entry includes the file's purpose, target audience, last updated date, key features covered, and cross-references to related documentation.
+This index provides organized access to all Bridget project documentation, categorized by purpose and functionality.
 
-**Last Updated**: July 8, 2025  
-**Total Documentation Files**: 19  
-**Status**: ✅ **Current** - All major features documented
-
----
-
-## 🎯 **Core Development Documentation**
-
-### **ASSISTANT_TODO.md**
-- **Purpose**: Granular development roadmap and task prioritization
-- **Audience**: Development team, project managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Current project status (4900 events, 7 bridges)
-  - Granular priority roadmap (Critical/High/Medium/Low)
-  - Detailed task breakdown with time estimates
-  - Success criteria and dependencies
-  - Immediate next steps and timeline
-  - MotionDetectionService integration completed ✅
-- **Cross-References**: 
-  - → FEATURES.md (roadmap alignment)
-  - → UNIMPLEMENTED_FEATURES.md (task coordination)
-  - → BACKGROUND_AGENTS.md (implementation details)
-
-### **FEATURES.md**
-- **Purpose**: Comprehensive feature roadmap and implementation phases
-- **Audience**: Product managers, developers, stakeholders
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Phase 1: Traffic Sensing Foundation (CRITICAL)
-  - Phase 2: Routes Tab Implementation (HIGH)
-  - Phase 3: Advanced Traffic Features (MEDIUM)
-  - Indirect Bridge Delay Detection (NEW)
-  - Implementation priority matrix
-  - MotionDetectionService integration completed ✅
-- **Cross-References**:
-  - → ASSISTANT_TODO.md (task breakdown)
-  - → UNIMPLEMENTED_FEATURES.md (feature status)
-  - → BACKGROUND_AGENTS.md (background processing)
-
-### **UNIMPLEMENTED_FEATURES.md**
-- **Purpose**: Catalog of unimplemented or incomplete features
-- **Audience**: Developers, project managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Current project status assessment
-  - Missing features by priority
-  - Implementation estimates
-  - Legacy unimplemented features
-  - MotionDetectionService integration completed ✅
-- **Cross-References**:
-  - → FEATURES.md (feature planning)
-  - → ASSISTANT_TODO.md (task prioritization)
-  - → BACKGROUND_AGENTS.md (background features)
+**Last Updated:** January 15, 2025  
+**Organization:** Categorized by functional areas  
+**Total Documents:** 40+ documentation files
 
 ---
 
-## 🏗️ **Technical Implementation Documentation**
+## 🎯 **UI Engineering** (`UI_Engineering/`)
 
-### **BACKGROUND_AGENTS.md**
-- **Purpose**: Background traffic monitoring and indirect bridge delay detection
-- **Audience**: Developers, system architects
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - BackgroundTrafficAgent implementation
-  - Indirect bridge delay detection using Apple Maps
-  - BridgeCongestionMonitor and CongestionCorrelation
-  - TrafficAlert system and data models
-  - Integration guide and API reference
-- **Cross-References**:
-  - → FEATURES.md (feature requirements)
-  - → ASSISTANT_TODO.md (implementation tasks)
-  - → MOTION_DETECTION_IMPLEMENTATION_GUIDE.md (sensor integration)
+### **Core UI Documentation**
+- **[UI Engineering Manifest Checklist](UI_Engineering/UI_ENGINEERING_MANIFEST_CHECKLIST.md)** - Comprehensive UI/HIG compliance checklist
+- **[UI Element Registry](UI_Engineering/UI_ELEMENT_REGISTRY.md)** - Complete component catalog with Atomic Design classification
+- **[UI Discovery Implementation Summary](UI_Engineering/UI_DISCOVERY_IMPLEMENTATION_SUMMARY.md)** - Phase 1.1 completion summary
+- **[Phase 1.2 Ready Checklist](UI_Engineering/PHASE_1.2_READY_CHECKLIST.md)** - Next phase preparation guide
 
-### **MOTION_DETECTION_IMPLEMENTATION_GUIDE.md**
-- **Purpose**: Motion detection service implementation and integration
-- **Audience**: Developers, iOS engineers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - MotionDetectionService architecture with configurable polling
-  - Traffic condition analysis
-  - Device motion integration
-  - Background processing setup
-  - High detail mode and data export
-  - Configurable polling intervals (1-20 Hz)
-- **Cross-References**:
-  - → BACKGROUND_AGENTS.md (background processing)
-  - → ASSISTANT_TODO.md (implementation tasks)
-  - → MOTION_DETECTION_REAL_DEVICE_TESTING.md (testing procedures)
-
-### **MOTION_DETECTION_REAL_DEVICE_TESTING.md**
-- **Purpose**: Comprehensive real device testing procedures for motion detection
-- **Audience**: QA engineers, developers, testers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Complete testing plan for iPhone 16 Pro
-  - 10-phase testing procedure
-  - Configurable polling intervals (1-20 Hz)
-  - High detail mode testing
-  - Motion data export and analysis
-  - Console monitoring setup
-  - Device connection requirements
-- **Cross-References**:
-  - → MOTION_DETECTION_IMPLEMENTATION_GUIDE.md (implementation details)
-  - → MANUAL_TESTING_CHECKLIST.md (testing procedures)
-  - → ASSISTANT_TODO.md (testing tasks)
-
-### **API_DOCUMENTATION_GENERATOR.md**
-- **Purpose**: Background agent system for generating comprehensive API documentation
-- **Audience**: Developers, technical writers, project managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Background agent implementation for API documentation
-  - Package scanning across all 10 SPM modules
-  - Automated documentation generation
-  - Cross-reference system
-  - Progress tracking and export
-  - SwiftUI control interface
-- **Cross-References**:
-  - → MODULARIZATION_GUIDE.md (package structure)
-  - → ASSISTANT_TODO.md (development tasks)
-  - → BACKGROUND_AGENTS.md (background processing)
-
-### **MODULARIZATION_GUIDE.md**
-- **Purpose**: Swift Package Manager modular architecture
-- **Audience**: Developers, architects
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - 10-package modular structure
-  - Package dependencies and relationships
-  - Build system configuration
-- **Cross-References**:
-  - → README.md (project overview)
-  - → REFACTORING_DOCUMENTATION.md (architecture changes)
+### **Purpose**
+- UI component cataloging and classification
+- HIG compliance monitoring
+- Atomic Design implementation
+- UI engineering best practices
 
 ---
 
-## 📊 **Statistics & Analytics Documentation**
+## 📊 **Analysis** (`Analysis/`)
 
-### **STATISTICS_DOCUMENTATION.md**
-- **Purpose**: Comprehensive statistics system documentation
-- **Audience**: Developers, data analysts
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - BridgeAnalytics data model
-  - Statistical analysis algorithms
-  - Prediction engine architecture
-  - Performance metrics and optimization
-- **Cross-References**:
-  - → STATISTICS_USER_GUIDE.md (user interface)
-  - → STATISTICS_DEVELOPER_GUIDE.md (implementation)
-  - → ASSISTANT_TODO.md (development tasks)
+### **Automated Analysis Reports**
+- **[SwiftUI Components](Analysis/UI_Analysis/swiftui_components.md)** - All View components catalog
+- **[Accessibility Audit](Analysis/UI_Analysis/accessibility_audit.md)** - Accessibility properties analysis
+- **[HIG Compliance](Analysis/UI_Analysis/hig_compliance.md)** - Human Interface Guidelines compliance check
+- **[Atomic Design Classification](Analysis/UI_Analysis/atomic_design.md)** - Component classification by design principles
+- **[Package Analysis](Analysis/UI_Analysis/package_analysis.md)** - Package structure and dependencies
+- **[Summary Report](Analysis/UI_Analysis/summary.md)** - Overall analysis summary and recommendations
 
-### **STATISTICS_USER_GUIDE.md**
-- **Purpose**: User-facing statistics and analytics guide
-- **Audience**: End users, product managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - How to use statistics features
-  - Understanding bridge predictions
-  - Data interpretation guide
-  - Troubleshooting tips
-- **Cross-References**:
-  - → STATISTICS_DOCUMENTATION.md (technical details)
-  - → STATISTICS_DEVELOPER_GUIDE.md (implementation)
-
-### **STATISTICS_DEVELOPER_GUIDE.md**
-- **Purpose**: Technical implementation guide for statistics
-- **Audience**: Developers, data engineers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - API usage and integration
-  - Data models and relationships
-  - Extension points and customization
-  - Testing and validation
-  - MotionDetectionService integration with configurable polling
-- **Cross-References**:
-  - → STATISTICS_DOCUMENTATION.md (system overview)
-  - → STATISTICS_USER_GUIDE.md (user interface)
+### **Purpose**
+- Automated component discovery
+- Code quality analysis
+- Compliance monitoring
+- Performance insights
 
 ---
 
-## 🔒 **Security & Compliance**
+## ♿ **Accessibility** (`Accessibility/`)
 
-### **SECURITY_VULNERABILITY_CHECKLIST.md**
-- **Purpose**: Comprehensive security vulnerability assessment and remediation checklist
-- **Audience**: Developers, security engineers, project managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - 8 identified security vulnerabilities with priority levels
-  - Critical (HIGH): 3 vulnerabilities requiring immediate attention
-  - Medium Priority: 3 vulnerabilities for Week 2
-  - Low Priority: 2 vulnerabilities for Week 3
-  - Detailed implementation steps and code examples
-  - Security testing checklist and validation procedures
-  - 2-3 week implementation timeline
-  - Pre-App Store submission security requirements
-- **Cross-References**:
-  - → ASSISTANT_TODO.md (security task integration)
-  - → APP_STORE_SUBMISSION.md (compliance requirements)
-  - → TESTING_INTEGRATION_GUIDE.md (security testing)
+### **Accessibility Implementation**
+- **[Accessibility Inspector Guide](Accessibility/ACCESSIBILITY_INSPECTOR_GUIDE.md)** - Xcode Accessibility Inspector setup and usage
+- **[Accessibility Inspector Example](Accessibility/ACCESSIBILITY_INSPECTOR_EXAMPLE.md)** - Practical accessibility implementation examples
+- **[Accessibility Inspector Catalog](Accessibility/ACCESSIBILITY_INSPECTOR_CATALOG.md)** - Accessibility properties reference
+
+### **Purpose**
+- Accessibility compliance implementation
+- Screen reader support
+- VoiceOver optimization
+- Inclusive design practices
 
 ---
 
-## 🧪 **Testing & Quality Assurance**
+## 🛠️ **Development** (`Development/`)
 
-### **TESTING_INTEGRATION_GUIDE.md**
-- **Purpose**: Comprehensive testing strategy and implementation
-- **Audience**: Developers, QA engineers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Test infrastructure setup
-  - Unit, integration, and UI testing
-  - iPhone 16 Pro testing commands
-  - Continuous integration guidelines
-- **Cross-References**:
-  - → MANUAL_TESTING_CHECKLIST.md (manual testing)
-  - → ASSISTANT_TODO.md (testing tasks)
-  - → MOTION_DETECTION_REAL_DEVICE_TESTING.md (motion testing)
+### **Core Development**
+- **[SwiftData Implementation Review](Development/SWIFTDATA_IMPLEMENTATION_REVIEW.md)** - SwiftData architecture analysis
+- **[SwiftData Implementation TODO](Development/SWIFTDATA_IMPLEMENTATION_TODO.md)** - SwiftData implementation roadmap
+- **[SwiftData Best Practices](Development/SWIFTDATA_BEST_PRACTICES.md)** - SwiftData usage guidelines
+- **[Modularization Guide](Development/MODULARIZATION_GUIDE.md)** - Package modularization strategy
+- **[Refactoring Documentation](Development/REFACTORING_DOCUMENTATION.md)** - Code refactoring guidelines
+- **[Refactoring Summary](Development/REFACTORING_SUMMARY.md)** - Refactoring progress and results
 
-### **MANUAL_TESTING_CHECKLIST.md**
-- **Purpose**: Manual testing procedures and checklists
-- **Audience**: QA engineers, developers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - iPhone 16 Pro testing procedures
-  - Feature-by-feature test cases
-  - Bug reporting guidelines
-  - Device-specific testing notes
-- **Cross-References**:
-  - → TESTING_INTEGRATION_GUIDE.md (automated testing)
-  - → ASSISTANT_TODO.md (testing priorities)
-  - → MOTION_DETECTION_REAL_DEVICE_TESTING.md (motion testing)
+### **Project Management**
+- **[Dashboard Issues Fix Plan](Development/DASHBOARD_ISSUES_FIX_PLAN.md)** - Dashboard component improvements
+- **[Dashboard Trends and Visuals](Development/DASHBOARD_TRENDS_AND_VISUALS.md)** - Dashboard analytics implementation
+- **[Build Error Fix Plan](Development/BUILD_ERROR_FIX_PLAN.md)** - Build system troubleshooting
+- **[API Documentation Generator](Development/API_DOCUMENTATION_GENERATOR.md)** - API documentation automation
+- **[App Store Submission](Development/APP_STORE_SUBMISSION.md)** - App Store preparation guide
+
+### **Development Workflow**
+- **[Conversation Reference Guide](Development/CONVERSATION_REFERENCE_GUIDE.md)** - Complete project context and reference
+- **[Session Starter Template](Development/SESSION_STARTER_TEMPLATE.md)** - Quick templates for new conversations
+
+### **Purpose**
+- Development best practices
+- Architecture guidance
+- Project management
+- Build and deployment
 
 ---
 
-## 📱 **User & Product Documentation**
+## 🧪 **Testing** (`Testing/`)
 
-### **README.md**
-- **Purpose**: Project overview and getting started guide
-- **Audience**: Developers, stakeholders, new team members
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Project overview and features
-  - Installation and setup instructions
-  - Modular architecture overview
-  - Quick start guide
-- **Cross-References**:
-  - → ASSISTANT_TODO.md (current development status)
-  - → FEATURES.md (feature roadmap)
-  - → MODULARIZATION_GUIDE.md (architecture)
+### **Testing Implementation**
+- **[Testing Integration Guide](Testing/TESTING_INTEGRATION_GUIDE.md)** - Testing framework integration
+- **[Manual Testing Checklist](Testing/MANUAL_TESTING_CHECKLIST.md)** - Manual testing procedures
+- **[Background Processing Test Guide](Testing/BACKGROUND_PROCESSING_TEST_GUIDE.md)** - Background task testing
 
-### **UW_TO_SPACE_NEEDLE_EXAMPLE.md**
-- **Purpose**: Real-world usage example and demonstration
-- **Audience**: Users, developers, stakeholders
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - UW to Space Needle route analysis
-  - Bridge risk assessment example
-  - Traffic prediction demonstration
-  - Route optimization scenarios
-- **Cross-References**:
-  - → FEATURES.md (feature demonstration)
-  - → STATISTICS_USER_GUIDE.md (user guide)
+### **Purpose**
+- Testing strategy and implementation
+- Quality assurance procedures
+- Automated testing setup
+- Manual testing workflows
 
 ---
 
-## 🚀 **Deployment & Release Documentation**
+## ⚡ **Features** (`Features/`)
 
-### **APP_STORE_SUBMISSION.md**
-- **Purpose**: App Store submission guidelines and requirements
-- **Audience**: Product managers, release engineers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - App Store requirements
-  - Submission checklist
-  - Metadata guidelines
-  - Review process preparation
-- **Cross-References**:
-  - → README.md (project overview)
-  - → MANUAL_TESTING_CHECKLIST.md (quality assurance)
+### **Core Features**
+- **[Features Overview](Features/FEATURES.md)** - Complete feature catalog
+- **[Unimplemented Features](Features/UNIMPLEMENTED_FEATURES.md)** - Planned feature roadmap
+- **[Statistics Developer Guide](Features/STATISTICS_DEVELOPER_GUIDE.md)** - Statistics implementation guide
+- **[Statistics Documentation](Features/STATISTICS_DOCUMENTATION.md)** - Statistics system documentation
+- **[Statistics User Guide](Features/STATISTICS_USER_GUIDE.md)** - Statistics feature user guide
 
----
+### **Advanced Features**
+- **[Motion Detection Implementation Guide](Features/MOTION_DETECTION_IMPLEMENTATION_GUIDE.md)** - Motion detection system
+- **[Motion Detection Real Device Testing](Features/MOTION_DETECTION_REAL_DEVICE_TESTING.md)** - Motion detection testing
+- **[Background Agents](Features/BACKGROUND_AGENTS.md)** - Background processing implementation
+- **[UW to Space Needle Example](Features/UW_TO_SPACE_NEEDLE_EXAMPLE.md)** - Routing example implementation
 
-## 🔧 **Refactoring & Architecture**
-
-### **REFACTORING_DOCUMENTATION.md**
-- **Purpose**: Architecture changes and refactoring history
-- **Audience**: Developers, architects
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Refactoring decisions and rationale
-  - Architecture evolution
-  - Migration guides
-  - Breaking changes
-- **Cross-References**:
-  - → MODULARIZATION_GUIDE.md (current architecture)
-  - → REFACTORING_SUMMARY.md (change summary)
-
-### **REFACTORING_SUMMARY.md**
-- **Purpose**: High-level summary of refactoring changes
-- **Audience**: Developers, project managers
-- **Last Updated**: July 8, 2025
-- **Key Features**:
-  - Refactoring timeline
-  - Key changes summary
-  - Impact assessment
-  - Migration status
-- **Cross-References**:
-  - → REFACTORING_DOCUMENTATION.md (detailed changes)
-  - → MODULARIZATION_GUIDE.md (current state)
+### **Purpose**
+- Feature documentation and guides
+- Implementation examples
+- User guides
+- Technical specifications
 
 ---
 
-## 📈 **Documentation Health Metrics**
+## 🔧 **Tools and Scripts**
 
-### **Current Status**
-- ✅ **18 documentation files** covering all major areas
-- ✅ **All critical features documented**
-- ✅ **Cross-references established**
-- ✅ **Regular updates maintained**
-- ✅ **MotionDetectionService integration completed**
-- ✅ **API documentation generator implemented**
+### **Automated Tools**
+- **[UI Element Discovery Script](Scripts/ui_element_discovery.sh)** - Automated component analysis tool
+- **Xcode Accessibility Inspector** - Built-in accessibility testing
+- **SwiftUI ViewDebugger** - View hierarchy analysis
 
-### **Coverage Areas**
-- **Development**: 4 files (roadmap, features, tasks, architecture)
-- **Technical**: 5 files (background agents, motion detection, motion testing, API docs, modularization)
-- **Statistics**: 3 files (documentation, user guide, developer guide)
-- **Testing**: 2 files (integration guide, manual checklist)
-- **User**: 2 files (README, example)
-- **Deployment**: 1 file (App Store submission)
-- **Refactoring**: 2 files (documentation, summary)
-
-### **Update Frequency**
-- **Weekly**: ASSISTANT_TODO.md, FEATURES.md
-- **Monthly**: Technical implementation guides
-- **As Needed**: User guides, deployment docs
-
-### **Recent Major Updates**
-- ✅ **MotionDetectionService integration** (July 8, 2025)
-- ✅ **Configurable polling intervals** (1-20 Hz)
-- ✅ **Real device testing procedures**
-- ✅ **API documentation generator**
-- ✅ **Background agents implementation**
+### **Purpose**
+- Automated analysis and discovery
+- Code quality monitoring
+- Compliance checking
+- Performance analysis
 
 ---
 
-## 🎯 **Quick Reference**
+## 📚 **Quick Reference**
 
-### **For New Developers**
-1. Start with `README.md` for project overview
-2. Review `ASSISTANT_TODO.md` for current priorities
-3. Read `FEATURES.md` for feature roadmap
-4. Check `MODULARIZATION_GUIDE.md` for architecture
+### **Getting Started**
+1. **New to Bridget?** → Start with [Features Overview](Features/FEATURES.md)
+2. **UI Development?** → Check [UI Element Registry](UI_Engineering/UI_ELEMENT_REGISTRY.md)
+3. **Accessibility?** → Review [Accessibility Inspector Guide](Accessibility/ACCESSIBILITY_INSPECTOR_GUIDE.md)
+4. **Development?** → See [SwiftData Best Practices](Development/SWIFTDATA_BEST_PRACTICES.md)
+5. **Conversation Context?** → Use [Conversation Reference Guide](Development/CONVERSATION_REFERENCE_GUIDE.md)
 
-### **For Feature Development**
-1. Check `FEATURES.md` for requirements
-2. Review `ASSISTANT_TODO.md` for tasks
-3. Read relevant technical guides
-4. Update documentation as needed
+### **Common Tasks**
+- **Add new UI component** → [UI Engineering Manifest](UI_Engineering/UI_ENGINEERING_MANIFEST_CHECKLIST.md)
+- **Implement accessibility** → [Accessibility Inspector Guide](Accessibility/ACCESSIBILITY_INSPECTOR_GUIDE.md)
+- **Run analysis** → [UI Element Discovery Script](Scripts/ui_element_discovery.sh)
+- **Test features** → [Manual Testing Checklist](Testing/MANUAL_TESTING_CHECKLIST.md)
+- **Start new conversation** → [Session Starter Template](Development/SESSION_STARTER_TEMPLATE.md)
 
-### **For Testing**
-1. Follow `TESTING_INTEGRATION_GUIDE.md`
-2. Use `MANUAL_TESTING_CHECKLIST.md`
-3. Test on iPhone 16 Pro (simulator and device)
-4. Use `MOTION_DETECTION_REAL_DEVICE_TESTING.md` for motion features
-
-### **For API Documentation**
-1. Use `API_DOCUMENTATION_GENERATOR.md` for automated docs
-2. Access via Settings → Geek Features → API Documentation Generator
-3. Review generated documentation in app or exported files
-
-### **For Release**
-1. Review `APP_STORE_SUBMISSION.md`
-2. Complete `MANUAL_TESTING_CHECKLIST.md`
-3. Update version numbers in documentation
-4. Commit and tag release
+### **Troubleshooting**
+- **Build issues** → [Build Error Fix Plan](Development/BUILD_ERROR_FIX_PLAN.md)
+- **UI problems** → [Dashboard Issues Fix Plan](Development/DASHBOARD_ISSUES_FIX_PLAN.md)
+- **Testing issues** → [Testing Integration Guide](Testing/TESTING_INTEGRATION_GUIDE.md)
 
 ---
 
-*This documentation index is maintained as part of the Bridget project. For questions or updates, refer to the development team.* 
+## 🔄 **Maintenance**
+
+### **Documentation Updates**
+- **Weekly:** Analysis reports regeneration
+- **Monthly:** Feature documentation updates
+- **Quarterly:** Complete documentation review
+
+### **Automated Maintenance**
+- **UI Analysis:** Run `./Scripts/ui_element_discovery.sh` weekly
+- **Accessibility Audit:** Review accessibility reports monthly
+- **Compliance Check:** Monitor HIG compliance quarterly
+
+---
+
+## 📞 **Support**
+
+### **Documentation Issues**
+- Check [README.md](README.md) for project overview
+- Review [ASSISTANT_TODO.md](ASSISTANT_TODO.md) for current tasks
+- Consult [SECURITY_VULNERABILITY_CHECKLIST.md](SECURITY_VULNERABILITY_CHECKLIST.md) for security concerns
+
+### **Development Support**
+- **Architecture questions** → Development folder
+- **UI/UX questions** → UI Engineering folder
+- **Feature questions** → Features folder
+- **Testing questions** → Testing folder
+
+---
+
+*This organized documentation structure provides clear navigation and quick access to all Bridget project information. Each category serves a specific purpose and contains related documentation for efficient development workflows.* 
