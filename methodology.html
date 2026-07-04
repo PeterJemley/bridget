@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>How Bridget detects drawbridge delays — methodology & accuracy</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem;
+    color: #1c1c1e; background: #fff;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: #0a6cff; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2.25rem 0 .6rem; }
+  .lede { color: #636366; margin: 0 0 2rem; }
+  ol, ul { padding-left: 1.3rem; }
+  li { margin: .4rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #e5e5ea; vertical-align: top; }
+  th { font-weight: 600; white-space: nowrap; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: #f2f2f7; padding: .1em .35em; border-radius: 4px; }
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid #e5e5ea; color: #8e8e93; font-size: .9rem; }
+  footer a { color: #8e8e93; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e5e5ea; background: #000; }
+    .lede { color: #98989d; }
+    a { color: #4c9dff; }
+    th, td, footer { border-color: #2c2c2e; }
+    code { background: #1c1c1e; }
+    footer, footer a { color: #8e8e93; }
+  }
+</style>
+</head>
+<body>
+<h1>How Bridget detects drawbridge delays</h1>
+<p class="lede">Methodology &amp; accuracy</p>
+
+<h2>The short version</h2>
+<p>Bridget has <strong>no backend and no live bridge feed.</strong> It infers, on your iPhone, when a drawbridge is <strong>backing up traffic</strong> — usually because it's raised — by comparing the live drive time across the bridge's approach to that road's normal free-flow time. A big, sustained slowdown is the signature of a stopped span.</p>
+<p>It is honest about two limits: it <strong>reacts to congestion as it forms</strong> (so it helps you <em>avoid a jam</em>, it doesn't <em>predict a raise</em>), and it's only confident on the bridges where city records back it up.</p>
+
+<h2>How the signal works</h2>
+<ol>
+  <li>For each bridge, Bridget derives a <strong>canonical probe</strong> — a point ~500&nbsp;m back along the real approach road (validated to sit within 200&nbsp;m of the bridge centerline, so it's on the actual approach, not a parallel street).</li>
+  <li>While you're on a planned route, it periodically asks Apple's MapKit for the live drive time from that probe to the bridge, and divides by the road's free-flow baseline. That ratio is the <strong>Congestion Index (CI)</strong>.</li>
+  <li>A per-bridge, time-of-day <strong>calibrated threshold</strong> turns CI into a status. The calibration is done offline (see below) and baked into the app as fixed numbers — not fetched.</li>
+</ol>
+
+<h2>How we validated it</h2>
+<p>We collected CI every ~3 minutes for all seven Seattle bridges over a week (~23,000 readings) and cross-checked every reading against the <strong>City of Seattle's official drawbridge opening records</strong> (SDOT Open Data, dataset <code>gm8h-9449</code>) — 248 real openings in the window. We then measured, per bridge: how reliably CI catches a real opening (recall), how often it fires on normal traffic (false alarms), separability (ROC-AUC), and — combining our measurements with the city's long-term opening frequency — the calibrated probability that a flagged bridge is genuinely delayed.</p>
+
+<h2>What we found (per bridge)</h2>
+<table>
+  <thead>
+    <tr><th>Bridge</th><th>Confidence</th><th>Notes</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Ballard</strong></td><td>High</td><td>Catches ~97% of openings; calm baseline; the clearest signal. Alerts all day.</td></tr>
+    <tr><td><strong>Montlake</strong></td><td>Medium</td><td>Catches openings reliably, but its normal rush-hour traffic also spikes — so it alerts <strong>off-peak only</strong>, when a spike is meaningful.</td></tr>
+    <tr><td><strong>Fremont</strong></td><td>Low (board-only)</td><td>Opens most often, but short openings let traffic divert, so CI can't cleanly separate them. Shown on the board; no proactive alerts.</td></tr>
+    <tr><td><strong>South Park</strong></td><td>Promising, not yet validated</td><td>Excellent separation but too few openings in the window to confirm. Board-only for now.</td></tr>
+    <tr><td><strong>1st Ave S</strong></td><td>Board-only</td><td>Opens rarely; congestion there is usually port/rail, not the bridge.</td></tr>
+    <tr><td><strong>University, Spokane St</strong></td><td>Board-only</td><td>Absent from the city feed during the study (no openings recorded), so we have no ground truth to validate them yet.</td></tr>
+    <tr><td><strong>New York City</strong></td><td>Board-only</td><td>NYC ships with status but <strong>no proactive alerts</strong> — there's no NYC opening feed to calibrate against yet.</td></tr>
+  </tbody>
+</table>
+
+<h2>Honest limitations</h2>
+<ul>
+  <li><strong>It detects backups, not raises.</strong> Congestion takes a few minutes to build, so CI typically crosses its threshold <em>after</em> a bridge has started opening. That's fine for avoiding a queue you haven't reached yet — but Bridget can't promise a warning <em>before</em> the span goes up.</li>
+  <li><strong>Openings are rare</strong>, so even a good signal yields modest precision: when Bridget flags a bridge, the chance it's a confirmed opening (rather than ordinary heavy traffic) ranges from roughly 1-in-12 to nearly 1-in-2 depending on the bridge. We surface confidence per bridge rather than implying certainty.</li>
+  <li><strong>It's an inference, not a sensor.</strong> Bridget reads traffic; it does not receive any official bridge-status signal.</li>
+  <li><strong>Calibration is a snapshot.</strong> Thresholds are tuned to the records available at build time and refined as we collect more data.</li>
+</ul>
+
+<h2>What we never do</h2>
+<p>We never use a live city or government feed in the app, never send your data anywhere, and never describe Bridget as receiving official bridge status. The city records are used <strong>only offline, to tune the thresholds</strong> — the shipping app has no servers.</p>
+
+<footer>
+  Bridget &middot; <a href="privacy.html">Privacy policy</a> &middot; <a href="index.html">Home</a>
+</footer>
+</body>
+</html>
