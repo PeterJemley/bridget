@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<title>Bridget — press notes (September 2026)</title>
+<style>
+  :root { color-scheme: light dark; }
+  * { box-sizing: border-box; }
+  body {
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 44rem; margin: 0 auto; padding: 2.5rem 1.25rem 4rem;
+    color: #1c1c1e; background: #fff;
+    -webkit-text-size-adjust: 100%;
+  }
+  a { color: #0a6cff; }
+  h1 { font-size: 1.7rem; line-height: 1.25; margin: 0 0 .25rem; }
+  h2 { font-size: 1.25rem; margin: 2.25rem 0 .6rem; }
+  .lede { color: #636366; margin: 0 0 2rem; }
+  ol, ul { padding-left: 1.3rem; }
+  li { margin: .4rem 0; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; font-size: .95rem; display: block; overflow-x: auto; }
+  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid #e5e5ea; vertical-align: top; }
+  th { font-weight: 600; white-space: nowrap; }
+  code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; background: #f2f2f7; padding: .1em .35em; border-radius: 4px; }
+  footer { margin-top: 3rem; padding-top: 1.25rem; border-top: 1px solid #e5e5ea; color: #8e8e93; font-size: .9rem; }
+  footer a { color: #8e8e93; }
+  @media (prefers-color-scheme: dark) {
+    body { color: #e5e5ea; background: #000; }
+    .lede { color: #98989d; }
+    a { color: #4c9dff; }
+    th, td, footer { border-color: #2c2c2e; }
+    code { background: #1c1c1e; }
+    footer, footer a { color: #8e8e93; }
+  }
+</style>
+</head>
+<body>
+<h1>Bridget — press notes</h1>
+<p class="lede">September 2026 · free iPhone app · Seattle drawbridges</p>
+
+<h2>What it is</h2>
+<p>Bridget is a free iPhone app (tip-jar supported, no ads, no account, no
+servers — nothing leaves the phone) that warns Seattle drivers when a
+drawbridge is backing up traffic. It doesn't receive any official bridge
+signal: it measures live drive times across each bridge's approach road and
+compares them to that road's own measured normal. A big, sustained slowdown
+is the signature of a stopped span. Thresholds are tuned against the City of
+Seattle's official drawbridge opening records — offline, at build time.
+Full method: <a href="methodology.html">the methodology page</a>.</p>
+
+<h2>The closure weekend it measured (Aug 21–23, 2026)</h2>
+<p>Three bridge approaches closed the same weekend: Montlake Blvd (SR 520
+sign-structure work, from 10 PM Fri 8/21), northbound SR 99 at the 1st Ave S
+bridge (preservation work, Sat–Sun), and the Spokane St swing bridge
+(mechanical repairs). Bridget's calibration instrument — running a
+pre-registered two-week study at the time, meaning its pass/fail rules were
+written and frozen before the data existed — independently detected all
+three:</p>
+<ul>
+  <li>the first Montlake detection at 10:54 PM, <strong>54 minutes after the
+      posted 10 PM closure start</strong>;</li>
+  <li>every 1st Ave S detection northbound-only, matching the
+      northbound-only closure;</li>
+  <li>a sustained Spokane St signature through the repair period.</li>
+</ul>
+<p>Its response throughout was to <em>decline to report</em> travel numbers
+for roads it couldn't honestly measure — silence with reasons, never a
+confident wrong number.</p>
+
+<h2>The two-week study (Aug 17–31, 2026)</h2>
+<p><strong>70,511 measurements over exactly 14 days, zero interruptions.</strong>
+Results: the flagship Ballard Bridge was retuned on 2.3× its previous data;
+and two bridges whose city status records went dark — University (dark since
+April 2026, save a single logged opening on Sept 2) and Spokane St (since
+January 2026) — earned cautious, off-peak-only alerts, calibrated by matching
+each bridge's traffic-spike fingerprint to its own historical opening
+pattern. The method was tested blind first: hide a well-recorded bridge's
+answer key, ask the method to find its threshold from traffic alone, compare.
+It landed inside the accepted range on both test bridges.</p>
+
+<h2>A finding about the public record</h2>
+<p>By sampling the city's own live status page once a minute for 11 days and
+comparing it with the published opening log, the study measured how much the
+log misses: it captured about 98% of observed openings at Ballard, but only
+about 35% at South Park and about 7% at 1st Ave S.</p>
+
+<h2>Honest limits</h2>
+<p>Bridget reacts to congestion as it forms — it helps you avoid a jam; it
+does not predict a raise, and it can't promise a warning before a span goes
+up.</p>
+
+<h2>Facts</h2>
+<table>
+  <tr><th>Platform</th><td>iPhone, iOS 18 or later</td></tr>
+  <tr><th>Price</th><td>Free (optional tip jar)</td></tr>
+  <tr><th>Languages</th><td>English, Spanish</td></tr>
+  <tr><th>Coverage</th><td>Seattle only — 7 drawbridges</td></tr>
+  <tr><th>Developer</th><td>Peter Jemley (solo)</td></tr>
+  <tr><th>App Store</th><td><a href="https://apps.apple.com/us/app/id6781426694">apps.apple.com/us/app/id6781426694</a></td></tr>
+  <tr><th>Contact</th><td>See the contact section on <a href="index.html">the home page</a></td></tr>
+</table>
+
+<footer>
+  Bridget &middot; <a href="methodology.html">Methodology</a> &middot; <a href="privacy.html">Privacy policy</a> &middot; <a href="index.html">Home</a>
+</footer>
+</body>
+</html>

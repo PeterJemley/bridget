@@ -42,7 +42,7 @@
 
 <h2>The short version</h2>
 <p>Bridget has <strong>no backend and no live bridge feed.</strong> It infers, on your iPhone, when a drawbridge is <strong>backing up traffic</strong> — usually because it's raised — by comparing the live drive time across the bridge's approach to that road's normal free-flow time. A big, sustained slowdown is the signature of a stopped span.</p>
-<p>It is honest about two limits: it <strong>reacts to congestion as it forms</strong> (so it helps you <em>avoid a jam</em>, it doesn't <em>predict a raise</em>), and it's only confident on the bridges where city records back it up.</p>
+<p>It is honest about two limits: it <strong>reacts to congestion as it forms</strong> (so it helps you <em>avoid a jam</em>, it doesn't <em>predict a raise</em>), and it's only confident on the bridges where the evidence backs it up — for most bridges that evidence is the city's official records; for two whose records went dark, it's the statistical fingerprint of their own opening history (how that was validated: see the <a href="#sept2026">September 2026 update</a> at the end of this page).</p>
 
 <h2>How the signal works</h2>
 <ol>
@@ -60,12 +60,12 @@
     <tr><th>Bridge</th><th>Confidence</th><th>Notes</th></tr>
   </thead>
   <tbody>
-    <tr><td><strong>Ballard</strong></td><td>High</td><td>Catches ~97% of openings; calm baseline; the clearest signal. Alerts all day.</td></tr>
+    <tr><td><strong>Ballard</strong></td><td>High</td><td>Catches ~97% of openings (July study); calm baseline; the clearest signal. Alerts all day. <em>Thresholds retuned September 2026 — see the <a href="#sept2026">update below</a>.</em></td></tr>
     <tr><td><strong>Montlake</strong></td><td>Medium</td><td>Catches openings reliably, but its normal rush-hour traffic also spikes — so it alerts <strong>off-peak only</strong>, when a spike is meaningful.</td></tr>
     <tr><td><strong>Fremont</strong></td><td>Low (board-only)</td><td>Opens most often, but short openings let traffic divert, so CI can't cleanly separate them. Shown on the board; no proactive alerts.</td></tr>
     <tr><td><strong>South Park</strong></td><td>Promising, not yet validated</td><td>Excellent separation but too few openings in the window to confirm. Board-only for now.</td></tr>
     <tr><td><strong>1st Ave S</strong></td><td>Board-only</td><td>Opens rarely; congestion there is usually port/rail, not the bridge.</td></tr>
-    <tr><td><strong>University, Spokane St</strong></td><td>Board-only</td><td>Absent from the city feed during the study (no openings recorded), so we have no ground truth to validate them yet.</td></tr>
+    <tr><td><strong>University, Spokane St</strong></td><td>Board-only <em>(promoted September 2026 — see the <a href="#sept2026">update below</a>)</em></td><td>Absent from the city feed during the study (no openings recorded), so we had no ground truth to validate them at the time.</td></tr>
   </tbody>
 </table>
 
@@ -76,6 +76,63 @@
   <li><strong>It's an inference, not a sensor.</strong> Bridget reads traffic; it does not receive any official bridge-status signal.</li>
   <li><strong>Calibration is a snapshot.</strong> Thresholds are tuned to the records available at build time and refined as we collect more data.</li>
 </ul>
+
+<h2 id="sept2026">September 2026 update — the second study and two newly validated bridges</h2>
+<p><em>Added 2026-09-13; ships with v1.1. The sections above describe the
+original July study and are kept as written, with inline pointers where this
+update changes the current picture.</em></p>
+
+<p>In late August 2026 we ran a second, longer study: <strong>14 days, 70,511
+readings</strong> — two complete weekly cycles. It was pre-registered (the
+pass/fail rules were written down and frozen before the data existed) and it
+answered the question the table above left open: what to do about
+<strong>University and Spokane St</strong>, whose openings the city's public
+record stopped capturing (their bridges still open; the record's sensor path
+went quiet).</p>
+
+<p><strong>How we calibrated bridges with no usable city record —
+distribution matching.</strong> You can't check individual alarms against a
+record that isn't there. But a bridge's openings leave a statistical
+fingerprint that doesn't depend on any single event: how often traffic spikes
+relative to that bridge's own normal, how those spikes spread across the hours
+of the week (openings are banned during commute rush, which carves a
+distinctive weekly shape), and how long they last. We chose each bridge's
+alert threshold so that the <em>pattern</em> of what it flags matches the
+<em>pattern</em> of that bridge's own opening history — no event-by-event
+pairing needed. Before trusting the method, we tested it blind on the two
+bridges where we DO have a usable record: we hid Ballard's and Fremont's
+records, asked the method to find their thresholds from the traffic pattern
+alone, and compared its answers to the answers computed with the records. It
+landed inside the accepted range on both (Fremont: 2.00 vs a supervised range
+of 1.80–2.10; Ballard: 2.50, where the record-based score is within 0.003 of
+its best). That test — pass or fail — was defined before we looked.</p>
+
+<p><strong>Result:</strong> University and Spokane St now alert
+<strong>off-peak only</strong> (the same cautious tier as Montlake), with
+thresholds recovered by this method. They are deliberately capped there: a
+bridge validated by pattern-matching alone never gets the top tier.</p>
+
+<p><strong>The second study also retuned every existing threshold.</strong>
+With roughly twice the opening coverage of the July study, all seven bridges'
+numbers were recomputed from scratch. The visible effect:
+<strong>Ballard's alert thresholds rose</strong> (its off-peak bar most of
+all), so Ballard alerts somewhat less often than before — the larger dataset
+showed its earlier off-peak bar was set too low, flagging some ordinary heavy
+traffic. Fewer, better alerts is the intended trade. Montlake's tier and alert
+threshold are unchanged (its board levels moved with everything else's): the
+second study re-tested its behavior directly (a pass/fail rule fixed before the
+data existed) and it passed with more than four-fold margin (3.7% measured,
+against a pre-set 15.6% limit).</p>
+
+<p><strong>A caveat we measured, not assumed — the city record is a lower
+bound.</strong> By independently sampling the city's own live status page for
+11 days and comparing it to the published record, we measured how much the
+record undercounts: it captured ~98% of the openings we observed at Ballard,
+~88% at Fremont, ~84% at Montlake — and ~35% at South Park and ~7% at 1st
+Ave S. Every “false alarm” rate we compute against the record is therefore an
+upper bound (some “false” alarms are real openings the record missed), and the
+two newly validated bridges' calibration rests on the pattern of their
+history, not on its completeness.</p>
 
 <h2>What we never do</h2>
 <p>We never use a live city or government feed in the app, never send your data anywhere, and never describe Bridget as receiving official bridge status. The city records are used <strong>only offline, to tune the thresholds</strong> — the shipping app has no servers.</p>
