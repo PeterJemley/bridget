@@ -41,13 +41,13 @@
 <p class="lede">Methodology &amp; accuracy</p>
 
 <h2>The short version</h2>
-<p>Bridget has <strong>no backend and no live bridge feed.</strong> It infers, on your iPhone, when a drawbridge is <strong>backing up traffic</strong> — usually because it's raised — by comparing the live drive time across the bridge's approach to that road's normal free-flow time. A big, sustained slowdown is the signature of a stopped span.</p>
+<p>Bridget has <strong>no servers of its own and is not an official live feed.</strong> It watches the live drive time across each drawbridge's approach and compares it to the drive time on an empty road — what Apple Maps predicts for 3 a.m. A big slowdown means the bridge is <strong>backing up traffic</strong> — whether from an opening or ordinary congestion. Bridget's math runs on your iPhone, and the reading is an inference from traffic — there is no sensor on the bridge.</p>
 <p>It is honest about two limits: it <strong>reacts to congestion as it forms</strong> (so it helps you <em>avoid a jam</em>, it doesn't <em>predict a raise</em>), and it's only confident on the bridges where the evidence backs it up — for most bridges that evidence is the city's official records; for two whose records went dark, it's the statistical fingerprint of their own opening history (how that was validated: see the <a href="#sept2026">September 2026 update</a> at the end of this page).</p>
 
 <h2>How the signal works</h2>
 <ol>
   <li>For each bridge, Bridget derives a <strong>canonical probe</strong> — a point ~500&nbsp;m back along the real approach road (validated to sit within 200&nbsp;m of the bridge centerline, so it's on the actual approach, not a parallel street).</li>
-  <li>While you're on a planned route, it periodically asks Apple's MapKit for the live drive time from that probe to the bridge, and divides by the road's free-flow baseline. That ratio is the <strong>Congestion Index (CI)</strong>.</li>
+  <li>While you're on a planned route, it periodically asks Apple's MapKit for the live drive time from that probe to the bridge, and divides by the road's <strong>free-flow baseline</strong> — the empty-road, 3 a.m. drive time described in the short version above. That ratio is the <strong>Congestion Index (CI)</strong>.</li>
   <li>A per-bridge, time-of-day <strong>calibrated threshold</strong> turns CI into a status. The calibration is done offline (see below) and baked into the app as fixed numbers — not fetched.</li>
 </ol>
 
@@ -135,7 +135,7 @@ two newly validated bridges' calibration rests on the pattern of their
 history, not on its completeness.</p>
 
 <h2>What we never do</h2>
-<p>We never use a live city or government feed in the app, never send your data anywhere, and never describe Bridget as receiving official bridge status. The city records are used <strong>only offline, to tune the thresholds</strong> — the shipping app has no servers.</p>
+<p>We never use a live city or government feed in the app, never receive your data (the only thing that leaves your iPhone is the route request Apple Maps needs), and never describe Bridget as receiving official bridge status. The city records are used <strong>only offline, to tune the thresholds</strong> — the shipping app has no servers.</p>
 
 <footer>
   Bridget &middot; <a href="privacy.html">Privacy policy</a> &middot; <a href="index.html">Home</a>
